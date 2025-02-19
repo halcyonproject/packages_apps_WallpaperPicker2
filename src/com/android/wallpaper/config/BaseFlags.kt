@@ -81,7 +81,7 @@ abstract class BaseFlags {
     open fun isColorPickerUpdateEnabled() = colorPickerUpdateFlag()
 
     // Local flag to gate Compose UI under the colorPickerUpdateFlag
-    open fun isColorPickerComposeEnabled() = false
+    open fun isColorPickerComposeEnabled() = true
 
     open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
 
