@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.data.category
+package com.android.customization.picker.pack.data
 
-import android.content.pm.ResolveInfo
-import android.graphics.drawable.Drawable
-
-// TODO(b/406555816): Consolidate asset and drawable into a single data class
-/**
- * Represents set of attributes required for displaying a 3rd party wallpaper app installed on
- * device.
- */
-data class ThirdPartyCategoryData(val resolveInfo: ResolveInfo, val defaultDrawable: Drawable?)
+/** Contains pack info for the main page. */
+data class PackThemeData(
+    val showPackThemeBanner: Boolean = false,
+    val showPackThemeChipButton: Boolean = false,
+    val launchingDetailActivityClass: String = "",
+    val launchingPackageName: String = "",
+    val suggestedChipThemePackInfo: ThemePackInfo = ThemePackInfo(),
+    val currentThemePackInfo: ThemePackInfo = ThemePackInfo(),
+)

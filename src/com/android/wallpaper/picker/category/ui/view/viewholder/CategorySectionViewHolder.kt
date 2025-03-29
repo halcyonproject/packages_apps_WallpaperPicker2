@@ -18,6 +18,7 @@ package com.android.wallpaper.picker.category.ui.view.viewholder
 
 import android.app.ActivityOptions
 import android.app.PendingIntent
+import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.util.Log
 import android.view.View
@@ -25,6 +26,8 @@ import android.view.ViewStub
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
@@ -32,7 +35,6 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.picker.category.ui.binder.BannerProvider
 import com.android.wallpaper.picker.category.ui.view.adapter.CategoryAdapter
 import com.android.wallpaper.picker.category.ui.view.adapter.CuratedPhotosAdapter
-import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.category.ui.viewmodel.PhotosViewModel
 import com.android.wallpaper.picker.category.ui.viewmodel.SectionViewModel
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
@@ -74,26 +76,61 @@ class CategorySectionViewHolder(itemView: View, private val windowWidth: Int) :
                 shouldAnimate = shouldAnimateColor,
                 lifecycleOwner = lifecycleOwner,
             )
+
+            // setting the icon color of the button
+            ColorUpdateBinder.bind(
+                setColor = { color ->
+                    TextViewCompat.setCompoundDrawableTintList(
+                        morePhotosButton,
+                        ColorStateList.valueOf(color),
+                    )
+                },
+                color = colorUpdateViewModel.colorOnPrimary,
+                shouldAnimate = shouldAnimateColor,
+                lifecycleOwner = lifecycleOwner,
+            )
+
+            // setting the text color of the button
+            ColorUpdateBinder.bind(
+                setColor = { color -> morePhotosButton.setTextColor(color) },
+                color = colorUpdateViewModel.colorOnPrimary,
+                shouldAnimate = shouldAnimateColor,
+                lifecycleOwner = lifecycleOwner,
+            )
+
+            // setting background of the button
+            ColorUpdateBinder.bind(
+                setColor = { color ->
+                    DrawableCompat.setTint(DrawableCompat.wrap(morePhotosButton.background), color)
+                },
+                color = colorUpdateViewModel.colorPrimary,
+                shouldAnimate = shouldAnimateColor,
+                lifecycleOwner = lifecycleOwner,
+            )
+        }
+
+        if (item.sectionTitle != null && item.tileViewModels.isNotEmpty()) {
+            sectionTitle.text = item.sectionTitle
+            sectionTitle.visibility = View.VISIBLE
+        } else {
+            sectionTitle.visibility = View.GONE
         }
 
         // TODO: this probably is not necessary but if in the case the sections get updated we
         //  should just update the adapter instead of instantiating a new instance
-        when (item.displayType) {
+        when (item) {
             // This is the display type for suggested photos carousel
-            CategoriesViewModel.DisplayType.Carousel -> {
-                sectionTiles.adapter = CuratedPhotosAdapter(item.tileViewModels)
-                val layoutManagerCuratedPhotos = CarouselLayoutManager()
-                sectionTiles.layoutManager = layoutManagerCuratedPhotos
-                val snapHelper = CarouselSnapHelper()
-
-                // in case there are no suggested photos
-                if (item.tileViewModels.isEmpty()) {
+            is PhotosViewModel -> {
+                // in case there are no suggested photos or suggested photos are less than 3
+                if (!item.isSuggestedPhotoCarouselVisible) {
                     val signInBannerView = bannerProvider?.getSignInBanner()
                     val layoutParams = morePhotosButton.layoutParams as RelativeLayout.LayoutParams
                     layoutParams.removeRule(RelativeLayout.ALIGN_PARENT_END)
                     layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL)
                     morePhotosButton.layoutParams = layoutParams
-                    val pendingIntentForPhotos = (item as PhotosViewModel).pendingIntent
+                    morePhotosButton.text = itemView.context.getString(R.string.choose_a_photo)
+                    morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
+                    val pendingIntentForPhotos = item.pendingIntent
 
                     if (item.status == PhotosErrorData.UNAUTHENTICATED && !isSignInBannerVisible) {
                         val viewStub = categoryHeader.findViewById<ViewStub>(R.id.sign_in_banner_id)
@@ -129,9 +166,16 @@ class CategorySectionViewHolder(itemView: View, private val windowWidth: Int) :
                             Log.e(TAG, "PendingIntent was canceled: $e")
                         }
                     })
+                    // we hide the title called suggested photos in this case
+                    sectionTitle.visibility = View.GONE
+                } else {
+                    sectionTiles.adapter = CuratedPhotosAdapter(item.tileViewModels)
+                    val layoutManagerCuratedPhotos = CarouselLayoutManager()
+                    sectionTiles.layoutManager = layoutManagerCuratedPhotos
+                    val snapHelper = CarouselSnapHelper()
+                    snapHelper.attachToRecyclerView(sectionTiles)
+                    morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
                 }
-                snapHelper.attachToRecyclerView(sectionTiles)
-                morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
             }
             else -> {
                 morePhotosButton.visibility = View.GONE
@@ -169,13 +213,6 @@ class CategorySectionViewHolder(itemView: View, private val windowWidth: Int) :
                     )
                 sectionTiles.addItemDecoration(itemDecoration)
             }
-        }
-
-        if (item.sectionTitle != null && item.tileViewModels.isNotEmpty()) {
-            sectionTitle.text = item.sectionTitle
-            sectionTitle.visibility = View.VISIBLE
-        } else {
-            sectionTitle.visibility = View.GONE
         }
     }
 

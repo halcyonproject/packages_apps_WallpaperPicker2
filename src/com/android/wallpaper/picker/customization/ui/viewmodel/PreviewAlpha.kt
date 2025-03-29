@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.data.category
+package com.android.wallpaper.picker.customization.ui.viewmodel
 
-import android.content.pm.ResolveInfo
-import android.graphics.drawable.Drawable
-
-// TODO(b/406555816): Consolidate asset and drawable into a single data class
 /**
- * Represents set of attributes required for displaying a 3rd party wallpaper app installed on
- * device.
+ * Data class defining the target alpha that a preview should be set to. If shouldAnimate is true,
+ * the preview will animate to the target alpha value.
  */
-data class ThirdPartyCategoryData(val resolveInfo: ResolveInfo, val defaultDrawable: Drawable?)
+data class PreviewAlpha(val alpha: Float, val shouldAnimate: Boolean)

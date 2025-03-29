@@ -64,6 +64,8 @@ object WallpaperPreviewBinder {
         viewLifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        onPreviewReady: ((Screen) -> Unit)? = null,
+        onPreviewSurfaceDestroyed: ((Screen) -> Unit)? = null,
     ) {
         var surfaceCallback: SurfaceViewUtils.SurfaceCallback? = null
         viewLifecycleOwner.lifecycleScope.launch {
@@ -80,6 +82,8 @@ object WallpaperPreviewBinder {
                         lifecycleOwner = viewLifecycleOwner,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred = isFirstBindingDeferred,
+                        onPreviewReady = onPreviewReady,
+                        onPreviewSurfaceDestroyed = onPreviewSurfaceDestroyed,
                     )
                 surfaceView.setZOrderMediaOverlay(true)
                 surfaceCallback?.let { surfaceView.holder.addCallback(it) }
@@ -108,11 +112,14 @@ object WallpaperPreviewBinder {
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        onPreviewReady: ((Screen) -> Unit)? = null,
+        onPreviewSurfaceDestroyed: ((Screen) -> Unit)? = null,
     ): SurfaceViewUtils.SurfaceCallback {
 
         return object : SurfaceViewUtils.SurfaceCallback {
 
             var job: Job? = null
+            var currentWallpaper: String? = null
 
             override fun surfaceCreated(holder: SurfaceHolder) {
                 job =
@@ -135,7 +142,7 @@ object WallpaperPreviewBinder {
                                         WallpaperEngineConnection.WallpaperEngineConnectionListener {
                                         override fun onWallpaperColorsChanged(
                                             colors: WallpaperColors?,
-                                            displayId: Int
+                                            displayId: Int,
                                         ) {
                                             viewModel.setWallpaperConnectionColors(
                                                 WallpaperColorsModel.Loaded(colors)
@@ -151,8 +158,16 @@ object WallpaperPreviewBinder {
                                     engineRenderingConfig,
                                     isFirstBindingDeferred,
                                     listener,
+                                    onPreviewReady = { onPreviewReady?.invoke(screen) },
                                 )
                             } else if (wallpaper is WallpaperModel.StaticWallpaperModel) {
+                                if (
+                                    currentWallpaper == wallpaper.commonWallpaperData.id.wallpaperId
+                                ) {
+                                    onPreviewReady?.invoke(screen)
+                                    return@collect
+                                }
+                                currentWallpaper = wallpaper.commonWallpaperData.id.wallpaperId
                                 val staticPreviewView =
                                     LayoutInflater.from(applicationContext)
                                         .inflate(R.layout.fullscreen_wallpaper_preview, null)
@@ -164,7 +179,7 @@ object WallpaperPreviewBinder {
                                 surfaceView.attachView(
                                     staticPreviewView,
                                     surfacePosition.width(),
-                                    surfacePosition.height()
+                                    surfacePosition.height(),
                                 )
                                 // Bind static wallpaper
                                 StaticPreviewBinder.bind(
@@ -186,6 +201,7 @@ object WallpaperPreviewBinder {
                                         },
                                     displaySize = displaySize,
                                     parentCoroutineScope = this,
+                                    onPreviewReady = { onPreviewReady?.invoke(screen) },
                                 )
                                 // TODO (b/348462236): investigate cinematic wallpaper toggle case
                                 // Previously all live wallpaper services are shut down to enable
@@ -202,6 +218,7 @@ object WallpaperPreviewBinder {
             override fun surfaceDestroyed(holder: SurfaceHolder) {
                 job?.cancel()
                 job = null
+                onPreviewSurfaceDestroyed?.invoke(screen)
                 // Note that we disconnect wallpaper connection for live wallpapers in
                 // WallpaperPreviewActivity's onDestroy().
                 // This is to reduce multiple times of connecting and disconnecting live

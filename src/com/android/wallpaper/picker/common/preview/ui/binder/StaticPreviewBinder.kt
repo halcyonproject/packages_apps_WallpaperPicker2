@@ -56,6 +56,7 @@ object StaticPreviewBinder {
         displaySize: Point,
         parentCoroutineScope: CoroutineScope,
         isFullScreen: Boolean = false,
+        onPreviewReady: (() -> Unit)? = null,
     ) {
         lowResImageView.initLowResImageView()
         fullResImageView.initFullResImageView()
@@ -68,6 +69,7 @@ object StaticPreviewBinder {
                         it?.let {
                             lowResImageView.setImageBitmap(it)
                             lowResImageView.isVisible = true
+                            onPreviewReady?.invoke()
                         }
                     }
                 }
@@ -119,6 +121,8 @@ object StaticPreviewBinder {
 
                         if (lowResImageView.isVisible) {
                             crossFadeInFullResImageView(lowResImageView, fullResImageView)
+                        } else {
+                            onPreviewReady?.invoke()
                         }
                     }
                 }
@@ -131,7 +135,7 @@ object StaticPreviewBinder {
             RenderEffect.createBlurEffect(
                 LOW_RES_BITMAP_BLUR_RADIUS,
                 LOW_RES_BITMAP_BLUR_RADIUS,
-                Shader.TileMode.CLAMP
+                Shader.TileMode.CLAMP,
             )
         )
     }
@@ -163,7 +167,7 @@ object StaticPreviewBinder {
                         if (isFullScreen) 1f
                         else
                             WallpaperCropUtils.getSystemWallpaperMaximumScale(
-                                context.applicationContext,
+                                context.applicationContext
                             ),
                 )
                 .let { scaleAndCenter ->
