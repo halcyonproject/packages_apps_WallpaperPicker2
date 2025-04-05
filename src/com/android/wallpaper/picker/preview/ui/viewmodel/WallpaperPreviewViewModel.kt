@@ -25,6 +25,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.customization.picker.clock.shared.ClockSize
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
@@ -41,6 +42,7 @@ import com.android.wallpaper.picker.preview.domain.interactor.PreviewActionsInte
 import com.android.wallpaper.picker.preview.domain.interactor.WallpaperPreviewInteractor
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
+import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.binder.PreviewTooltipBinder
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.PreviewUtils
@@ -73,6 +75,7 @@ constructor(
     staticWallpaperPreviewViewModelFactory: StaticWallpaperPreviewViewModel.Factory,
     val previewActionsViewModel: PreviewActionsViewModel,
     private val displayUtils: DisplayUtils,
+    private val applyWallpaperOptionsProvider: ApplyWallpaperOptionsProvider,
     @HomeScreenPreviewUtils private val homePreviewUtils: PreviewUtils,
     @LockScreenPreviewUtils private val lockPreviewUtils: PreviewUtils,
     @ApplicationContext private val context: Context,
@@ -97,6 +100,8 @@ constructor(
         if (isViewAsHome) Screen.HOME_SCREEN else Screen.LOCK_SCREEN
 
     val wallpaper: StateFlow<WallpaperModel?> = interactor.wallpaperModel
+
+    val preferredClockSize: Flow<ClockSize?> = interactor.preferredClockSize
 
     fun setPreviewWallpaperModel(wallpaperModel: WallpaperModel) {
         interactor.setPreviewWallpaper(wallpaperModel)
@@ -340,6 +345,20 @@ constructor(
 
     val isApplyButtonEnabled: Flow<Boolean> =
         setWallpaperDialogSelectedScreens.map { it.isNotEmpty() }
+
+    val hasSuggestedWallpaperDestination: Flow<Boolean> =
+        wallpaper.map { model ->
+            (model as? LiveWallpaperModel)?.liveWallpaperData?.description?.let {
+                applyWallpaperOptionsProvider.getSuggestedWallpaperDestination(it)
+            } != null
+        }
+
+    val applyWallpaperSubTitle: Flow<String?> =
+        wallpaper.map { model ->
+            (model as? LiveWallpaperModel)?.liveWallpaperData?.description?.let {
+                applyWallpaperOptionsProvider.getSuggestedWallpaperDestinationReason(it)
+            }
+        }
 
     val isHomeCheckBoxChecked: Flow<Boolean> =
         setWallpaperDialogSelectedScreens.map { it.contains(Screen.HOME_SCREEN) }
