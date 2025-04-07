@@ -17,7 +17,9 @@
 package com.android.wallpaper.picker.customization.ui.binder
 
 import android.content.res.ColorStateList
+import android.widget.TextView
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -64,6 +66,12 @@ object WallpaperPickerEntryBinder {
             lifecycleOwner = lifecycleOwner,
             navigateToPreviewScreen = navigateToPreviewScreen,
             navigateToWallpaperCollectionScreen = navigateToWallpaperCollectionScreen,
+        )
+
+        bindWallpaperPickerEntryLabels(
+            suggestedPhotosLabel = view.suggestedPhotosText,
+            viewModel = viewModel.customizationOptionsViewModel.wallpaperCarouselViewModel,
+            lifecycleOwner = lifecycleOwner,
         )
 
         lifecycleOwner.lifecycleScope.launch {
@@ -187,6 +195,22 @@ object WallpaperPickerEntryBinder {
                                 navigateToPreviewScreen?.invoke(navigationEvent.wallpaperModel)
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun bindWallpaperPickerEntryLabels(
+        suggestedPhotosLabel: TextView,
+        viewModel: WallpaperCarouselViewModel,
+        lifecycleOwner: LifecycleOwner,
+    ) {
+        lifecycleOwner.lifecycleScope.launch {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.shouldShowSuggestedPhotosLabel.collect {
+                        suggestedPhotosLabel.isVisible = it
                     }
                 }
             }

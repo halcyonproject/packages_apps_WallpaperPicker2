@@ -167,6 +167,15 @@ constructor(
             }
         }
 
+    /**
+     * This [Flow] emits a [Boolean] which signifies whether the suggested photos label should be
+     * visible
+     */
+    val shouldShowSuggestedPhotosLabel: Flow<Boolean> =
+        curatedPhotoCarouselItems.map { curatedPhotos: List<TileViewModel> ->
+            return@map curatedPhotos.size > CAROUSEL_ITEMS_THRESHOLD
+        }
+
     private fun navigateToPreviewScreen(
         wallpaperModel: WallpaperModel,
         categoryType: CategoryType,
