@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.picker.category.ui.view.adapter.CuratedPhotosAdapter
 import com.android.wallpaper.picker.category.ui.view.adapter.LoadingAnimationAdapter
+import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
 import com.android.wallpaper.picker.customization.ui.view.listener.WallpaperCarouselScrollListener
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -48,6 +49,8 @@ object WallpaperPickerEntryBinder {
         lifecycleOwner: LifecycleOwner,
         navigateToWallpaperCategoriesScreen: (screen: Screen) -> Unit,
         navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
+        navigateToWallpaperCollectionScreen:
+            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
     ) {
         val isOnMainScreen = {
             viewModel.customizationOptionsViewModel.selectedOption.value == null
@@ -60,6 +63,7 @@ object WallpaperPickerEntryBinder {
             shouldAnimateColor = isOnMainScreen,
             lifecycleOwner = lifecycleOwner,
             navigateToPreviewScreen = navigateToPreviewScreen,
+            navigateToWallpaperCollectionScreen = navigateToWallpaperCollectionScreen,
         )
 
         lifecycleOwner.lifecycleScope.launch {
@@ -125,6 +129,8 @@ object WallpaperPickerEntryBinder {
         shouldAnimateColor: () -> Boolean,
         lifecycleOwner: LifecycleOwner,
         navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
+        navigateToWallpaperCollectionScreen:
+            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
     ) {
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -172,8 +178,10 @@ object WallpaperPickerEntryBinder {
                         navigationEvent: WallpaperCarouselViewModel.NavigationEvent ->
                         when (navigationEvent) {
                             is NavigateToWallpaperCollection -> {
-                                // TODO (b/398250531): implement navigation to creative
-                                // category collection page
+                                navigateToWallpaperCollectionScreen?.invoke(
+                                    navigationEvent.categoryId,
+                                    navigationEvent.categoryType,
+                                )
                             }
                             is NavigateToPreviewScreen -> {
                                 navigateToPreviewScreen?.invoke(navigationEvent.wallpaperModel)
