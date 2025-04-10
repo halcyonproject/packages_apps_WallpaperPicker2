@@ -14,7 +14,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Main themes -->
     <style name="WallpaperTheme" parent="@android:style/Theme.DeviceDefault.Settings">
@@ -154,6 +154,8 @@
         <item name="android:textSize">16sp</item>
         <item name="android:textFontWeight">500</item>
     </style>
+
+    <style name="CategorySectionTitleTextAppearance.TitleMediumEmphasized" />
 
     <!-- Individual components / Widgets -->
     <style name="OutlinedButtonStyle"  parent="@android:style/Widget.DeviceDefault.Button">
@@ -313,4 +315,10 @@
         <item name="android:textAlignment">center</item>
         <item name="android:paddingVertical">8dp</item>
     </style>
+
+    <!-- Main page emphasized font style -->
+    <style name="TextAppearance.DeviceDefault.Small"
+        parent="@android:style/TextAppearance.DeviceDefault.Small" />
+
+    <style name="TextAppearance.DeviceDefault.Small.LabelLargeEmphasized" />
 </resources>
