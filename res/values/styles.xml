@@ -321,4 +321,12 @@
         parent="@android:style/TextAppearance.DeviceDefault.Small" />
 
     <style name="TextAppearance.DeviceDefault.Small.LabelLargeEmphasized" />
+
+    <style name="TextAppearance.DeviceDefault.Large" parent="@android:style/TextAppearance.DeviceDefault.Large" />
+
+    <style name="TextAppearance.DeviceDefault.Large.TitleLargeEmphasized" />
+
+    <style name="ToolbarTheme">
+        <item name="android:titleTextAppearance">@style/TextAppearance.DeviceDefault.Large.TitleLargeEmphasized</item>
+    </style>
 </resources>
