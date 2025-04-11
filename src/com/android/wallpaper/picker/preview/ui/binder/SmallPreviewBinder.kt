@@ -214,8 +214,16 @@ object SmallPreviewBinder {
                             ) {
                                 view.setOnClickListener(null)
                             } else {
-                                onClick?.let { view.setOnClickListener { it() } }
-                                    ?: view.setOnClickListener(null)
+                                onClick?.let {
+                                    view.setOnClickListener {
+                                        if (BaseFlags.get().isNewPickerUi()) {
+                                            // Set top z order for shared element transition
+                                            wallpaperSurface.setZOrderOnTop(true)
+                                            workspaceSurface.setZOrderOnTop(true)
+                                        }
+                                        it()
+                                    }
+                                } ?: view.setOnClickListener(null)
                             }
                         }
                 } else if (R.id.setWallpaperDialog == currentNavDestId) {
