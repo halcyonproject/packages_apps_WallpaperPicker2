@@ -93,7 +93,6 @@ object FullWallpaperPreviewBinder {
             if (isWallpaperFullScreen) {
                 previewCard.radius = 0f
             }
-            wallpaperSurface.cornerRadius = previewCard.radius
             scrimView.isVisible = isWallpaperFullScreen
             onWallpaperLoaded?.invoke(isWallpaperFullScreen)
         }
@@ -113,6 +112,11 @@ object FullWallpaperPreviewBinder {
                                 override fun onTransitionStart(transition: Transition) {
                                     super.onTransitionStart(transition)
                                     if (BaseFlags.get().isNewPickerUi()) {
+                                        // When putting the surface on top for full transition, the
+                                        // card view is behind the surface view so we need to apply
+                                        // radius on surface view instead
+                                        wallpaperSurface.cornerRadius = previewCard.radius
+                                        workspaceSurface.cornerRadius = previewCard.radius
                                         // Set top z order during shared element transition to
                                         // prevent showing any other surfaces, e.g. background
                                         // engine

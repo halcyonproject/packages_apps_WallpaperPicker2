@@ -102,14 +102,15 @@ object SmallPreviewBinder {
                 )
             }
         val wallpaperSurface = view.requireViewById<SurfaceView>(R.id.wallpaper_surface)
+        val workspaceSurface = view.requireViewById<SurfaceView>(R.id.workspace_surface)
 
         // Don't set radius for set wallpaper dialog
         if (!viewModel.showSetWallpaperDialog.value) {
             // When putting the surface on top for full transition, the card view is behind the
             // surface view so we need to apply radius on surface view instead
             wallpaperSurface.cornerRadius = previewCard.radius
+            workspaceSurface.cornerRadius = previewCard.radius
         }
-        val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
 
         // Set transition names to enable the small to full preview enter and return shared
         // element transitions.
