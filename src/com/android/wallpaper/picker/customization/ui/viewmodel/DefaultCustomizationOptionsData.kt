@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.category.ui.view.providers
+package com.android.wallpaper.picker.customization.ui.viewmodel
 
-import androidx.fragment.app.Fragment
-import com.android.wallpaper.picker.customization.shared.model.CategoryType
-
-/**
- * This interface provides the signature to classes to provide the correct IndividualPickerFragment
- */
-interface IndividualPickerFactory {
-    fun getIndividualPickerInstance(collectionId: String): Fragment
-
-    fun getIndividualPickerInstance(collectionId: String, categoryType: CategoryType): Fragment
-}
+class DefaultCustomizationOptionsData : CustomizationOptionsData {}
