@@ -187,6 +187,17 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                         navigationEvent.categoryType == CategoryType.CreativeCategories,
                     )
                 }
+                is CategoriesViewModel.NavigationEvent.NavigateToExtendedWallpaperEffects -> {
+                    parentFragmentManager.commit {
+                        replace(
+                            R.id.fragment_container,
+                            PhotoPickerFragment.newInstance(
+                                shouldNavigateToExtendedWallpaperEffects = true
+                            ),
+                        )
+                        addToBackStack(null)
+                    }
+                }
             }
         }
         return view
