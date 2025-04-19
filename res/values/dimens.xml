@@ -33,7 +33,7 @@
     <dimen name="grid_tile_aspect_height">340dp</dimen>
     <dimen name="grid_tile_aspect_width">182dp</dimen>
     <dimen name="category_grid_edge_space">18dp</dimen>
-    <dimen name="category_grid_padding_top">32dp</dimen>
+    <dimen name="category_grid_padding_top">16dp</dimen>
 
     <!-- Dimensions for creative categoriy tiles. -->
     <dimen name="creative_category_grid_padding_horizontal">8dp</dimen>
@@ -424,7 +424,7 @@
     <dimen name="customization_option_entry_text_margin_end">16dp</dimen>
     <dimen name="customization_option_entry_icon_size">60dp</dimen>
     <dimen name="customization_option_entry_icon_padding">8dp</dimen>
-    <dimen name="preview_corner_radius">32dp</dimen>
+    <dimen name="preview_corner_radius">@*android:dimen/rounded_corner_content_padding</dimen>
     <dimen name="apply_button_end_margin">16dp</dimen>
     <dimen name="nav_button_start_margin">16dp</dimen>
     <dimen name="wallpaper_picker_entry_bottom_space">4dp</dimen>
