@@ -56,6 +56,11 @@ class CuratedPhotoSectionViewHolder(itemView: View, private val windowWidth: Int
 
     private val morePhotosButton: Button = itemView.requireViewById(R.id.more_photos_button)
     private val categoryHeader: RelativeLayout = itemView.requireViewById(R.id.category_header)
+    private val snapHelper = CarouselSnapHelper()
+
+    init {
+        snapHelper.attachToRecyclerView(sectionTiles)
+    }
 
     fun bind(
         item: PhotosViewModel,
@@ -255,8 +260,6 @@ class CuratedPhotoSectionViewHolder(itemView: View, private val windowWidth: Int
                 morePhotosLabel.visibility = View.VISIBLE
                 sectionTiles.adapter = CuratedPhotosAdapter(item.tileViewModels)
                 val layoutManagerCuratedPhotos = CarouselLayoutManager()
-                val snapHelper = CarouselSnapHelper()
-                snapHelper.attachToRecyclerView(sectionTiles)
                 sectionTiles.layoutManager = layoutManagerCuratedPhotos
                 morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
             }

@@ -166,6 +166,9 @@ object WallpaperPickerEntryBinder {
                     wallpaperCarousel.apply {
                         adapter = loadingAnimationAdapter
                         layoutManager = customLayoutManager
+                        if (wallpaperCarousel.onFlingListener == null) {
+                            CarouselSnapHelper().attachToRecyclerView(this)
+                        }
                     }
                     viewModel.wallpaperCarouselItems.collect {
                         wallpaperCarousel.swapAdapter(
@@ -175,9 +178,6 @@ object WallpaperPickerEntryBinder {
                         )
                         customLayoutManager.setIsScrollable(true)
                         wallpaperCarousel.addOnScrollListener(WallpaperCarouselScrollListener())
-                        if (wallpaperCarousel.onFlingListener == null) {
-                            CarouselSnapHelper().attachToRecyclerView(wallpaperCarousel)
-                        }
                     }
                 }
 
