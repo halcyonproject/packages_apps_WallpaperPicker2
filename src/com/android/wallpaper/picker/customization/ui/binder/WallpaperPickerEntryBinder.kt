@@ -31,7 +31,8 @@ import com.android.wallpaper.picker.category.ui.view.adapter.CuratedPhotosAdapte
 import com.android.wallpaper.picker.category.ui.view.adapter.LoadingAnimationAdapter
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
-import com.android.wallpaper.picker.customization.ui.view.listener.WallpaperCarouselScrollListener
+import com.android.wallpaper.picker.customization.ui.view.listener.CarouselHorizontalScrollEnforcer
+import com.android.wallpaper.picker.customization.ui.view.listener.WallpaperTitleScrollListener
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel
@@ -151,6 +152,10 @@ object WallpaperPickerEntryBinder {
                                 return if (isScrollable) super.canScrollHorizontally() else false
                             }
 
+                            override fun canScrollVertically(): Boolean {
+                                return false
+                            }
+
                             fun setIsScrollable(isScrollable: Boolean) {
                                 this.isScrollable = isScrollable
                             }
@@ -161,6 +166,11 @@ object WallpaperPickerEntryBinder {
                         if (wallpaperCarousel.onFlingListener == null) {
                             CarouselSnapHelper().attachToRecyclerView(this)
                         }
+                        val horizontalScrollEnforcer =
+                            CarouselHorizontalScrollEnforcer(wallpaperCarousel.context)
+                        addOnScrollListener(horizontalScrollEnforcer)
+                        addOnItemTouchListener(horizontalScrollEnforcer)
+                        isNestedScrollingEnabled = false
                     }
                     viewModel.wallpaperCarouselItems.collect {
                         wallpaperCarousel.swapAdapter(
@@ -169,7 +179,7 @@ object WallpaperPickerEntryBinder {
                             false,
                         )
                         customLayoutManager.setIsScrollable(true)
-                        wallpaperCarousel.addOnScrollListener(WallpaperCarouselScrollListener())
+                        wallpaperCarousel.addOnScrollListener(WallpaperTitleScrollListener())
                     }
                 }
 
