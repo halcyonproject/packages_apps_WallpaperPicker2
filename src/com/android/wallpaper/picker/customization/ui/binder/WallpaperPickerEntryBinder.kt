@@ -59,7 +59,7 @@ object WallpaperPickerEntryBinder {
         }
 
         bindWallpaperCarousel(
-            wallpaperCarousel = view.wallpaperCarousel,
+            wallpaperPickerEntryView = view,
             viewModel = viewModel.customizationOptionsViewModel.wallpaperCarouselViewModel,
             colorUpdateViewModel = colorUpdateViewModel,
             shouldAnimateColor = isOnMainScreen,
@@ -123,7 +123,7 @@ object WallpaperPickerEntryBinder {
     }
 
     private fun bindWallpaperCarousel(
-        wallpaperCarousel: RecyclerView,
+        wallpaperPickerEntryView: WallpaperPickerEntry,
         viewModel: WallpaperCarouselViewModel,
         colorUpdateViewModel: ColorUpdateViewModel,
         shouldAnimateColor: () -> Boolean,
@@ -132,6 +132,7 @@ object WallpaperPickerEntryBinder {
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
     ) {
+        val wallpaperCarousel: RecyclerView = wallpaperPickerEntryView.wallpaperCarousel
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -163,6 +164,12 @@ object WallpaperPickerEntryBinder {
                         }
                     }
                     viewModel.wallpaperCarouselItems.collect {
+                        if (it.isEmpty()) {
+                            wallpaperPickerEntryView.animateToCollapsed()
+                        } else {
+                            wallpaperPickerEntryView.animateToExpanded()
+                        }
+
                         wallpaperCarousel.swapAdapter(
                             CuratedPhotosAdapter(it),
                             /** removeAndRecycleExistingViews= */
