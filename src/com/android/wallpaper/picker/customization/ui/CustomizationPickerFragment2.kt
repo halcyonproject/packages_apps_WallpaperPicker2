@@ -25,7 +25,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
-import android.widget.Button
+import android.view.ViewStub
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toolbar
@@ -45,6 +45,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.transition.Transition
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
@@ -53,6 +54,7 @@ import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.view.CategoriesFragment
+import com.android.wallpaper.picker.category.ui.view.PhotoPickerFragment
 import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerFactory
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder
@@ -67,6 +69,8 @@ import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.util.EmptyTransitionListener
+import com.android.wallpaper.picker.customization.ui.view.ApplyButton
+import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
 import com.android.wallpaper.picker.customization.ui.view.PreviewPagerViews
 import com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -154,6 +158,13 @@ class CustomizationPickerFragment2 :
             view.requireViewById(R.id.apply_button),
         )
 
+        // TODO(b/412547250): Manage the suggested button by the settings.secure.
+        val packThemeSuggestedChip: PackThemeSuggestedChip? =
+            if (BaseFlags.get().isPackThemeEnabled()) {
+                val stubView: ViewStub = view.requireViewById(R.id.stub_pack_theme_suggested_chip)
+                stubView.inflate() as PackThemeSuggestedChip
+            } else null
+
         val pickerMotionContainer: MotionLayout = view.requireViewById(R.id.picker_motion_layout)
         val optionContainer: ConstraintLayout =
             view.requireViewById(R.id.customization_option_container)
@@ -207,6 +218,7 @@ class CustomizationPickerFragment2 :
                     wallpaperPickerEntry = view.requireViewById(R.id.wallpaper_picker_entry),
                     previewLabelHeight = view.requireViewById<View>(R.id.label_placeholder).height,
                     optionContainerHeight = optionContainer.height,
+                    packThemeSuggestedChip = packThemeSuggestedChip,
                 )
             }
 
@@ -217,6 +229,7 @@ class CustomizationPickerFragment2 :
                 homeScreenCustomizationOptionEntries = homeScreenCustomizationOptionEntries,
                 customizationOptionFloatingSheetViewMap = customizationOptionFloatingSheetViewMap,
                 customizationFloatingSheetContainer = customizationFloatingSheetContainer,
+                packThemeSuggestedChip = packThemeSuggestedChip,
             )
         }
 
@@ -300,6 +313,7 @@ class CustomizationPickerFragment2 :
         wallpaperPickerEntry: WallpaperPickerEntry,
         previewLabelHeight: Int,
         optionContainerHeight: Int,
+        packThemeSuggestedChip: PackThemeSuggestedChip?,
     ) {
         val isLargeScreenSingleDisplayPortrait = displayUtils.isLargeScreenSingleDisplayPortrait()
         val wallpaperPickerEntryExpandedHeight = wallpaperPickerEntry.height
@@ -328,6 +342,7 @@ class CustomizationPickerFragment2 :
         val collapsedHeaderHeight =
             (pickerMotionContainer.height -
                     (optionContainerHeight -
+                        (packThemeSuggestedChip?.height ?: 0) -
                         (wallpaperPickerEntryExpandedHeight - wallpaperPickerEntryCollapsedHeight)))
                 .coerceAtLeast(minCollapsedPagerHeight)
         pickerMotionContainer
@@ -370,6 +385,7 @@ class CustomizationPickerFragment2 :
                             // isLargeScreenSingleDisplayPortrait is true
                             if (!isLargeScreenSingleDisplayPortrait) {
                                 wallpaperPickerEntry.animateToCollapsed()
+                                packThemeSuggestedChip?.animateToCollapsed()
                             }
                         }
                     }
@@ -387,6 +403,7 @@ class CustomizationPickerFragment2 :
                                         WallpaperPickerEntry.State.COLLAPSED
                             if (shouldExpand) {
                                 wallpaperPickerEntry.animateToExpanded()
+                                packThemeSuggestedChip?.animateToExpanded()
                             }
                         }
                     } else if (currentId == R.id.collapsed_header_primary) {
@@ -400,6 +417,7 @@ class CustomizationPickerFragment2 :
                                         WallpaperPickerEntry.State.EXPANDED
                             if (shouldCollapse) {
                                 wallpaperPickerEntry.animateToCollapsed()
+                                packThemeSuggestedChip?.animateToCollapsed()
                             }
                         }
                     }
@@ -431,6 +449,7 @@ class CustomizationPickerFragment2 :
         homeScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>>,
         customizationOptionFloatingSheetViewMap: Map<CustomizationOption, View>,
         customizationFloatingSheetContainer: FrameLayout,
+        packThemeSuggestedChip: PackThemeSuggestedChip?,
     ) {
         CustomizationPickerBinder2.bind(
             customizationOptionsData = customizationOptionsData,
@@ -488,6 +507,12 @@ class CustomizationPickerFragment2 :
                     individualPickerFactory.getIndividualPickerInstance(categoryId, categoryType)
                 )
             },
+            navigateToExtendedWallpaperEffects = {
+                switchFragment(
+                    PhotoPickerFragment.newInstance(shouldNavigateToExtendedWallpaperEffects = true)
+                )
+            },
+            packThemeSuggestedChip = packThemeSuggestedChip,
         )
 
         customizationOptionsBinder.bindDiscardChangesDialog(
@@ -540,7 +565,7 @@ class CustomizationPickerFragment2 :
         onBackPressedCallback?.remove()
     }
 
-    private fun setupToolbar(navButton: FrameLayout, toolbar: Toolbar, applyButton: Button) {
+    private fun setupToolbar(navButton: FrameLayout, toolbar: Toolbar, applyButton: ApplyButton) {
         toolbar.title = getString(R.string.app_name)
         toolbar.setBackgroundColor(Color.TRANSPARENT)
         toolbarBinder.bind(

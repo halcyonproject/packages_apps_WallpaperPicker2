@@ -31,10 +31,12 @@ import com.android.wallpaper.picker.category.ui.view.adapter.CuratedPhotosAdapte
 import com.android.wallpaper.picker.category.ui.view.adapter.LoadingAnimationAdapter
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
-import com.android.wallpaper.picker.customization.ui.view.listener.WallpaperCarouselScrollListener
+import com.android.wallpaper.picker.customization.ui.view.listener.CarouselHorizontalScrollEnforcer
+import com.android.wallpaper.picker.customization.ui.view.listener.WallpaperTitleScrollListener
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel
+import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToExtendedWallpaperEffects
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToPreviewScreen
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToWallpaperCollection
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -53,19 +55,21 @@ object WallpaperPickerEntryBinder {
         navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+        navigateToExtendedWallpaperEffects: (() -> Unit)?,
     ) {
         val isOnMainScreen = {
             viewModel.customizationOptionsViewModel.selectedOption.value == null
         }
 
         bindWallpaperCarousel(
-            wallpaperCarousel = view.wallpaperCarousel,
+            wallpaperPickerEntryView = view,
             viewModel = viewModel.customizationOptionsViewModel.wallpaperCarouselViewModel,
             colorUpdateViewModel = colorUpdateViewModel,
             shouldAnimateColor = isOnMainScreen,
             lifecycleOwner = lifecycleOwner,
             navigateToPreviewScreen = navigateToPreviewScreen,
             navigateToWallpaperCollectionScreen = navigateToWallpaperCollectionScreen,
+            navigateToExtendedWallpaperEffects = navigateToExtendedWallpaperEffects,
         )
 
         bindWallpaperPickerEntryLabels(
@@ -123,7 +127,7 @@ object WallpaperPickerEntryBinder {
     }
 
     private fun bindWallpaperCarousel(
-        wallpaperCarousel: RecyclerView,
+        wallpaperPickerEntryView: WallpaperPickerEntry,
         viewModel: WallpaperCarouselViewModel,
         colorUpdateViewModel: ColorUpdateViewModel,
         shouldAnimateColor: () -> Boolean,
@@ -131,7 +135,9 @@ object WallpaperPickerEntryBinder {
         navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+        navigateToExtendedWallpaperEffects: (() -> Unit)?,
     ) {
+        val wallpaperCarousel: RecyclerView = wallpaperPickerEntryView.wallpaperCarousel
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -151,6 +157,10 @@ object WallpaperPickerEntryBinder {
                                 return if (isScrollable) super.canScrollHorizontally() else false
                             }
 
+                            override fun canScrollVertically(): Boolean {
+                                return false
+                            }
+
                             fun setIsScrollable(isScrollable: Boolean) {
                                 this.isScrollable = isScrollable
                             }
@@ -158,18 +168,29 @@ object WallpaperPickerEntryBinder {
                     wallpaperCarousel.apply {
                         adapter = loadingAnimationAdapter
                         layoutManager = customLayoutManager
+                        if (wallpaperCarousel.onFlingListener == null) {
+                            CarouselSnapHelper().attachToRecyclerView(this)
+                        }
+                        val horizontalScrollEnforcer =
+                            CarouselHorizontalScrollEnforcer(wallpaperCarousel.context)
+                        addOnScrollListener(horizontalScrollEnforcer)
+                        addOnItemTouchListener(horizontalScrollEnforcer)
+                        isNestedScrollingEnabled = false
                     }
                     viewModel.wallpaperCarouselItems.collect {
+                        if (it.isEmpty()) {
+                            wallpaperPickerEntryView.animateToCollapsed()
+                        } else {
+                            wallpaperPickerEntryView.animateToExpanded()
+                        }
+
                         wallpaperCarousel.swapAdapter(
                             CuratedPhotosAdapter(it),
                             /** removeAndRecycleExistingViews= */
                             false,
                         )
                         customLayoutManager.setIsScrollable(true)
-                        wallpaperCarousel.addOnScrollListener(WallpaperCarouselScrollListener())
-                        if (wallpaperCarousel.onFlingListener == null) {
-                            CarouselSnapHelper().attachToRecyclerView(wallpaperCarousel)
-                        }
+                        wallpaperCarousel.addOnScrollListener(WallpaperTitleScrollListener())
                     }
                 }
 
@@ -185,6 +206,9 @@ object WallpaperPickerEntryBinder {
                             }
                             is NavigateToPreviewScreen -> {
                                 navigateToPreviewScreen?.invoke(navigationEvent.wallpaperModel)
+                            }
+                            is NavigateToExtendedWallpaperEffects -> {
+                                navigateToExtendedWallpaperEffects?.invoke()
                             }
                         }
                     }

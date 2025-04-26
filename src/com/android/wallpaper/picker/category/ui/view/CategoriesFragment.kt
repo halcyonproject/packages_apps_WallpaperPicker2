@@ -27,14 +27,15 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
-import androidx.fragment.app.replace
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
@@ -107,6 +108,10 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         setTitle(getText(R.string.wallpaper_title))
 
         val isNewPickerUi = BaseFlags.get().isNewPickerUi()
+
+        val categoriesHeaderImage: ImageView? = view.findViewById(R.id.categories_header_image)
+        categoriesHeaderImage?.let { it.isVisible = isNewPickerUi }
+
         if (isNewPickerUi) {
             ColorUpdateBinder.bind(
                 setColor = { _ ->
@@ -148,7 +153,12 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                 is CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker -> {
                     if (BaseFlags.get().isPhotoPickerEnabled()) {
                         parentFragmentManager.commit {
-                            replace<PhotoPickerFragment>(R.id.fragment_container)
+                            replace(
+                                R.id.fragment_container,
+                                PhotoPickerFragment.newInstance(
+                                    shouldNavigateToExtendedWallpaperEffects = false
+                                ),
+                            )
                             addToBackStack(null)
                         }
                     } else {
@@ -182,6 +192,17 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                         navigationEvent.wallpaperModel,
                         navigationEvent.categoryType == CategoryType.CreativeCategories,
                     )
+                }
+                is CategoriesViewModel.NavigationEvent.NavigateToExtendedWallpaperEffects -> {
+                    parentFragmentManager.commit {
+                        replace(
+                            R.id.fragment_container,
+                            PhotoPickerFragment.newInstance(
+                                shouldNavigateToExtendedWallpaperEffects = true
+                            ),
+                        )
+                        addToBackStack(null)
+                    }
                 }
             }
         }

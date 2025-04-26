@@ -39,6 +39,8 @@ import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
+import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
+import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.util.ActivityUtils
@@ -59,12 +61,15 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
     @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
     @Inject lateinit var persistentWallpaperModelRepository: PersistentWallpaperModelRepository
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
+    @Inject lateinit var colorUpdateViewModel: ColorUpdateViewModel
 
     private lateinit var embeddedPickerProvider: EmbeddedPhotoPickerProvider
     private lateinit var surfaceView: SurfaceView
     private lateinit var embeddedPhotoPickerFeatureInfo: EmbeddedPhotoPickerFeatureInfo
     private var session: EmbeddedPhotoPickerSession? = null
     private var view: View? = null
+
+    var navigateToExtendedWallpaperEffects: Boolean? = null
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreateView(
@@ -73,6 +78,18 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         savedInstanceState: Bundle?,
     ): View? {
         view = inflater.inflate(R.layout.fragment_photo_picker, container, false)
+        ColorUpdateBinder.bind(
+            setColor = { _ ->
+                setUpToolbar(view)
+                setTitle(getText(R.string.select_a_photo))
+                view?.requestApplyInsets()
+            },
+            color = colorUpdateViewModel.colorSurfaceContainer,
+            shouldAnimate = { false },
+            lifecycleOwner = viewLifecycleOwner,
+        )
+        navigateToExtendedWallpaperEffects =
+            arguments?.getBoolean(ARG_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS) ?: false
         setUpToolbar(view)
         setTitle(getText(R.string.select_a_photo))
         return view
@@ -158,9 +175,13 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         }
 
         override fun onUriPermissionGranted(uris: List<Uri>) {
-            val imageWallpaperInfo = ImageWallpaperInfo(uris.get(0))
+            if (uris.isEmpty()) {
+                return
+            }
+            val imageWallpaperInfo = ImageWallpaperInfo(uris[0])
             val wallpaperModel =
                 context?.let { wallpaperModelFactory.getWallpaperModel(it, imageWallpaperInfo) }
+
             if (wallpaperModel != null) {
                 startWallpaperPreviewActivity(wallpaperModel, false)
             }
@@ -189,6 +210,8 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
                 isViewAsHome = true,
                 isNewTask = isMultiPanel,
                 shouldCategoryRefresh = isCreativeCategories,
+                shouldNavigateToExtendedWallpaperEffects =
+                    navigateToExtendedWallpaperEffects ?: false,
             )
         ActivityUtils.startActivityForResultSafely(
             activity,
@@ -207,5 +230,19 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
 
     companion object {
         private const val TAG = "PhotoPickerFragment"
+
+        private const val ARG_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS =
+            "navigate_to_extended_wallpaper_effects"
+
+        fun newInstance(shouldNavigateToExtendedWallpaperEffects: Boolean): PhotoPickerFragment {
+            val fragment = PhotoPickerFragment()
+            val args = Bundle()
+            args.putBoolean(
+                ARG_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS,
+                shouldNavigateToExtendedWallpaperEffects,
+            )
+            fragment.arguments = args
+            return fragment
+        }
     }
 }
