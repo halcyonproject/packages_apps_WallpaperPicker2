@@ -134,13 +134,16 @@ class CustomizationPickerFragment2 :
         if (savedInstanceState != null) {
             // Fragment is being restored, not initial creation
             isInitialCreation = false
+        } else {
+            // If the fragment is initially created, get isFromLauncher from intent and set preview
+            // screen to the view model accordingly; otherwise, respect the value in the view model.
+            val isFromLauncher =
+                activity?.intent?.let { ActivityUtils.isLaunchedFromLauncher(it) } ?: false
+            if (isFromLauncher) {
+                customizationPickerViewModel.selectPreviewScreen(HOME_SCREEN)
+            }
         }
 
-        val isFromLauncher =
-            activity?.intent?.let { ActivityUtils.isLaunchedFromLauncher(it) } ?: false
-        if (isFromLauncher) {
-            customizationPickerViewModel.selectPreviewScreen(HOME_SCREEN)
-        }
         prepareFragmentExitTransitionAnimation()
         prepareFragmentReenterTransitionAnimation()
     }
