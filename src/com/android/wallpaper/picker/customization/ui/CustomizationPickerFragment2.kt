@@ -683,6 +683,7 @@ class CustomizationPickerFragment2 :
             previewPager = previewPagerViews.previewPager,
             preview = previewPagerViews.lockPreview,
             isFirstBinding = isFirstBinding,
+            previewTextLabel = previewPagerViews.lockPreviewLabel,
         )
 
         bindPreview(
@@ -690,6 +691,7 @@ class CustomizationPickerFragment2 :
             previewPager = previewPagerViews.previewPager,
             preview = previewPagerViews.homePreview,
             isFirstBinding = isFirstBinding,
+            previewTextLabel = previewPagerViews.homePreviewLabel,
         )
     }
 
@@ -698,6 +700,7 @@ class CustomizationPickerFragment2 :
         previewPager: ClickableMotionLayout,
         preview: View,
         isFirstBinding: Boolean,
+        previewTextLabel: View? = null,
     ) {
         val appContext = context?.applicationContext ?: return
         val activity = activity ?: return
@@ -755,6 +758,7 @@ class CustomizationPickerFragment2 :
                 customizationPickerViewModel.setPreviewReady(previewScreen, false)
             },
             clockViewFactory = clockViewFactory,
+            previewTextLabel = previewTextLabel,
         )
     }
 
