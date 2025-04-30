@@ -65,6 +65,7 @@ import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2
+import com.android.wallpaper.picker.customization.ui.binder.PackThemeSuggestedEntryBinder
 import com.android.wallpaper.picker.customization.ui.binder.PagerTouchInterceptorBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
@@ -98,6 +99,7 @@ class CustomizationPickerFragment2 :
 
     @Inject lateinit var customizationOptionUtil: CustomizationOptionUtil
     @Inject lateinit var customizationOptionsBinder: CustomizationOptionsBinder
+    @Inject lateinit var packThemeSuggestedEntryBinder: PackThemeSuggestedEntryBinder
     @Inject lateinit var toolbarBinder: ToolbarBinder
     @Inject lateinit var colorUpdateViewModel: ColorUpdateViewModel
     @Inject lateinit var clockViewFactory: ClockViewFactory
@@ -538,6 +540,7 @@ class CustomizationPickerFragment2 :
                 )
             },
             packThemeSuggestedChip = packThemeSuggestedChip,
+            packThemeSuggestedEntryBinder = packThemeSuggestedEntryBinder,
         )
 
         customizationOptionsBinder.bindDiscardChangesDialog(
