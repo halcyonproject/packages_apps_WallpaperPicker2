@@ -45,10 +45,6 @@ import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import kotlinx.coroutines.launch
 
 object CustomizationPickerBinder2 {
-
-    const val ALPHA_SELECTED_PREVIEW = 1f
-    const val ALPHA_NON_SELECTED_PREVIEW = 0.4f
-
     /**
      * @return Callback for the [CustomizationPickerActivity2] to set
      *   [CustomizationPickerViewModel2]'s screen state to null, which infers to the main screen. We
@@ -65,7 +61,7 @@ object CustomizationPickerBinder2 {
         customizationOptionsBinder: CustomizationOptionsBinder,
         lifecycleOwner: LifecycleOwner,
         navigateToPrimary: () -> Unit,
-        navigateToSecondary: (screen: CustomizationOption) -> Unit,
+        navigateToSecondary: (option: CustomizationOption) -> Unit,
         navigateToWallpaperCategoriesScreen: (screen: Screen) -> Unit,
         navigateToMoreLockScreenSettingsActivity: () -> Unit,
         navigateToColorContrastSettingsActivity: () -> Unit,
@@ -76,6 +72,7 @@ object CustomizationPickerBinder2 {
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
         packThemeSuggestedChip: PackThemeSuggestedChip?,
+        packThemeSuggestedEntryBinder: PackThemeSuggestedEntryBinder,
     ) {
         val lockCustomizationOptionContainer: LinearLayout =
             view.requireViewById(R.id.lock_customization_option_container)
@@ -133,11 +130,12 @@ object CustomizationPickerBinder2 {
 
         if (get().isPackThemeEnabled()) {
             packThemeSuggestedChip?.let {
-                SuggestedEntryBinder.bind(
+                packThemeSuggestedEntryBinder.bind(
                     view = it,
                     viewModel = viewModel,
                     colorUpdateViewModel = colorUpdateViewModel,
                     lifecycleOwner = lifecycleOwner,
+                    navigateToPackThemeActivity = navigateToPackThemeActivity,
                 )
             }
         }

@@ -27,16 +27,21 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.Companion.FOLDABLE_DISPLAY_TYPES
-import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2.ALPHA_NON_SELECTED_PREVIEW
-import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2.ALPHA_SELECTED_PREVIEW
+import com.android.wallpaper.picker.customization.ui.util.ViewAlphaAnimator.animateToAlpha
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_FADE_ALPHA
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_SHOW_ALPHA
+import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import com.android.wallpaper.picker.preview.ui.view.DualDisplayAspectRatioLayout.Companion.getViewId
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.Companion.PreviewScreen
+import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /** Binds the set wallpaper button on small preview. */
@@ -48,6 +53,7 @@ object ApplyWallpaperScreenBinder {
         lifecycleOwner: LifecycleOwner,
         @MainDispatcher mainScope: CoroutineScope,
         isFoldable: Boolean,
+        wallpaperConnectionUtils: WallpaperConnectionUtils,
         onWallpaperSet: () -> Unit,
     ) {
         val applyButton = previewPager.requireViewById<Button>(R.id.apply_button)
@@ -57,6 +63,59 @@ object ApplyWallpaperScreenBinder {
         val subTitle = previewPager.requireViewById<TextView>(R.id.apply_wallpaper_description)
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    combine(
+                            viewModel.applyWallpaperPreviewSelectedTab.filterNotNull(),
+                            viewModel.wallpaper,
+                            ::Pair,
+                        )
+                        .collect { (tab, wallpaper) ->
+                            if (wallpaper is WallpaperModel.LiveWallpaperModel && isFoldable) {
+                                Screen.entries.forEach { screen ->
+                                    wallpaperConnectionUtils.setEngineVisibility(
+                                        packageName =
+                                            wallpaper.liveWallpaperData.systemWallpaperInfo
+                                                .packageName,
+                                        screen = screen,
+                                        isVisible = tab == screen,
+                                    )
+                                }
+                            }
+                        }
+                }
+
+                launch {
+                    combine(
+                            viewModel.previousAndCurrentPreviewScreen,
+                            viewModel.applyWallpaperPreviewSelectedTab,
+                            ::Pair,
+                        )
+                        .collect { (screens, tab) ->
+                            val (previousScreen, currentScreen) = screens
+                            currentScreen?.let {
+                                if (it == PreviewScreen.APPLY_WALLPAPER) {
+                                    if (isFoldable) {
+                                        previewPager.transitionToState(
+                                            if (tab == Screen.LOCK_SCREEN)
+                                                R.id.apply_wallpaper_lock_preview_selected
+                                            else R.id.apply_wallpaper_home_preview_selected
+                                        )
+                                    } else {
+                                        // Transition to final apply wallpaper screen state if
+                                        // previous screen is not small preview
+                                        previewPager.transitionToState(
+                                            if (previousScreen == PreviewScreen.SMALL_PREVIEW) {
+                                                R.id.apply_wallpaper_preview_only
+                                            } else {
+                                                R.id.apply_wallpaper_all
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                }
+
                 launch { viewModel.applyWallpaperSubTitle.collect { subTitle.text = it } }
 
                 launch {
@@ -130,7 +189,7 @@ object ApplyWallpaperScreenBinder {
                 }
 
                 launch {
-                    viewModel.hasSuggestedWallpaperDestination.collect {
+                    viewModel.disableApplyWallpaperSelectionCheckBox.collect {
                         homeCheckbox.isEnabled = !it
                         lockCheckbox.isEnabled = !it
                         if (it) {
@@ -182,12 +241,7 @@ object ApplyWallpaperScreenBinder {
         setOf(R.id.wallpaper_surface, R.id.workspace_surface).forEach {
             parent
                 .requireViewById<View>(it)
-                .animate()
-                .alpha(if (checked) ALPHA_SELECTED_PREVIEW else ALPHA_NON_SELECTED_PREVIEW)
-                .setDuration(
-                    parent.resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
-                )
-                .start()
+                .animateToAlpha(if (checked) PREVIEW_SHOW_ALPHA else PREVIEW_FADE_ALPHA)
         }
     }
 }

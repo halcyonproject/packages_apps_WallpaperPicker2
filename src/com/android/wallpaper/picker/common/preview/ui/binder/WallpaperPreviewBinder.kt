@@ -120,7 +120,6 @@ object WallpaperPreviewBinder {
         return object : SurfaceViewUtils.SurfaceCallback {
 
             var job: Job? = null
-            var currentWallpaper: String? = null
             var surfaceControlViewHost: SurfaceControlViewHost? = null
 
             override fun surfaceCreated(holder: SurfaceHolder) {
@@ -152,24 +151,17 @@ object WallpaperPreviewBinder {
                                         }
                                     }
                                 wallpaperConnectionUtils.connect(
-                                    applicationContext,
-                                    wallpaper,
-                                    whichPreview,
-                                    screen.toFlag(),
-                                    surfaceView,
-                                    engineRenderingConfig,
-                                    isFirstBindingDeferred,
-                                    listener,
+                                    context = applicationContext,
+                                    wallpaperModel = wallpaper,
+                                    whichPreview = whichPreview,
+                                    destinationFlag = screen.toFlag(),
+                                    surfaceView = surfaceView,
+                                    engineRenderingConfig = engineRenderingConfig,
+                                    isFirstBindingDeferred = isFirstBindingDeferred,
+                                    listener = listener,
                                     onPreviewReady = { onPreviewReady?.invoke(screen) },
                                 )
                             } else if (wallpaper is WallpaperModel.StaticWallpaperModel) {
-                                if (
-                                    currentWallpaper == wallpaper.commonWallpaperData.id.wallpaperId
-                                ) {
-                                    onPreviewReady?.invoke(screen)
-                                    return@collect
-                                }
-                                currentWallpaper = wallpaper.commonWallpaperData.id.wallpaperId
                                 val staticPreviewView =
                                     LayoutInflater.from(applicationContext)
                                         .inflate(R.layout.fullscreen_wallpaper_preview, null)

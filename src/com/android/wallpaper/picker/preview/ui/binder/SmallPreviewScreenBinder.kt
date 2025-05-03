@@ -27,8 +27,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
+import com.android.customization.picker.clock.shared.ClockSize
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
+import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
+import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
@@ -37,6 +40,7 @@ import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 object SmallPreviewScreenBinder {
@@ -52,6 +56,9 @@ object SmallPreviewScreenBinder {
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
         isFoldable: Boolean,
+        onPreviewReady: ((Screen) -> Unit)? = null,
+        onStartTransition: (() -> Unit)? = null,
+        onPreviewSurfaceDestroyed: ((Screen) -> Unit)? = null,
         navigate: (View) -> Unit,
     ) {
         val previewPager = fragmentLayout.requireViewById<ClickableMotionLayout>(R.id.preview_pager)
@@ -76,11 +83,51 @@ object SmallPreviewScreenBinder {
             wallpaperConnectionUtils,
             isFirstBindingDeferred,
             isFoldable,
+            onPreviewReady,
+            onStartTransition,
+            onPreviewSurfaceDestroyed,
             navigate,
         )
 
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    combine(
+                            viewModel.shouldUpdateSelectedPreviewTab,
+                            viewModel.suggestedWallpaperDestination,
+                            viewModel.preferredClockSize.filterNotNull(),
+                            ::Triple,
+                        )
+                        .collect { (shouldUpdate, dest, clockSize) ->
+                            if (
+                                shouldUpdate &&
+                                    (dest == WallpaperDestination.BOTH) &&
+                                    clockSize == ClockSize.SMALL
+                            ) {
+                                previewPager.jumpToState(R.id.lock_preview_selected)
+                                viewModel.setSmallPreviewSelectedTab(Screen.LOCK_SCREEN)
+                            }
+                            viewModel.setShouldUpdateSelectedPreviewTab(false)
+                        }
+                }
+
+                launch {
+                    combine(viewModel.smallPreviewSelectedTab, viewModel.wallpaper, ::Pair)
+                        .collect { (tab, wallpaper) ->
+                            if (wallpaper is WallpaperModel.LiveWallpaperModel && isFoldable) {
+                                Screen.entries.forEach { screen ->
+                                    wallpaperConnectionUtils.setEngineVisibility(
+                                        packageName =
+                                            wallpaper.liveWallpaperData.systemWallpaperInfo
+                                                .packageName,
+                                        screen = screen,
+                                        isVisible = tab == screen,
+                                    )
+                                }
+                            }
+                        }
+                }
+
                 launch {
                     combine(
                             viewModel.currentPreviewScreen,
@@ -90,22 +137,33 @@ object SmallPreviewScreenBinder {
                             viewModel.previewActionsViewModel.isDownloadVisible,
                             ::Quintuple,
                         )
-                        .collect { (screen, tab, isActionChecked, isNextVisible, isDownloadEnabled)
+                        .collect { (screen, tab, isActionChecked, isNextVisible, isDownloadVisible)
                             ->
                             when (screen) {
                                 PreviewScreen.SMALL_PREVIEW -> {
                                     val endState =
                                         if (isNextVisible) R.id.small_preview
                                         else R.id.small_preview_not_downloaded
-                                    if (
+                                    val isInitialTransitionState =
                                         fragmentLayout.endState == R.id.small_preview_no_header &&
                                             fragmentLayout.startState ==
-                                                R.id.small_preview_not_downloaded &&
-                                            !isDownloadEnabled
+                                                R.id.small_preview_not_downloaded
+                                    val isApplyWallpaperStates =
+                                        setOf(
+                                                R.id.apply_wallpaper_all,
+                                                R.id.apply_wallpaper_home_preview_selected,
+                                                R.id.apply_wallpaper_lock_preview_selected,
+                                            )
+                                            .contains(previewPager.currentState)
+                                    if (
+                                        isInitialTransitionState &&
+                                            !isDownloadVisible &&
+                                            !isApplyWallpaperStates
                                     ) {
                                         // When entering the non downloadable wallpaper preview the
-                                        // first time, use scheduleTransitionTo so the transition
-                                        // is not conflicting with the rest of the transition.
+                                        // first time and not coming from the apply wallpaper screen
+                                        // , use scheduleTransitionTo so the transition is not
+                                        // conflicting with the rest of the transition.
                                         fragmentLayout.scheduleTransitionTo(endState)
                                     } else {
                                         fragmentLayout.transitionToState(endState)
@@ -127,10 +185,6 @@ object SmallPreviewScreenBinder {
                                     fragmentLayout.transitionToState(R.id.small_preview_no_header)
                                     previewPagerContainer.transitionToState(
                                         R.id.show_apply_wallpaper
-                                    )
-                                    previewPager.transitionToState(
-                                        if (isFoldable) R.id.apply_wallpaper_lock_preview_selected
-                                        else R.id.apply_wallpaper_preview_only
                                     )
                                 }
                             }

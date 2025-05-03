@@ -178,10 +178,10 @@ object WallpaperPickerEntryBinder {
                         isNestedScrollingEnabled = false
                     }
                     viewModel.wallpaperCarouselItems.collect {
-                        if (it.isEmpty()) {
-                            wallpaperPickerEntryView.animateToCollapsed()
-                        } else {
-                            wallpaperPickerEntryView.animateToExpanded()
+                        wallpaperPickerEntryView.post {
+                            if (it.isEmpty()) {
+                                wallpaperPickerEntryView.animateToCollapsed()
+                            }
                         }
 
                         wallpaperCarousel.swapAdapter(

@@ -23,10 +23,12 @@ import android.view.SurfaceView
 import android.view.View
 import com.android.app.tracing.TraceUtils.traceAsync
 import com.android.wallpaper.R
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toSetWallpaperFlags
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
+import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityRetainedScoped
@@ -35,7 +37,9 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -45,7 +49,10 @@ import kotlinx.coroutines.sync.withLock
 @ActivityRetainedScoped
 class WallpaperConnectionUtils
 @Inject
-constructor(@ApplicationContext private val context: Context) {
+constructor(
+    @ApplicationContext private val context: Context,
+    @BackgroundDispatcher private val bgDispatcher: CoroutineDispatcher,
+) {
 
     // The engineMap and the surfaceControlMap are used for disconnecting wallpaper services.
     private val wallpaperConnectionMap = ConcurrentHashMap<String, Deferred<WallpaperConnection>>()
@@ -57,10 +64,16 @@ constructor(@ApplicationContext private val context: Context) {
     // Track the currently used creative wallpaper config preview URI to avoid unnecessary multiple
     // update queries for the same preview.
     private val creativeWallpaperConfigPreviewUriMap = mutableMapOf<String, Uri>()
+    private val isPreviewEnginesConnected = CompletableDeferred<Boolean>()
 
     private val mutex = Mutex()
 
-    /** Only call this function when the surface view is attached. */
+    /**
+     * Only call this function when the surface view is attached.
+     *
+     * @param totalEngineNum numbers of engines that should be considered connected when all of them
+     *   are connected via [isPreviewEnginesConnected].
+     */
     suspend fun connect(
         context: Context,
         wallpaperModel: LiveWallpaperModel,
@@ -69,6 +82,7 @@ constructor(@ApplicationContext private val context: Context) {
         surfaceView: SurfaceView,
         engineRenderingConfig: EngineRenderingConfig,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        totalEngineNum: Int = 1,
         listener: WallpaperEngineConnection.WallpaperEngineConnectionListener? = null,
         onPreviewReady: (() -> Unit)? = null,
     ) {
@@ -109,8 +123,8 @@ constructor(@ApplicationContext private val context: Context) {
             if (!wallpaperConnectionMap.containsKey(engineKey)) {
                 mutex.withLock {
                     if (!wallpaperConnectionMap.containsKey(engineKey)) {
-                        wallpaperConnectionMap[engineKey] = coroutineScope {
-                            async {
+                        coroutineScope {
+                            wallpaperConnectionMap[engineKey] = async {
                                 initEngine(
                                     context,
                                     wallpaperModel.getWallpaperServiceIntent(),
@@ -121,6 +135,10 @@ constructor(@ApplicationContext private val context: Context) {
                                     listener,
                                     wallpaperModel.liveWallpaperData.description,
                                 )
+                            }
+
+                            if (wallpaperConnectionMap.size == totalEngineNum) {
+                                isPreviewEnginesConnected.complete(true)
                             }
                         }
                     }
@@ -143,8 +161,8 @@ constructor(@ApplicationContext private val context: Context) {
                         surfaceView,
                         engineRenderingConfig.getEngineDisplaySize(),
                         engineRenderingConfig.enforceSingleEngine,
+                        onPreviewReady,
                     )
-                    onPreviewReady?.invoke()
                 }
             }
         }
@@ -174,6 +192,25 @@ constructor(@ApplicationContext private val context: Context) {
                             surfaceControls.clear()
                         }
                         wallpaperConnectionMap.remove(engineKey)?.await()?.disconnect(context)
+                    }
+            }
+        }
+    }
+
+    suspend fun setEngineVisibility(packageName: String, screen: Screen, isVisible: Boolean) {
+        if (isPreviewEnginesConnected.await()) {
+            mutex.withLock {
+                wallpaperConnectionMap
+                    .filterKeys { key ->
+                        key.startsWith(packageName) && key.contains(":${screen.toFlag()}:")
+                    }
+                    .values
+                    .forEach {
+                        try {
+                            it.await().engineConnection.get()?.engine?.setVisibility(isVisible)
+                        } catch (e: RemoteException) {
+                            Log.w(TAG, "Error setting engine visibility", e)
+                        }
                     }
             }
         }
@@ -373,6 +410,7 @@ constructor(@ApplicationContext private val context: Context) {
         parentSurface: SurfaceView,
         displayMetrics: Point,
         enforceSingleEngine: Boolean,
+        onPreviewReady: (() -> Unit)?,
     ) {
         fun logError(e: Exception) {
             Log.e(WallpaperConnection::class.simpleName, "Fail to reparent wallpaper surface", e)
@@ -387,15 +425,19 @@ constructor(@ApplicationContext private val context: Context) {
             val values = getScale(parentSurface, displayMetrics)
             SurfaceControl.Transaction().use { t ->
                 t.setMatrix(
-                    wallpaperSurfaceControl,
-                    if (enforceSingleEngine) values[Matrix.MSCALE_Y] else values[Matrix.MSCALE_X],
-                    values[Matrix.MSKEW_X],
-                    values[Matrix.MSKEW_Y],
-                    values[Matrix.MSCALE_Y],
-                )
-                t.reparent(wallpaperSurfaceControl, parentSurfaceControl)
-                t.show(wallpaperSurfaceControl)
-                t.apply()
+                        wallpaperSurfaceControl,
+                        if (enforceSingleEngine) values[Matrix.MSCALE_Y]
+                        else values[Matrix.MSCALE_X],
+                        values[Matrix.MSKEW_X],
+                        values[Matrix.MSKEW_Y],
+                        values[Matrix.MSCALE_Y],
+                    )
+                    .reparent(wallpaperSurfaceControl, parentSurfaceControl)
+                    .show(wallpaperSurfaceControl)
+                    .addTransactionCompletedListener(bgDispatcher.asExecutor()) { _ ->
+                        onPreviewReady?.invoke()
+                    }
+                    .apply()
             }
         } catch (e: RemoteException) {
             logError(e)
