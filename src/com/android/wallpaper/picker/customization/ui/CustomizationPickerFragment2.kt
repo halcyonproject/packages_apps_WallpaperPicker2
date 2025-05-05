@@ -424,7 +424,7 @@ class CustomizationPickerFragment2 :
                         // isLargeScreenSingleDisplayPortrait is true
                         if (!isLargeScreenSingleDisplayPortrait) {
                             wallpaperPickerEntry.animateToCollapsed()
-                            packThemeSuggestedChip?.animateToCollapsed()
+                            packThemeSuggestedChip?.animateToCollapsed({})
                         }
                     }
 
