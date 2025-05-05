@@ -184,6 +184,7 @@ class CustomizationPickerFragment2 :
             pickerMotionContainer.isInvisible = true
         }
 
+        var isMotionContainerInitialized = false
         val optionContainer: ConstraintLayout =
             view.requireViewById(R.id.customization_option_container)
         val customizationFloatingSheetContainer: FrameLayout =
@@ -199,6 +200,20 @@ class CustomizationPickerFragment2 :
                 statusBarHeight = insets.top,
                 navBarHeight = insets.bottom,
             )
+
+            if (isMotionContainerInitialized) {
+                // Reconfigure motion container constraints if already initialized, to adjust
+                // for new insets (doing it only after it's initialized to avoid jumping if
+                // insets first arrive before the first initialization)
+                configurePickerMotionConstraints(
+                    pickerMotionContainer = pickerMotionContainer,
+                    wallpaperPickerEntry = view.requireViewById(R.id.wallpaper_picker_entry),
+                    previewLabelHeight = view.requireViewById<View>(R.id.label_placeholder).height,
+                    optionContainerHeight = optionContainer.height,
+                    packThemeSuggestedChip = packThemeSuggestedChip,
+                    bottomInset = insets.bottom,
+                )
+            }
             WindowInsetsCompat.CONSUMED
         }
         // Inflate the views of customization options only when options data is ready.
@@ -237,6 +252,7 @@ class CustomizationPickerFragment2 :
                     previewLabelHeight = view.requireViewById<View>(R.id.label_placeholder).height,
                     optionContainerHeight = optionContainer.height,
                     packThemeSuggestedChip = packThemeSuggestedChip,
+                    bottomInset = optionContainer.paddingBottom,
                 )
 
                 if (isInitSecondaryScreen && initSelectedOption != null) {
@@ -271,6 +287,7 @@ class CustomizationPickerFragment2 :
                         packThemeSuggestedChip,
                     )
                 }
+                isMotionContainerInitialized = true
             }
         }
 
@@ -359,6 +376,7 @@ class CustomizationPickerFragment2 :
         previewLabelHeight: Int,
         optionContainerHeight: Int,
         packThemeSuggestedChip: PackThemeSuggestedChip?,
+        bottomInset: Int,
     ) {
         val isLargeScreenSingleDisplayPortrait = displayUtils.isLargeScreenSingleDisplayPortrait()
         val wallpaperPickerEntryExpandedHeight = wallpaperPickerEntry.height
@@ -397,6 +415,7 @@ class CustomizationPickerFragment2 :
         val expandedHeaderHeight =
             (pickerMotionContainer.height -
                     wallpaperPickerEntryExpandedHeight -
+                    bottomInset -
                     resources.getDimensionPixelSize(R.dimen.customization_option_entry_height) / 2)
                 .coerceAtMost(maxExpandedPagerHeight)
                 .coerceAtLeast(minExpandedPagerHeight)
