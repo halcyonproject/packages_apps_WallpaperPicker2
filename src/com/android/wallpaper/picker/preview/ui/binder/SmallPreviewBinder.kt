@@ -222,7 +222,9 @@ object SmallPreviewBinder {
                             } else {
                                 onClick?.let {
                                     view.setOnClickListener {
-                                        if (BaseFlags.get().isNewPickerUi()) {
+                                        // If tab != screen, it's pager switching tab and no need to
+                                        // set z order
+                                        if (BaseFlags.get().isNewPickerUi() && tab == screen) {
                                             // Set top z order for shared element transition
                                             wallpaperSurface.setZOrderOnTop(true)
                                             workspaceSurface.setZOrderOnTop(true)
