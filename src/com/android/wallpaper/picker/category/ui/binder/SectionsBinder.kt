@@ -27,7 +27,6 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewMo
 
 /** Binds the collection of SectionViewModel to a section */
 object SectionsBinder {
-    private const val DEFAULT_SPAN = 3
 
     fun bind(
         sectionsListView: RecyclerView,
@@ -50,8 +49,10 @@ object SectionsBinder {
                 onSignInBannerDismissed,
                 bannerProvider,
             )
+        val defaultSpanCount =
+            sectionsListView.context.resources.getInteger(R.integer.category_span_count)
         val gridLayoutManager =
-            GridLayoutManager(sectionsListView.context, DEFAULT_SPAN).apply {
+            GridLayoutManager(sectionsListView.context, defaultSpanCount).apply {
                 spanSizeLookup =
                     object : GridLayoutManager.SpanSizeLookup() {
                         override fun getSpanSize(position: Int): Int {
