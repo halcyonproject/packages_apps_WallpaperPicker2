@@ -16,8 +16,10 @@
 
 package com.android.wallpaper.picker.category.ui.view
 
+import android.annotation.NonNull
 import android.annotation.RequiresApi
 import android.content.Context
+import android.content.res.Configuration
 import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Build
@@ -95,6 +97,13 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         return view
     }
 
+    override fun onConfigurationChanged(@NonNull newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (session != null) {
+            session?.notifyConfigurationChanged(newConfig)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -165,6 +174,9 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         override fun onSessionOpened(session: EmbeddedPhotoPickerSession) {
             this@PhotoPickerFragment.session = session
             this@PhotoPickerFragment.session?.notifyPhotoPickerExpanded(true)
+            this@PhotoPickerFragment.session?.notifyConfigurationChanged(
+                appContext.resources.configuration
+            )
             surfaceView.setChildSurfacePackage(session.surfacePackage)
             Log.d(TAG, "Embedded PhotoPicker session opened successfully")
         }
