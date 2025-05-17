@@ -124,6 +124,60 @@ object OptionItemBinder2 {
             }
         view.isLongClickable = viewModel.onLongClicked != null
 
+        var colorBindingDisposableHandle: DisposableHandle? = null
+        colorUpdateViewModel.get()?.let {
+            val textColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> textView?.setTextColor(color) },
+                    color =
+                        viewModel.isSelected.flatMapLatest { isSelected ->
+                            if (isSelected) {
+                                it.colorOnSurface
+                            } else {
+                                it.colorOnSurfaceVariant
+                            }
+                        },
+                    shouldAnimate = { false },
+                    lifecycleOwner = lifecycleOwner,
+                )
+
+            val foregroundColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> foregroundView?.setColorFilter(color) },
+                    color =
+                        viewModel.isSelected.flatMapLatest { isSelected ->
+                            if (isSelected) {
+                                it.colorOnPrimaryFixed
+                            } else {
+                                it.colorOnSurfaceVariant
+                            }
+                        },
+                    shouldAnimate = { false },
+                    lifecycleOwner = lifecycleOwner,
+                )
+
+            val unselectedBackgroundColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> backgroundView.setUnselectedColor(color) },
+                    color = it.colorSurfaceContainerHigh,
+                    shouldAnimate = shouldAnimateColor,
+                    lifecycleOwner = lifecycleOwner,
+                )
+            val selectedBackgroundColorBinding =
+                ColorUpdateBinder.bind(
+                    setColor = { color -> backgroundView.setSelectedColor(color) },
+                    color = it.colorPrimaryFixedDim,
+                    shouldAnimate = shouldAnimateColor,
+                    lifecycleOwner = lifecycleOwner,
+                )
+            colorBindingDisposableHandle = DisposableHandle {
+                textColorBinding.destroy()
+                foregroundColorBinding.destroy()
+                unselectedBackgroundColorBinding.destroy()
+                selectedBackgroundColorBinding.destroy()
+            }
+        }
+
         val job =
             lifecycleOwner.lifecycleScope.launch {
                 lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -146,10 +200,9 @@ object OptionItemBinder2 {
                             .collect { isSelected ->
                                 textView?.setTextAppearance(
                                     if (isSelected) {
-                                        R.style
-                                            .TextAppearance_DeviceDefault_Small_LabelMediumEmphasized
+                                        R.style.TextAppearance_OptionItem_Label_Selected
                                     } else {
-                                        R.style.TextAppearance_DeviceDefault_Small_LabelMedium
+                                        R.style.TextAppearance_OptionItem_Label_Unselected
                                     }
                                 )
                                 val shouldAnimate =
@@ -183,52 +236,10 @@ object OptionItemBinder2 {
                 }
             }
 
-        colorUpdateViewModel.get()?.let {
-            // Bind setTextColor at the end, after binding setTextAppearance above, to make sure
-            // text color is set correctly on init.
-            ColorUpdateBinder.bind(
-                setColor = { color -> textView?.setTextColor(color) },
-                color =
-                    viewModel.isSelected.flatMapLatest { isSelected ->
-                        if (isSelected) {
-                            it.colorOnSurface
-                        } else {
-                            it.colorOnSurfaceVariant
-                        }
-                    },
-                shouldAnimate = { false },
-                lifecycleOwner = lifecycleOwner,
-            )
-
-            ColorUpdateBinder.bind(
-                setColor = { color -> foregroundView?.setColorFilter(color) },
-                color =
-                    viewModel.isSelected.flatMapLatest { isSelected ->
-                        if (isSelected) {
-                            it.colorOnPrimaryFixed
-                        } else {
-                            it.colorOnSurfaceVariant
-                        }
-                    },
-                shouldAnimate = { false },
-                lifecycleOwner = lifecycleOwner,
-            )
-
-            ColorUpdateBinder.bind(
-                setColor = { color -> backgroundView.setUnselectedColor(color) },
-                color = it.colorSurfaceContainerHigh,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
-            ColorUpdateBinder.bind(
-                setColor = { color -> backgroundView.setSelectedColor(color) },
-                color = it.colorPrimaryFixedDim,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
+        return DisposableHandle {
+            job.cancel()
+            colorBindingDisposableHandle?.dispose()
         }
-
-        return DisposableHandle { job.cancel() }
     }
 
     private fun animatedSelection(

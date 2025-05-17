@@ -15,8 +15,10 @@
  */
 package com.android.wallpaper.config
 
+import android.app.Flags.updateRecentsFromSystem
 import android.app.WallpaperManager
 import android.content.Context
+import android.content.pm.PackageManager
 import com.android.settings.accessibility.Flags.enableColorContrastControl
 import com.android.systemui.shared.Flags.clockReactiveVariants
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
@@ -26,6 +28,7 @@ import com.android.systemui.shared.customization.data.content.CustomizationProvi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
 import com.android.wallpaper.Flags.composeRefactorFlag
+import com.android.wallpaper.Flags.desktopUiFlag
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
 import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
@@ -151,6 +154,26 @@ abstract class BaseFlags {
         return fullscreenPreviewFlag() &&
             isNewPickerUi() &&
             DesktopState.fromContext(context).canEnterDesktopMode
+    }
+
+    open fun isRecentWallpapersFromSystemEnabled(context: Context): Boolean {
+        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
+        try {
+            wallpaperManager.javaClass.getMethod(
+                "getWallpaperInstance",
+                Int::class.javaPrimitiveType,
+            )
+            return updateRecentsFromSystem()
+        } catch (e: NoSuchMethodException) {
+            return false
+        }
+    }
+
+    open fun shouldShowDesktopUi(context: Context): Boolean {
+        // TODO: b/416024080 use a better solution than FEATURE_PC.
+        return desktopUiFlag() &&
+            isNewPickerUi() &&
+            context.packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
     }
 
     companion object {

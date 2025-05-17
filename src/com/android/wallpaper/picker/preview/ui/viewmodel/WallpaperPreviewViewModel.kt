@@ -32,6 +32,7 @@ import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.BasePreviewActivity.EXTRA_VIEW_AS_HOME
 import com.android.wallpaper.picker.customization.shared.model.WallpaperColorsModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
+import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toScreens
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_FADE_ALPHA
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_HIDE_ALPHA
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_SHOW_ALPHA
@@ -53,7 +54,6 @@ import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.EnumSet
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -203,24 +203,38 @@ constructor(
 
     /**
      * Returns true if back pressed is handled due to conditions like users at a secondary screen.
+     *
+     * [PreviewScreen.SMALL_PREVIEW] with floating sheet should collapse sheet and consume press.
+     * [PreviewScreen.APPLY_WALLPAPER] to [PreviewScreen.SMALL_PREVIEW] should consume press.
+     * [PreviewScreen.FULL_PREVIEW] to [PreviewScreen.SMALL_PREVIEW] shouldn't consume press. Other
+     * cases shouldn't consume press.
      */
     fun handleBackPressed(): Boolean {
-        if (_currentPreviewScreen.value == PreviewScreen.APPLY_WALLPAPER) {
+        if (
+            _currentPreviewScreen.value == PreviewScreen.SMALL_PREVIEW &&
+                previewActionsViewModel.isFloatingSheetVisible()
+        ) {
+            previewActionsViewModel.onFloatingSheetCollapsed()
+            return true
+        } else if (_currentPreviewScreen.value == PreviewScreen.APPLY_WALLPAPER) {
             _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
             return true
         } else if (_currentPreviewScreen.value == PreviewScreen.FULL_PREVIEW) {
             _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
-            // TODO(b/367374790): Returns true when shared element transition is removed
             return false
         }
         return false
+    }
+
+    fun onTransitionToFullPreview() {
+        _currentPreviewScreen.value = PreviewScreen.FULL_PREVIEW
     }
 
     fun getSmallPreviewTabIndex(): Int {
         return smallPreviewTabs.indexOf(smallPreviewSelectedTab.value)
     }
 
-    fun setApplyWallpaperPreviewSelectedTab(screen: Screen?) {
+    fun setApplyWallpaperPreviewSelectedTab(screen: Screen) {
         _applyWallpaperPreviewSelectedTab.value = screen
     }
 
@@ -403,16 +417,6 @@ constructor(
             } else null
         }
 
-    val onNextButtonClicked: Flow<(() -> Unit)?> =
-        isSetWallpaperButtonEnabled.map {
-            if (it) {
-                {
-                    setApplyWallpaperPreviewSelectedTab(smallPreviewSelectedTab.value)
-                    _currentPreviewScreen.value = PreviewScreen.APPLY_WALLPAPER
-                }
-            } else null
-        }
-
     val onCancelButtonClicked: Flow<() -> Unit> = flowOf {
         applyWallpaperPreviewSelectedTab.value?.let { setSmallPreviewSelectedTab(it) }
         _currentPreviewScreen.value = PreviewScreen.SMALL_PREVIEW
@@ -422,22 +426,12 @@ constructor(
     val showSetWallpaperDialog = _showSetWallpaperDialog.asStateFlow()
 
     private val _setWallpaperDialogSelectedScreens: MutableStateFlow<Set<Screen>> =
-        MutableStateFlow(EnumSet.allOf(Screen::class.java))
+        MutableStateFlow(setOf())
     val setWallpaperDialogSelectedScreens: StateFlow<Set<Screen>> =
         _setWallpaperDialogSelectedScreens.asStateFlow()
 
     val isApplyButtonEnabled: Flow<Boolean> =
         setWallpaperDialogSelectedScreens.map { it.isNotEmpty() }
-
-    val suggestedWallpaperDestination: Flow<WallpaperDestination?> =
-        wallpaper.map { model ->
-            (model as? LiveWallpaperModel)?.liveWallpaperData?.description?.let {
-                applyWallpaperOptionsProvider.getSuggestedWallpaperDestination(it)
-            }
-        }
-
-    val disableApplyWallpaperSelectionCheckBox: Flow<Boolean> =
-        suggestedWallpaperDestination.map { it == WallpaperDestination.BOTH }
 
     val applyWallpaperSubTitle: Flow<String?> =
         wallpaper.map { model ->
@@ -460,6 +454,10 @@ constructor(
         onSetWallpaperDialogScreenSelected(Screen.LOCK_SCREEN)
     }
 
+    private fun initSetWallpaperDialogScreenSelected(screen: Set<Screen>) {
+        _setWallpaperDialogSelectedScreens.value = screen
+    }
+
     fun onSetWallpaperDialogScreenSelected(screen: Screen) {
         val previousSelection = _setWallpaperDialogSelectedScreens.value
         _setWallpaperDialogSelectedScreens.value =
@@ -472,6 +470,29 @@ constructor(
                 previousSelection.plus(screen)
             }
     }
+
+    val suggestedWallpaperDestination: Flow<WallpaperDestination?> =
+        wallpaper.map { model ->
+            (model as? LiveWallpaperModel)?.liveWallpaperData?.description?.let {
+                applyWallpaperOptionsProvider.getSuggestedWallpaperDestination(it)
+            }
+        }
+
+    val disableApplyWallpaperSelectionCheckBox: Flow<Boolean> =
+        suggestedWallpaperDestination.map { it != null }
+
+    val onNextButtonClicked: Flow<(() -> Unit)?> =
+        combine(isSetWallpaperButtonEnabled, suggestedWallpaperDestination, ::Pair).map {
+            (enabledSet, dest) ->
+            if (enabledSet) {
+                {
+                    val screens = dest?.toScreens() ?: setOf(smallPreviewSelectedTab.value)
+                    initSetWallpaperDialogScreenSelected(screens)
+                    setApplyWallpaperPreviewSelectedTab(smallPreviewSelectedTab.value)
+                    _currentPreviewScreen.value = PreviewScreen.APPLY_WALLPAPER
+                }
+            } else null
+        }
 
     private val _isSetWallpaperProgressBarVisible = MutableStateFlow(false)
     val isSetWallpaperProgressBarVisible: Flow<Boolean> =

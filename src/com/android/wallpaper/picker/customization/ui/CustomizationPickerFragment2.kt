@@ -85,6 +85,7 @@ import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import com.android.wallpaper.util.ActivityUtils
+import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.WallpaperConnection
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
@@ -113,6 +114,7 @@ class CustomizationPickerFragment2 :
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
     @Inject lateinit var individualPickerFactory: IndividualPickerFactory
     @Inject lateinit var userEventLogger: UserEventLogger
+    @Inject lateinit var curatedPhotosTimeUtil: CuratedPhotosTimeUtil
 
     private val customizationPickerViewModel: CustomizationPickerViewModel2 by viewModels()
 
@@ -178,6 +180,7 @@ class CustomizationPickerFragment2 :
                 val stubView: ViewStub = view.requireViewById(R.id.stub_pack_theme_suggested_chip)
                 stubView.inflate() as PackThemeSuggestedChip
             } else null
+        packThemeSuggestedChip?.visibility = View.INVISIBLE
 
         val pickerMotionContainer: MotionLayout = view.requireViewById(R.id.picker_motion_layout)
 
@@ -310,6 +313,7 @@ class CustomizationPickerFragment2 :
         val previewPagerViews: PreviewPagerViews =
             initPreviewPager(rootView = view, previewPager = previewPager)
         bindPreviewPager(
+            rootView = view,
             previewPagerViews = previewPagerViews,
             isFirstBinding = savedInstanceState == null,
         )
@@ -394,6 +398,8 @@ class CustomizationPickerFragment2 :
             resources.getDimensionPixelSize(
                 R.dimen.customization_picker_min_preview_collapsed_height
             )
+        wallpaperPickerEntry.configureForAnimation()
+
         val minCollapsedPagerHeight = minCollapsedPreviewHeight + previewLabelHeight
         val minExpandedPreviewHeight =
             resources.getDimensionPixelSize(
@@ -576,6 +582,8 @@ class CustomizationPickerFragment2 :
             },
             packThemeSuggestedChip = packThemeSuggestedChip,
             packThemeSuggestedEntryBinder = packThemeSuggestedEntryBinder,
+            curatedPhotosTimeUtil = curatedPhotosTimeUtil,
+            userEventLogger = userEventLogger,
         )
 
         customizationOptionsBinder.bindDiscardChangesDialog(
@@ -697,7 +705,11 @@ class CustomizationPickerFragment2 :
         )
     }
 
-    private fun bindPreviewPager(previewPagerViews: PreviewPagerViews, isFirstBinding: Boolean) {
+    private fun bindPreviewPager(
+        rootView: View,
+        previewPagerViews: PreviewPagerViews,
+        isFirstBinding: Boolean,
+    ) {
         PagerTouchInterceptorBinder.bind(
             previewPagerViews.pagerTouchInterceptor,
             customizationPickerViewModel,
@@ -738,6 +750,7 @@ class CustomizationPickerFragment2 :
         if (clockHostView != null && clockFaceClickDelegateView != null) {
             customizationOptionsBinder.bindClockPreview(
                 context = requireContext(),
+                rootView = rootView,
                 clockHostView = clockHostView,
                 clockFaceClickDelegateView = clockFaceClickDelegateView,
                 viewModel = customizationPickerViewModel,
