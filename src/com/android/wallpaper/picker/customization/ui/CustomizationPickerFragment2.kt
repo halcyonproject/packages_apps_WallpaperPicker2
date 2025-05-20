@@ -526,10 +526,12 @@ class CustomizationPickerFragment2 :
             lifecycleOwner = viewLifecycleOwner,
             navigateToPrimary = {
                 if (pickerMotionContainer.currentState == R.id.secondary) {
-                    pickerMotionContainer.transitionToState(
+                    pickerMotionContainer.setTransition(
+                        R.id.secondary,
                         if (fullyCollapsed) R.id.collapsed_header_primary
-                        else R.id.expanded_header_primary
+                        else R.id.expanded_header_primary,
                     )
+                    pickerMotionContainer.transitionToEnd()
                 }
             },
             navigateToSecondary = { option ->
