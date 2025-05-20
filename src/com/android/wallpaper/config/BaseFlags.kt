@@ -28,6 +28,7 @@ import com.android.systemui.shared.customization.data.content.CustomizationProvi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
 import com.android.wallpaper.Flags.composeRefactorFlag
+import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
 import com.android.wallpaper.Flags.desktopUiFlag
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
@@ -60,6 +61,9 @@ abstract class BaseFlags {
     open fun isWallpaperCategoryRefactoringEnabled() = refactorWallpaperCategoryFlag()
 
     open fun isNewCreativeWallpaperCategoryEnabled() = newCreativeWallpaperCategory()
+
+    open fun isCreativeWallpaperCollectionFieldEnabled() =
+        creativeWallpaperFieldCollectionWallpaper()
 
     open fun isColorContrastControlEnabled() = enableColorContrastControl()
 
