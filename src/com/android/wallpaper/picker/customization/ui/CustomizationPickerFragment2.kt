@@ -16,6 +16,8 @@
 
 package com.android.wallpaper.picker.customization.ui
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -31,6 +33,7 @@ import android.widget.LinearLayout
 import android.widget.Toolbar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -47,6 +50,7 @@ import androidx.transition.Transition
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.model.ImageWallpaperInfo
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
@@ -54,8 +58,10 @@ import com.android.wallpaper.module.LargeScreenMultiPanesChecker
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.MyPhotosStarter
 import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.view.CategoriesFragment
+import com.android.wallpaper.picker.category.ui.view.MyPhotosStarterImpl
 import com.android.wallpaper.picker.category.ui.view.PhotoPickerFragment
 import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerFactory
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
@@ -88,6 +94,7 @@ import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.WallpaperConnection
+import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -115,6 +122,8 @@ class CustomizationPickerFragment2 :
     @Inject lateinit var individualPickerFactory: IndividualPickerFactory
     @Inject lateinit var userEventLogger: UserEventLogger
     @Inject lateinit var curatedPhotosTimeUtil: CuratedPhotosTimeUtil
+    @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
+    @Inject lateinit var myPhotosStarterImpl: MyPhotosStarterImpl
 
     private val customizationPickerViewModel: CustomizationPickerViewModel2 by viewModels()
 
@@ -125,6 +134,7 @@ class CustomizationPickerFragment2 :
     private var fullyCollapsed = false
 
     private var onBackPressedCallback: OnBackPressedCallback? = null
+    private lateinit var extendedWallpaperEffectsLauncher: ActivityResultLauncher<Intent>
 
     private val startForResult =
         this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
@@ -151,8 +161,35 @@ class CustomizationPickerFragment2 :
             }
         }
 
+        if (!BaseFlags.get().isPhotoPickerEnabled()) {
+            extendedWallpaperEffectsLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result
+                    ->
+                    if (
+                        result.resultCode != Activity.RESULT_OK ||
+                            result.data?.data == null ||
+                            context == null
+                    ) {
+                        return@registerForActivityResult
+                    }
+
+                    result.data?.let { data ->
+                        context?.let { ctx ->
+                            val wallpaperModel = extractWallpaperModelFromResult(data, ctx)
+                            startWallpaperPreviewActivity(wallpaperModel, false, true)
+                        }
+                    }
+                }
+        }
+
         prepareFragmentExitTransitionAnimation()
         prepareFragmentReenterTransitionAnimation()
+    }
+
+    private fun extractWallpaperModelFromResult(result: Intent, context: Context): WallpaperModel {
+        val imageUri = result.data
+        val imageWallpaperInfo = ImageWallpaperInfo(imageUri)
+        return wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
     }
 
     override fun onCreateView(
@@ -567,7 +604,7 @@ class CustomizationPickerFragment2 :
             },
             navigateToPreviewScreen = { wallpaperModel ->
                 // navigate to standard preview screen
-                startWallpaperPreviewActivity(wallpaperModel, false)
+                startWallpaperPreviewActivity(wallpaperModel, false, false)
             },
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },
             navigateToWallpaperCollectionScreen = { categoryId, categoryType ->
@@ -576,9 +613,23 @@ class CustomizationPickerFragment2 :
                 )
             },
             navigateToExtendedWallpaperEffects = {
-                switchFragment(
-                    PhotoPickerFragment.newInstance(shouldNavigateToExtendedWallpaperEffects = true)
-                )
+                if (BaseFlags.get().isPhotoPickerEnabled()) {
+                    switchFragment(
+                        PhotoPickerFragment.newInstance(
+                            shouldNavigateToExtendedWallpaperEffects = true
+                        )
+                    )
+                } else {
+                    myPhotosStarterImpl.requestCustomPhotoPicker(
+                        object : MyPhotosStarter.PermissionChangedListener {
+                            override fun onPermissionsGranted() {}
+
+                            override fun onPermissionsDenied(dontAskAgain: Boolean) {}
+                        },
+                        requireActivity(),
+                        extendedWallpaperEffectsLauncher,
+                    )
+                }
             },
             packThemeSuggestedChip = packThemeSuggestedChip,
             packThemeSuggestedEntryBinder = packThemeSuggestedEntryBinder,
@@ -944,6 +995,7 @@ class CustomizationPickerFragment2 :
     private fun startWallpaperPreviewActivity(
         wallpaperModel: WallpaperModel,
         isCreativeCategories: Boolean,
+        shouldNavigateToExtendedWallpaperEffects: Boolean,
     ) {
         val appContext = requireContext()
         val activity = requireActivity()
@@ -956,6 +1008,7 @@ class CustomizationPickerFragment2 :
                 isViewAsHome = true,
                 isNewTask = isMultiPanel,
                 shouldCategoryRefresh = isCreativeCategories,
+                shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
             )
         ActivityUtils.startActivityForResultSafely(
             activity,
