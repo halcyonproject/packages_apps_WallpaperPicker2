@@ -68,7 +68,7 @@ import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptions
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2
 import com.android.wallpaper.picker.customization.ui.binder.DarkModeUpdateBinder
 import com.android.wallpaper.picker.customization.ui.binder.PackThemeSuggestedEntryBinder
-import com.android.wallpaper.picker.customization.ui.binder.PagerTouchInterceptorBinder
+import com.android.wallpaper.picker.customization.ui.binder.PreviewPagerBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
@@ -526,10 +526,12 @@ class CustomizationPickerFragment2 :
             lifecycleOwner = viewLifecycleOwner,
             navigateToPrimary = {
                 if (pickerMotionContainer.currentState == R.id.secondary) {
-                    pickerMotionContainer.transitionToState(
+                    pickerMotionContainer.setTransition(
+                        R.id.secondary,
                         if (fullyCollapsed) R.id.collapsed_header_primary
-                        else R.id.expanded_header_primary
+                        else R.id.expanded_header_primary,
                     )
+                    pickerMotionContainer.transitionToEnd()
                 }
             },
             navigateToSecondary = { option ->
@@ -693,7 +695,6 @@ class CustomizationPickerFragment2 :
 
         return PreviewPagerViews(
             previewPager = previewPager,
-            pagerTouchInterceptor = rootView.requireViewById(R.id.pager_touch_interceptor),
             lockPreviewLabel = previewPager.requireViewById(R.id.lock_preview_label),
             homePreviewLabel = previewPager.requireViewById(R.id.home_preview_label),
             lockPreview = previewPager.requireViewById(R.id.lock_preview),
@@ -710,11 +711,7 @@ class CustomizationPickerFragment2 :
         previewPagerViews: PreviewPagerViews,
         isFirstBinding: Boolean,
     ) {
-        PagerTouchInterceptorBinder.bind(
-            previewPagerViews.pagerTouchInterceptor,
-            customizationPickerViewModel,
-            viewLifecycleOwner,
-        )
+        PreviewPagerBinder.bind(previewPagerViews, customizationPickerViewModel, viewLifecycleOwner)
 
         ColorUpdateBinder.bind(
             setColor = { color -> previewPagerViews.lockPreviewLabel.setTextColor(color) },
@@ -765,7 +762,6 @@ class CustomizationPickerFragment2 :
             previewPager = previewPagerViews.previewPager,
             preview = previewPagerViews.lockPreview,
             isFirstBinding = isFirstBinding,
-            previewTextLabel = previewPagerViews.lockPreviewLabel,
         )
 
         bindPreview(
@@ -773,7 +769,6 @@ class CustomizationPickerFragment2 :
             previewPager = previewPagerViews.previewPager,
             preview = previewPagerViews.homePreview,
             isFirstBinding = isFirstBinding,
-            previewTextLabel = previewPagerViews.homePreviewLabel,
         )
     }
 
@@ -782,7 +777,6 @@ class CustomizationPickerFragment2 :
         previewPager: ClickableMotionLayout,
         preview: View,
         isFirstBinding: Boolean,
-        previewTextLabel: View? = null,
     ) {
         val appContext = context?.applicationContext ?: return
         val activity = activity ?: return
@@ -840,7 +834,6 @@ class CustomizationPickerFragment2 :
                 customizationPickerViewModel.setPreviewReady(previewScreen, false)
             },
             clockViewFactory = clockViewFactory,
-            previewTextLabel = previewTextLabel,
         )
     }
 

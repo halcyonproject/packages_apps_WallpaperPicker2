@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
@@ -26,6 +25,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.customization.picker.clock.shared.ClockSize
+import com.android.systemui.shared.Flags
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
@@ -49,11 +49,13 @@ import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.binder.PreviewTooltipBinder
+import com.android.wallpaper.picker.preview.ui.util.AccessibilityUtil
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.EnumSet
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -426,7 +428,9 @@ constructor(
     val showSetWallpaperDialog = _showSetWallpaperDialog.asStateFlow()
 
     private val _setWallpaperDialogSelectedScreens: MutableStateFlow<Set<Screen>> =
-        MutableStateFlow(setOf())
+        MutableStateFlow(
+            if (Flags.newCustomizationPickerUi()) setOf() else EnumSet.allOf(Screen::class.java)
+        )
     val setWallpaperDialogSelectedScreens: StateFlow<Set<Screen>> =
         _setWallpaperDialogSelectedScreens.asStateFlow()
 
@@ -655,15 +659,7 @@ constructor(
 
     @VisibleForTesting
     fun isAccessibilityEnabled(am: AccessibilityManager): Boolean {
-        val enabledServices =
-            am.getEnabledAccessibilityServiceList(
-                AccessibilityServiceInfo.FEEDBACK_AUDIBLE or
-                    AccessibilityServiceInfo.FEEDBACK_SPOKEN or
-                    AccessibilityServiceInfo.FEEDBACK_VISUAL or
-                    AccessibilityServiceInfo.FEEDBACK_HAPTIC or
-                    AccessibilityServiceInfo.FEEDBACK_BRAILLE
-            )
-        return enabledServices.isNotEmpty()
+        return AccessibilityUtil.isAccessibilityEnabled(am)
     }
 
     companion object {
