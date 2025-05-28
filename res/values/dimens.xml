@@ -306,6 +306,7 @@
 
     <!-- Floating Sheet -->
     <dimen name="floating_sheet_corner_radius">12dp</dimen>
+    <dimen name="floating_sheet_corner_radius_large">28dp</dimen>
     <dimen name="floating_sheet_margin">24dp</dimen>
     <dimen name="floating_sheet_bottom_margin">120dp</dimen>
     <dimen name="floating_sheet_customize_content_min_height">120dp</dimen>
