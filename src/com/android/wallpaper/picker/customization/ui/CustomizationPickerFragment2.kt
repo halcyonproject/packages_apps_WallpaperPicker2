@@ -526,12 +526,19 @@ class CustomizationPickerFragment2 :
             lifecycleOwner = viewLifecycleOwner,
             navigateToPrimary = {
                 if (pickerMotionContainer.currentState == R.id.secondary) {
-                    pickerMotionContainer.setTransition(
-                        R.id.secondary,
-                        if (fullyCollapsed) R.id.collapsed_header_primary
-                        else R.id.expanded_header_primary,
-                    )
-                    pickerMotionContainer.transitionToEnd()
+                    // For some reasons, for transitioning to R.id.collapsed_header_primary or
+                    // R.id.expanded_header_primary we need to use different methods; otherwise
+                    // there will be unexpected expand or collapse of the preview after the
+                    // transition completes.
+                    if (fullyCollapsed) {
+                        pickerMotionContainer.transitionToState(R.id.collapsed_header_primary)
+                    } else {
+                        pickerMotionContainer.setTransition(
+                            R.id.secondary,
+                            R.id.expanded_header_primary,
+                        )
+                        pickerMotionContainer.transitionToEnd()
+                    }
                 }
             },
             navigateToSecondary = { option ->
