@@ -343,6 +343,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val itemComponentName =
             ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
         val launchIntent = Intent(Intent.ACTION_SET_WALLPAPER)
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         launchIntent.component = itemComponentName
         ActivityUtils.startActivityForResultSafely(srcActivity, launchIntent, requestCode)
     }
