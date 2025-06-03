@@ -1082,10 +1082,6 @@ class CustomizationPickerFragment2 :
     companion object {
         private const val WALLPAPER_ENTRY_EARLY_COLLAPSE_PROGRESS_THRESHOLD = 0.25f
         private const val ANIMATION_DURATION = 200
-        private const val PACK_THEME_PACKAGE_NAME =
-            "com.google.android.apps.pixel.customizationbundle"
-        private const val PACK_THEME_SERVICE_NAME =
-            "$PACK_THEME_PACKAGE_NAME.tiktok.app.MainActivity"
     }
 
     private fun prepareFragmentExitTransitionAnimation() {
