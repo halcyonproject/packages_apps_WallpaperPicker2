@@ -20,6 +20,8 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
 import com.android.wallpaper.module.logging.UserEventLogger
@@ -42,6 +44,8 @@ class CuratedPhotoHolder(
     var backgroundColorBinding: ColorUpdateBinder.Binding? = null
     var loadingAnimation: LoadingAnimation2? = null
     private val curatedPhotoImage: ImageView = itemView.requireViewById(R.id.carousel_image_view)
+
+    private val curatedPhotoTitle: TextView = itemView.requireViewById(R.id.carousel_text_view)
 
     fun bind(item: TileViewModel, context: Context, isFirst: Boolean) {
         curatedPhotoImage.contentDescription = item.contentDescription
@@ -109,7 +113,27 @@ class CuratedPhotoHolder(
         curatedPhotoImage.layoutParams.height =
             context.resources.getDimension(R.dimen.curated_photo_height).toInt()
 
+        updateTitleVisibility(item, context, isFirst)
+
         itemView.setOnClickListener { _ -> item.onClicked?.invoke() }
+    }
+
+    public fun updateTitleVisibility(item: TileViewModel, context: Context, isFirst: Boolean) {
+        curatedPhotoTitle.text = item.text
+        curatedPhotoTitle.visibility =
+            if (isFirst && item.showTitle) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
+        if (isFirst && item.showTitle) {
+            val gradientDrawable =
+                ContextCompat.getDrawable(context, R.drawable.carousel_item_gradient_overlay)
+            curatedPhotoImage.foreground = gradientDrawable
+        } else {
+            curatedPhotoImage.foreground = null
+        }
     }
 
     fun cleanUp() {

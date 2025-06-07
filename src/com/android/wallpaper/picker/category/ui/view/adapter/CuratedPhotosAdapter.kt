@@ -31,10 +31,11 @@ class CuratedPhotosAdapter(
     val items: List<TileViewModel>,
     val curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
     val userEventLogger: UserEventLogger,
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    val shouldShowDesktopUi: Boolean = false,
+) : RecyclerView.Adapter<CuratedPhotoHolder>() {
     private var visiblePosition = -1 // Track the position of the visible TextView
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CuratedPhotoHolder {
         return createIndividualHolder(parent)
     }
 
@@ -42,7 +43,7 @@ class CuratedPhotosAdapter(
         return items.size
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: CuratedPhotoHolder, position: Int) {
         val tile: TileViewModel = items[position]
         (holder as CuratedPhotoHolder?)?.bind(
             tile,
@@ -51,10 +52,35 @@ class CuratedPhotosAdapter(
         )
     }
 
-    private fun createIndividualHolder(parent: ViewGroup): RecyclerView.ViewHolder {
+    private fun createIndividualHolder(parent: ViewGroup): CuratedPhotoHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val view: View = layoutInflater.inflate(R.layout.curated_photo_tile, parent, false)
+        val layoutResource =
+            if (shouldShowDesktopUi) {
+                R.layout.curated_photo_tile_desktop
+            } else {
+                R.layout.curated_photo_tile
+            }
+        val view: View = layoutInflater.inflate(layoutResource, parent, false)
         return CuratedPhotoHolder(view, curatedPhotosTimeUtil, userEventLogger)
+    }
+
+    override fun onBindViewHolder(
+        holder: CuratedPhotoHolder,
+        position: Int,
+        payloads: MutableList<Any>,
+    ) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            val payload = payloads[0]
+            if (payload == UPDATE_TITLE) {
+                holder.updateTitleVisibility(
+                    items[position],
+                    holder.itemView.context,
+                    this.visiblePosition == position,
+                )
+            }
+        }
     }
 
     fun setVisiblePosition(position: Int) {
@@ -63,9 +89,13 @@ class CuratedPhotosAdapter(
         // only need to refresh list items if they have visible titles
         if (items[position].showTitle) {
             if (previousPosition != -1) {
-                notifyItemChanged(previousPosition)
+                notifyItemChanged(previousPosition, UPDATE_TITLE)
             }
-            notifyItemChanged(position)
+            notifyItemChanged(position, UPDATE_TITLE)
         }
+    }
+
+    companion object {
+        const val UPDATE_TITLE = "update_title"
     }
 }
