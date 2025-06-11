@@ -651,7 +651,13 @@ class CustomizationPickerFragment2 :
                     }
                 }
             },
-            navigateToWallpaperCategoriesScreen = { _ -> switchFragment(CategoriesFragment()) },
+            navigateToWallpaperCategoriesScreen = { _ ->
+                switchFragment(
+                    CategoriesFragment.newInstance(
+                        destinationScreen = customizationPickerViewModel.selectedPreviewScreen.value
+                    )
+                )
+            },
             navigateToMoreLockScreenSettingsActivity = {
                 activity?.startActivity(Intent(Settings.ACTION_LOCKSCREEN_SETTINGS))
             },
