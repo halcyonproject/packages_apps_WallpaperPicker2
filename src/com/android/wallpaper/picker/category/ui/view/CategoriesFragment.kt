@@ -44,6 +44,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.ImageWallpaperInfo
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
@@ -283,11 +284,13 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val activity = requireActivity()
         persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
         val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
+        val screen = arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java) as? Screen
+        val isDestinationHome = screen?.let { it == Screen.HOME_SCREEN } ?: true
         val previewIntent =
             WallpaperPreviewActivity.newIntent(
                 context = appContext,
                 isAssetIdPresent = true,
-                isViewAsHome = true,
+                isViewAsHome = isDestinationHome,
                 isNewTask = isMultiPanel,
                 shouldCategoryRefresh = isCreativeCategories,
                 shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
@@ -354,5 +357,14 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         const val SHOW_CATEGORY_REQUEST_CODE = 0
         const val SETTINGS_APP_INFO_REQUEST_CODE = 1
         const val READ_IMAGE_PERMISSION: String = Manifest.permission.READ_MEDIA_IMAGES
+
+        private const val DESTINATION_SCREEN = "destination_screen"
+
+        fun newInstance(destinationScreen: Screen): CategoriesFragment {
+            return CategoriesFragment().apply {
+                arguments =
+                    Bundle().apply { putSerializable(DESTINATION_SCREEN, destinationScreen) }
+            }
+        }
     }
 }
