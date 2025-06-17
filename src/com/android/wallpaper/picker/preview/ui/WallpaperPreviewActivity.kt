@@ -232,14 +232,15 @@ class WallpaperPreviewActivity :
 
                         override fun onError(t: Throwable) {
                             Log.e(TAG, "Error requesting fullscreen mode", t)
-                            onBackPressedWithToast()
+                            showToastAndFinish()
                         }
                     },
                 )
                 // Don't dismiss the preview right away while it is still switching to fullscreen.
                 return
             }
-            onBackPressedWithToast()
+            // User has returned to freeform mode, so we should dismiss the preview.
+            showToastAndFinish()
         }
     }
 
@@ -286,10 +287,10 @@ class WallpaperPreviewActivity :
         return wallpaperModelFactory.getWallpaperModel(appContext, this)
     }
 
-    private fun onBackPressedWithToast() {
+    private fun showToastAndFinish() {
         // TODO(b/409622144) re-evaluate this string for freeform mode.
         Toast.makeText(this, R.string.wallpaper_exit_split_screen, Toast.LENGTH_SHORT).show()
-        onBackPressedDispatcher.onBackPressed()
+        finishAfterTransition()
     }
 
     private fun isFullscreenPreviewEnabled() = BaseFlags.get().isFullscreenPreviewEnabled(this)
