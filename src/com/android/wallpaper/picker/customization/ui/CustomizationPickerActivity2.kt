@@ -189,7 +189,7 @@ class CustomizationPickerActivity2 :
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         configuration?.let {
-            val diff = newConfig.diff(it)
+            val diff = it.diff(newConfig)
             val isScreenSizeChange = diff and ActivityInfo.CONFIG_SCREEN_SIZE != 0
             val isAssetsPathsChange = diff and ActivityInfo.CONFIG_ASSETS_PATHS != 0
             val isUiModeChange = diff and ActivityInfo.CONFIG_UI_MODE != 0
