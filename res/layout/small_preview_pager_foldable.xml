@@ -42,6 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/foldable_apply_wallpaper_preview_sub_title_margin_top"
+            android:gravity="center"
             android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall" />
     </LinearLayout>
 
