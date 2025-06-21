@@ -344,7 +344,7 @@ public class LiveWallpaperThumbAsset extends Asset {
                             BitmapFactory.decodeStream(assetFileDescriptor.createInputStream()));
                 }
             } catch (IOException e) {
-                Log.w(TAG, "Not found thumbnail from URI.");
+                Log.w(TAG, "Not found thumbnail from URI.", e);
             }
         }
         return null;
