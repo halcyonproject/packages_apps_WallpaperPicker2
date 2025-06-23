@@ -18,6 +18,8 @@ package com.android.wallpaper.picker.preview.ui.util
 
 import android.app.Activity.RESULT_OK
 import android.app.Flags.liveWallpaperContentHandling
+import android.app.WallpaperManager.FLAG_LOCK
+import android.app.WallpaperManager.FLAG_SYSTEM
 import android.app.wallpaper.WallpaperDescription
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
@@ -31,6 +33,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING
+import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
@@ -40,6 +43,11 @@ import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 
 /** This class provides utility methods to facilitate the extended wallpaper effects flow */
 object ExtendedWallpaperEffectsUtils {
+    const val TAG = "ExtendedWallpaperEffectsUtils"
+
+    /** Parameters of the Intent that starts the editor activity */
+    const val PHOTO_URI = "PHOTO_URI"
+    const val SOURCE_BITMAP_SCREEN = "SOURCE_BITMAP_SCREEN"
 
     fun registerExtendedWallpaperEffectsActivityLauncher(
         activity: FragmentActivity,
@@ -145,6 +153,32 @@ object ExtendedWallpaperEffectsUtils {
                 WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
                 (wallpaper as LiveWallpaperModel).liveWallpaperData.description,
             )
+        } else if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
+            Log.d(TAG, "destination: ${wallpaper.commonWallpaperData.destination}")
+            when (wallpaper.commonWallpaperData.destination) {
+                Destination.NOT_APPLIED -> {
+                    (wallpaper as StaticWallpaperModel).imageWallpaperData?.uri?.let { photoUri ->
+                        Log.d(TAG, "Using photoUri: $photoUri")
+                        context.grantUriPermission(
+                            extendedWallpaperEffectPkgName,
+                            photoUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                        )
+                        extendedWallpaperIntent.putExtra(PHOTO_URI, photoUri)
+                    }
+                }
+
+                Destination.APPLIED_TO_SYSTEM,
+                Destination.APPLIED_TO_SYSTEM_LOCK -> {
+                    Log.d(TAG, "Using home screen bitmap")
+                    extendedWallpaperIntent.putExtra(SOURCE_BITMAP_SCREEN, FLAG_SYSTEM)
+                }
+
+                Destination.APPLIED_TO_LOCK -> {
+                    Log.d(TAG, "Using lock screen bitmap")
+                    extendedWallpaperIntent.putExtra(SOURCE_BITMAP_SCREEN, FLAG_LOCK)
+                }
+            }
         } else {
             val photoUri = (wallpaper as StaticWallpaperModel).imageWallpaperData?.uri
             Log.d("ExtendedWallpaperEffectsUtils", "PhotoURI is: $photoUri")
@@ -157,15 +191,10 @@ object ExtendedWallpaperEffectsUtils {
                 extendedWallpaperIntent.putExtra("PHOTO_URI", it)
             }
         }
-
         try {
             launcher.launch(extendedWallpaperIntent)
         } catch (ex: ActivityNotFoundException) {
-            Log.e(
-                "ExtendedWallpaperEffectsUtils",
-                "Extended Wallpaper Activity is not available",
-                ex,
-            )
+            Log.e(TAG, "Extended Wallpaper Activity is not available", ex)
         }
     }
 }
