@@ -59,3 +59,13 @@ flag {
         purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    name: "adaptive_wallpaper_flag"
+    namespace: "customization_picker"
+    description: "Add wallpapers that change based on the system's theme"
+    bug: "350781760"
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}

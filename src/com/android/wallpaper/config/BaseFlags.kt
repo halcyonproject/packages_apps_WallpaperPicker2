@@ -28,6 +28,7 @@ import com.android.systemui.shared.Flags.newCustomizationPickerUi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
+import com.android.wallpaper.Flags.adaptiveWallpaperFlag
 import com.android.wallpaper.Flags.composeRefactorFlag
 import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
 import com.android.wallpaper.Flags.desktopUiFlag
@@ -80,6 +81,8 @@ abstract class BaseFlags {
     open fun isMultiCropEnabled() = WallpaperManager.isMultiCropEnabled()
 
     open fun isComposeRefactorEnabled() = composeRefactorFlag()
+
+    open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
 
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
