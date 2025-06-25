@@ -71,6 +71,7 @@ object CustomizationPickerBinder2 {
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
         navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
         navigateToPackThemeActivity: (Intent) -> Unit,
+        navigateToScreenSaverSettingsActivity: () -> Unit,
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
@@ -190,6 +191,7 @@ object CustomizationPickerBinder2 {
             navigateToColorContrastSettingsActivity,
             navigateToLockScreenNotificationsSettingsActivity,
             navigateToPackThemeActivity,
+            navigateToScreenSaverSettingsActivity,
             iconStyleViewUtil,
         )
     }

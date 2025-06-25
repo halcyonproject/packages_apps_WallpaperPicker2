@@ -684,6 +684,9 @@ class CustomizationPickerFragment2 :
                 startWallpaperPreviewActivity(wallpaperModel, false, false)
             },
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },
+            navigateToScreenSaverSettingsActivity = {
+                activity?.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))
+            },
             navigateToWallpaperCollectionScreen = { categoryId, categoryType ->
                 switchFragment(
                     individualPickerFactory.getIndividualPickerInstance(categoryId, categoryType)
