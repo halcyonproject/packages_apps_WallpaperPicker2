@@ -121,27 +121,13 @@ class IndividualPickerFragment2 :
 
         fun newInstance(
             collectionId: String?,
+            categoryType: CategoryType? = null,
             destinationScreen: Screen? = null,
         ): IndividualPickerFragment2 {
             val args = Bundle()
             args.putString(ARG_CATEGORY_COLLECTION_ID, collectionId)
-            destinationScreen?.let {}
-
-            args.putSerializable(DESTINATION_SCREEN, destinationScreen)
-            val fragment = IndividualPickerFragment2()
-            fragment.arguments = args
-            return fragment
-        }
-
-        fun newInstance(
-            collectionId: String?,
-            categoryType: CategoryType,
-            destinationScreen: Screen? = null,
-        ): IndividualPickerFragment2 {
-            val args = Bundle()
-            args.putString(ARG_CATEGORY_COLLECTION_ID, collectionId)
-            args.putSerializable(ARG_CATEGORY_TYPE, categoryType)
-            destinationScreen?.let { args.putSerializable(DESTINATION_SCREEN, destinationScreen) }
+            categoryType?.let { args.putSerializable(ARG_CATEGORY_TYPE, it) }
+            destinationScreen?.let { args.putSerializable(DESTINATION_SCREEN, it) }
             val fragment = IndividualPickerFragment2()
             fragment.arguments = args
             return fragment
