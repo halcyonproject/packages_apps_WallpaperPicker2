@@ -186,10 +186,13 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         ) { navigationEvent, callback ->
             when (navigationEvent) {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
+                    val screen: Screen? =
+                        arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java)
                     switchFragment(
                         individualPickerFactory.getIndividualPickerInstance(
                             navigationEvent.categoryId,
                             navigationEvent.categoryType,
+                            screen,
                         )
                     )
                 }

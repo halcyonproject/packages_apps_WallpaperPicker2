@@ -686,7 +686,11 @@ class CustomizationPickerFragment2 :
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },
             navigateToWallpaperCollectionScreen = { categoryId, categoryType ->
                 switchFragment(
-                    individualPickerFactory.getIndividualPickerInstance(categoryId, categoryType)
+                    individualPickerFactory.getIndividualPickerInstance(
+                        categoryId,
+                        categoryType,
+                        customizationPickerViewModel.selectedPreviewScreen.value,
+                    )
                 )
             },
             navigateToExtendedWallpaperEffects = {
