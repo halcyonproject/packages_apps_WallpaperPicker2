@@ -689,7 +689,11 @@ class CustomizationPickerFragment2 :
             },
             navigateToWallpaperCollectionScreen = { categoryId, categoryType ->
                 switchFragment(
-                    individualPickerFactory.getIndividualPickerInstance(categoryId, categoryType)
+                    individualPickerFactory.getIndividualPickerInstance(
+                        categoryId,
+                        categoryType,
+                        customizationPickerViewModel.selectedPreviewScreen.value,
+                    )
                 )
             },
             navigateToExtendedWallpaperEffects = {
