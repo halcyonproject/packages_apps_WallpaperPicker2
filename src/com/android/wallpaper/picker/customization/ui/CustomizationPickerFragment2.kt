@@ -22,6 +22,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
+import android.stats.style.StyleEnums
 import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
@@ -188,6 +189,8 @@ class CustomizationPickerFragment2 :
                                 requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                                 isMultiPanesEnabled =
                                     multiPanesChecker.isMultiPanesEnabled(requireContext()),
+                                setWallpaperEntryPoint =
+                                    StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
                             )
                         }
                     }
@@ -690,7 +693,7 @@ class CustomizationPickerFragment2 :
             navigateToLockScreenNotificationsSettingsActivity = {
                 activity?.startActivity(Intent(Settings.ACTION_LOCKSCREEN_NOTIFICATIONS_SETTINGS))
             },
-            navigateToPreviewScreen = { wallpaperModel ->
+            navigateToPreviewScreen = { wallpaperModel, setEntryPoint ->
                 persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
                 ActivityUtils.startWallpaperPreviewActivity(
                     activity = requireActivity(),
@@ -699,6 +702,7 @@ class CustomizationPickerFragment2 :
                     isViewAsHome = true,
                     requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                     isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
+                    setWallpaperEntryPoint = setEntryPoint,
                 )
             },
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },

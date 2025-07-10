@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.service.wallpaper.WallpaperService
+import android.stats.style.StyleEnums
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,6 +29,7 @@ import com.android.wallpaper.asset.ContentUriAsset
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.PackageStatusNotifier.PackageStatus
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.category.domain.interactor.CategoriesLoadingStatusInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CategoryInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CreativeCategoryInteractor
@@ -136,10 +138,16 @@ constructor(
     private fun navigateToPreviewScreen(
         wallpaperModel: WallpaperModel,
         categoryType: CategoryType,
+        @UserEventLogger.SetWallpaperEntryPoint
+        setWallpaperEntryPoint: Int = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
     ) {
         viewModelScope.launch {
             _navigationEvents.emit(
-                NavigationEvent.NavigateToPreviewScreen(wallpaperModel, categoryType)
+                NavigationEvent.NavigateToPreviewScreen(
+                    wallpaperModel,
+                    categoryType,
+                    setWallpaperEntryPoint,
+                )
             )
         }
     }
@@ -344,6 +352,8 @@ constructor(
                                     navigateToPreviewScreen(
                                         wallpaperModel.value,
                                         CategoryType.MyPhotosCategories,
+                                        StyleEnums
+                                            .SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_CATEGORY_SCREEN,
                                     )
                                 }
                             } ?: emptyList()
@@ -501,6 +511,7 @@ constructor(
         data class NavigateToPreviewScreen(
             val wallpaperModel: WallpaperModel,
             val categoryType: CategoryType,
+            val entryPoint: Int,
         ) : NavigationEvent()
 
         data class NavigateToPhotosPicker(val wallpaperModel: WallpaperModel?) : NavigationEvent()
