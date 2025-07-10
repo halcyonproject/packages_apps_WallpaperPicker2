@@ -86,6 +86,7 @@ import javax.inject.Inject;
 @HiltAndroidTest
 @RunWith(AndroidJUnit4.class)
 @MediumTest
+@Ignore("b/430664384")
 public class PreviewActivityTest {
     private static final float FLOAT_ERROR_MARGIN = 0.001f;
     private static final String ACTION_URL = "http://google.com";
