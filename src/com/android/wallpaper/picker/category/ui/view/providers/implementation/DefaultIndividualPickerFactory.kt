@@ -29,16 +29,12 @@ import javax.inject.Singleton
 class DefaultIndividualPickerFactory @Inject constructor() : IndividualPickerFactory {
     override fun getIndividualPickerInstance(
         collectionId: String,
-        destinationScreen: Screen?,
-    ): Fragment {
-        return IndividualPickerFragment2.newInstance(collectionId, destinationScreen)
-    }
-
-    override fun getIndividualPickerInstance(
-        collectionId: String,
         categoryType: CategoryType,
         destinationScreen: Screen?,
     ): Fragment {
-        return IndividualPickerFragment2.newInstance(collectionId, destinationScreen)
+        return IndividualPickerFragment2.newInstance(
+            collectionId = collectionId,
+            destinationScreen = destinationScreen,
+        )
     }
 }
