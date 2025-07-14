@@ -44,6 +44,13 @@ flag {
 }
 
 flag {
+   name: "color_picker_update_flag"
+   namespace: "customization_picker"
+   description: "Update color picker with new UI and functionality, and integrate with ThemeService"
+   bug: "391927276"
+}
+
+flag {
     name: "fullscreen_preview_flag"
     namespace: "customization_picker"
     description: "Enables full screen wallpaper preview"
