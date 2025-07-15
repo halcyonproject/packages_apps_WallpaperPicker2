@@ -33,7 +33,6 @@ import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.module.logging.UserEventLogger
-import com.android.wallpaper.picker.preview.ui.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.view.ImageEffectDialog
 import com.android.wallpaper.picker.preview.ui.view.PreviewActionFloatingSheet
@@ -47,6 +46,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperActionsToggleAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
