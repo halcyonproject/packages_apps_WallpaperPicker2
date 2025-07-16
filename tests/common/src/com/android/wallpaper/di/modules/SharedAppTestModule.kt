@@ -26,6 +26,7 @@ import android.os.Looper
 import android.os.Process
 import com.android.wallpaper.binder.FakeBannerProvider
 import com.android.wallpaper.module.CreativeHelper
+import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.NetworkStatusNotifier
@@ -55,6 +56,7 @@ import com.android.wallpaper.testing.FakeCreativeHelper
 import com.android.wallpaper.testing.FakeCreativeWallpaperInteractor
 import com.android.wallpaper.testing.FakeDefaultCategoryFactory
 import com.android.wallpaper.testing.FakeDefaultWallpaperCategoryRepository
+import com.android.wallpaper.testing.FakeExtendedEffectsHelper
 import com.android.wallpaper.testing.FakeLiveWallpaperClientImpl
 import com.android.wallpaper.testing.FakeMyPhotosInteractor
 import com.android.wallpaper.testing.FakePowerManager
@@ -109,6 +111,10 @@ internal abstract class SharedAppTestModule {
     abstract fun bindCreativeCategoryInteractor(
         impl: FakeCreativeWallpaperInteractor
     ): CreativeCategoryInteractor
+
+    @Binds
+    @Singleton
+    abstract fun bindExtendedEffectsHelper(impl: FakeExtendedEffectsHelper): ExtendedEffectsHelper
 
     @Binds
     @Singleton

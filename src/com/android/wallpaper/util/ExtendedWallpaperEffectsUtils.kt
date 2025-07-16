@@ -30,9 +30,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING
+import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
@@ -41,6 +41,10 @@ import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment.Com
 import com.android.wallpaper.picker.preview.ui.util.ContentHandlingUtil
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 
 /** This class provides utility methods to facilitate the extended wallpaper effects flow */
 object ExtendedWallpaperEffectsUtils {
@@ -50,8 +54,25 @@ object ExtendedWallpaperEffectsUtils {
     const val PHOTO_URI = "PHOTO_URI"
     const val SOURCE_BITMAP_SCREEN = "SOURCE_BITMAP_SCREEN"
 
-    fun isExtendedEffectWallpaper(context: Context, component: ComponentName) =
-        component.packageName == context.getString(R.string.extended_wallpaper_effects_package)
+    private lateinit var extendedEffectsHelper: ExtendedEffectsHelper
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface EntryPointInjector {
+        fun getExtendedEffectsHelper(): ExtendedEffectsHelper
+    }
+
+    private fun getExtendedEffectsHelper(context: Context): ExtendedEffectsHelper {
+        if (!this::extendedEffectsHelper.isInitialized) {
+            extendedEffectsHelper =
+                EntryPoints.get(context, EntryPointInjector::class.java).getExtendedEffectsHelper()
+        }
+        return extendedEffectsHelper
+    }
+
+    fun isExtendedEffectWallpaper(context: Context, component: ComponentName): Boolean {
+        return getExtendedEffectsHelper(context).isExtendedEffectWallpaper(component)
+    }
 
     fun registerExtendedWallpaperEffectsActivityLauncher(
         activity: FragmentActivity,
@@ -141,16 +162,8 @@ object ExtendedWallpaperEffectsUtils {
         isExtendedEffect: Boolean,
         context: Context,
     ) {
-        val extendedWallpaperEffectPkgName =
-            context.getString(R.string.extended_wallpaper_effects_package)
-        val extendedWallpaperIntent =
-            Intent().apply {
-                component =
-                    ComponentName(
-                        extendedWallpaperEffectPkgName,
-                        context.getString(R.string.extended_wallpaper_effects_activity),
-                    )
-            }
+        val extendedWallpaperIntent = getExtendedEffectsHelper(context).getExtendedEffectIntent()
+        val extendedWallpaperPackageName = extendedWallpaperIntent.component?.packageName ?: ""
         if (isExtendedEffect) {
             // Extended effect wallpaper, launch with description
             extendedWallpaperIntent.putExtra(
@@ -164,7 +177,7 @@ object ExtendedWallpaperEffectsUtils {
                     (wallpaper as StaticWallpaperModel).imageWallpaperData?.uri?.let { photoUri ->
                         Log.d(TAG, "Using photoUri: $photoUri")
                         context.grantUriPermission(
-                            extendedWallpaperEffectPkgName,
+                            extendedWallpaperPackageName,
                             photoUri,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION,
                         )
@@ -188,7 +201,7 @@ object ExtendedWallpaperEffectsUtils {
             Log.d("ExtendedWallpaperEffectsUtils", "PhotoURI is: $photoUri")
             photoUri?.let {
                 context.grantUriPermission(
-                    extendedWallpaperEffectPkgName,
+                    extendedWallpaperPackageName,
                     photoUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
