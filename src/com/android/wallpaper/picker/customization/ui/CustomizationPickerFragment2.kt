@@ -179,7 +179,16 @@ class CustomizationPickerFragment2 :
                     result.data?.let { data ->
                         context?.let { ctx ->
                             val wallpaperModel = extractWallpaperModelFromResult(data, ctx)
-                            startWallpaperPreviewActivity(wallpaperModel, false, true)
+                            persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
+                            ActivityUtils.startWallpaperPreviewActivity(
+                                activity = requireActivity(),
+                                isCreativeCategories = false,
+                                shouldNavigateToExtendedWallpaperEffects = true,
+                                isViewAsHome = true,
+                                requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                                isMultiPanesEnabled =
+                                    multiPanesChecker.isMultiPanesEnabled(requireContext()),
+                            )
                         }
                     }
                 }
@@ -682,8 +691,15 @@ class CustomizationPickerFragment2 :
                 activity?.startActivity(Intent(Settings.ACTION_LOCKSCREEN_NOTIFICATIONS_SETTINGS))
             },
             navigateToPreviewScreen = { wallpaperModel ->
-                // navigate to standard preview screen
-                startWallpaperPreviewActivity(wallpaperModel, false, false)
+                persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
+                ActivityUtils.startWallpaperPreviewActivity(
+                    activity = requireActivity(),
+                    isCreativeCategories = false,
+                    shouldNavigateToExtendedWallpaperEffects = false,
+                    isViewAsHome = true,
+                    requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                    isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
+                )
             },
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },
             navigateToScreenSaverSettingsActivity = {
@@ -1092,31 +1108,6 @@ class CustomizationPickerFragment2 :
             // Wait until motion container's constraints are updated
             motionContainer.post { onSetComplete() }
         }
-    }
-
-    private fun startWallpaperPreviewActivity(
-        wallpaperModel: WallpaperModel,
-        isCreativeCategories: Boolean,
-        shouldNavigateToExtendedWallpaperEffects: Boolean,
-    ) {
-        val appContext = requireContext()
-        val activity = requireActivity()
-        persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
-        val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
-        val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context = appContext,
-                isAssetIdPresent = true,
-                isViewAsHome = true,
-                isNewTask = isMultiPanel,
-                shouldCategoryRefresh = isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
-            )
-        ActivityUtils.startActivityForResultSafely(
-            activity,
-            previewIntent,
-            VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
-        )
     }
 
     companion object {
