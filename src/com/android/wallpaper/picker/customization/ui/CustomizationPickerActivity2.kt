@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -107,12 +108,17 @@ class CustomizationPickerActivity2 :
             // If not, we need to start an intent to have settings launch the customization
             // activity. In case it is a two-pane situation and the activity should be embedded in
             // the settings app, instead of in the full screen.
-            val multiPanesIntent = multiPanesChecker.getMultiPanesIntent(intent)
-            ActivityUtils.startActivityForResultSafely(
-                this, /* activity */
-                multiPanesIntent,
-                0, /* requestCode */
-            )
+            multiPanesChecker.getMultiPanesIntent(intent)?.let { multiPanesIntent ->
+                ActivityUtils.startActivityForResultSafely(
+                    activity = this,
+                    intent = multiPanesIntent,
+                    requestCode = 0,
+                )
+            }
+                ?: Log.w(
+                    CUSTOMIZATION_PICKER_FRAGMENT_TAG,
+                    "multiPanesIntent was null, not starting multi-pane activity.",
+                )
             finish()
             return
         }
