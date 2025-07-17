@@ -49,6 +49,9 @@ abstract class BaseFlags {
     // local flag to gate the entry points for magic portrait
     open fun isMagicPortraitEntryPointsEnabled() = true
 
+    // local flag to enable the refactored version of IPF2
+    open fun isWallpapersFragmentEnabled() = false
+
     open fun isStagingBackdropContentEnabled() = false
 
     open fun isWallpaperEffectEnabled() = false
