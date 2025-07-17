@@ -26,7 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.customization.picker.icon.ui.util.IconStyleViewUtil
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags.Companion.get
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
@@ -109,6 +109,16 @@ object CustomizationPickerBinder2 {
                                 val homePreviewLabel: View =
                                     previewPager.requireViewById(R.id.home_preview_label)
                                 homePreviewLabel.visibility = View.VISIBLE
+                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
+                                    previewPager.addClickableViewId(R.id.home_preview_label)
+                                    previewPager.addClickableViewId(R.id.lock_preview_label)
+                                    lockPreviewLabel.setOnClickListener {
+                                        viewModel.selectPreviewScreen(LOCK_SCREEN)
+                                    }
+                                    homePreviewLabel.setOnClickListener {
+                                        viewModel.selectPreviewScreen(HOME_SCREEN)
+                                    }
+                                }
                             }
                             CUSTOMIZATION_OPTION -> {
                                 val lockPreviewLabel: View =
@@ -118,6 +128,12 @@ object CustomizationPickerBinder2 {
                                 val homePreviewLabel: View =
                                     previewPager.requireViewById(R.id.home_preview_label)
                                 homePreviewLabel.visibility = View.GONE
+                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
+                                    previewPager.removeClickableViewId(R.id.home_preview_label)
+                                    previewPager.removeClickableViewId(R.id.lock_preview_label)
+                                    lockPreviewLabel.setOnClickListener(null)
+                                    homePreviewLabel.setOnClickListener(null)
+                                }
                                 option?.let(navigateToSecondary)
                             }
                         }
@@ -147,7 +163,7 @@ object CustomizationPickerBinder2 {
             }
         }
 
-        if (get().isPackThemeEnabled()) {
+        if (BaseFlags.get().isPackThemeEnabled()) {
             packThemeSuggestedChip?.let {
                 packThemeSuggestedEntryBinder.bind(
                     view = it,
