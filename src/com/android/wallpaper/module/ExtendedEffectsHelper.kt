@@ -18,6 +18,8 @@ package com.android.wallpaper.module
 
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
+import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
 
 /** Methods for working with extended effect wallpapers. */
 interface ExtendedEffectsHelper {
@@ -35,4 +37,6 @@ interface ExtendedEffectsHelper {
     fun getExtendedEffectIntent(): Intent {
         return Intent().apply { component = ComponentName(effectsPackage, effectsActivity) }
     }
+
+    fun getCurrentThumbnail(destination: WallpaperDestination): Uri? = null
 }

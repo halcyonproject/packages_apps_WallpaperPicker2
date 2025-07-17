@@ -18,7 +18,9 @@ package com.android.wallpaper.testing
 
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
 import com.android.wallpaper.module.ExtendedEffectsHelper
+import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,8 +34,11 @@ class FakeExtendedEffectsHelper @Inject constructor() : ExtendedEffectsHelper {
 
     var isEffectWallpaper = false
     var effectIntent = Intent()
+    var thumbnailUri: Uri? = null
 
     override fun isExtendedEffectWallpaper(component: ComponentName) = isEffectWallpaper
 
     override fun getExtendedEffectIntent() = Intent(effectIntent)
+
+    override fun getCurrentThumbnail(destination: WallpaperDestination) = thumbnailUri
 }
