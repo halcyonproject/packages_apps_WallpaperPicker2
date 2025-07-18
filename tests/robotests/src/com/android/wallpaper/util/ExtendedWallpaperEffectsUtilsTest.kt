@@ -34,10 +34,11 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.preview.PreviewTestActivity
-import com.android.wallpaper.picker.preview.ui.util.ExtendedWallpaperEffectsUtils.PHOTO_URI
-import com.android.wallpaper.picker.preview.ui.util.ExtendedWallpaperEffectsUtils.SOURCE_BITMAP_SCREEN
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.WallpaperModelUtils
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.PHOTO_URI
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.SOURCE_BITMAP_SCREEN
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.EntryPoint
