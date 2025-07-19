@@ -48,7 +48,6 @@ import com.android.wallpaper.picker.preview.domain.interactor.PreviewActionsInte
 import com.android.wallpaper.picker.preview.domain.interactor.WallpaperPreviewInteractor
 import com.android.wallpaper.picker.preview.shared.model.DownloadStatus
 import com.android.wallpaper.picker.preview.shared.model.ImageEffectsModel
-import com.android.wallpaper.picker.preview.ui.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.picker.preview.ui.util.LiveWallpaperDeleteUtil
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.CUSTOMIZE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
@@ -62,6 +61,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.Customize
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.ImageEffectFloatingSheetViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.InformationFloatingSheetViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.PreviewFloatingSheetViewModel
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperEffectsView2.EffectDownloadClickListener
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperEffectsView2.EffectSwitchListener
@@ -616,7 +616,7 @@ constructor(
         flags.isExtendedWallpaperEnabled() &&
             model is LiveWallpaperModel &&
             model.liveWallpaperData.isEffectWallpaper &&
-            WallpaperConnectionUtils.isExtendedEffectWallpaper(
+            ExtendedWallpaperEffectsUtils.isExtendedEffectWallpaper(
                 context,
                 model.liveWallpaperData.systemWallpaperInfo.component,
             )

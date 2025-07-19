@@ -18,7 +18,6 @@ package com.android.wallpaper.config
 import android.app.Flags.updateRecentsFromSystem
 import android.app.WallpaperManager
 import android.content.Context
-import android.content.pm.PackageManager
 import com.android.settings.accessibility.Flags.enableColorContrastControl
 import com.android.systemui.shared.Flags.clockReactiveVariants
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
@@ -37,6 +36,7 @@ import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
 import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
+import com.android.wallpaper.R
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import kotlinx.coroutines.Dispatchers
@@ -184,10 +184,10 @@ abstract class BaseFlags {
     }
 
     open fun shouldShowDesktopUi(context: Context): Boolean {
-        // TODO: b/416024080 use a better solution than FEATURE_PC.
+        // TODO: b/416024080 use a better solution than a config boolean to show desktop UI.
         return desktopUiFlag() &&
             isNewPickerUi() &&
-            context.packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
+            context.resources.getBoolean(R.bool.isDesktopUi)
     }
 
     companion object {

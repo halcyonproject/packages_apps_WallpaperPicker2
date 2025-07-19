@@ -23,7 +23,6 @@ import android.view.SurfaceControl
 import android.view.SurfaceView
 import android.view.View
 import com.android.app.tracing.TraceUtils.traceAsync
-import com.android.wallpaper.R
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
@@ -32,6 +31,7 @@ import com.android.wallpaper.picker.customization.shared.model.WallpaperDestinat
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toSetWallpaperFlags
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.isExtendedEffectWallpaper
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityRetainedScoped
@@ -634,9 +634,6 @@ constructor(
                 else -> !liveWallpaperData.supportsMultipleEngines
             }
         }
-
-        fun isExtendedEffectWallpaper(context: Context, component: ComponentName) =
-            component.packageName == context.getString(R.string.extended_wallpaper_effects_package)
 
         fun toHex(o: Any?): String {
             return o.hashCode().toString(16).padStart(7, '0')
