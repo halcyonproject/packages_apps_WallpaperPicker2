@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.platform.test.annotations.DisableFlags
@@ -38,6 +39,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -107,6 +109,20 @@ class CategoriesViewModelTest {
 
         val aiTile = creativeSection?.tileViewModels?.get(EXPECTED_POSITION_AI_TILE)
         assertThat(aiTile?.text).isEqualTo(EXPECTED_TITLE_AI_TILE)
+    }
+
+    @Test
+    fun refetchPackThemeCategoryReceiver_registerCorrectReceiver() = runTest {
+        val shadowApplication = Shadows.shadowOf(appContext as Application)
+        categoriesViewModel.refetchPackThemeCategoryReceiver()
+        delay(10)
+
+        val registeredReceiver =
+            shadowApplication.registeredReceivers.find {
+                it.intentFilter.countActions() > 0 &&
+                    it.intentFilter.getAction(0) == REFETCH_PACK_THEME_CATEGORY_ACTION
+            }
+        assertThat(registeredReceiver).isNotNull()
     }
 
     @Test
@@ -290,5 +306,8 @@ class CategoriesViewModelTest {
         const val CATEGORY_INDEX_CELESTIAL_DREAMSCAPES = 0
         const val CATEGORY_INDEX_CYBERPUNK_CITYSCAPE = 6
         const val CATEGORY_INDEX_COSMIC_NEBULA = 8
+
+        const val REFETCH_PACK_THEME_CATEGORY_ACTION =
+            "com.google.android.apps.wallpaper.action.REFETCH_PACK_THEME_CATEGORY_ACTION"
     }
 }
