@@ -820,20 +820,6 @@ class CustomizationPickerFragment2 :
         previewPager: ClickableMotionLayout,
     ): PreviewPagerViews {
         previewPager.addClickableViewId(R.id.preview_card)
-        if (BaseFlags.get().shouldShowDesktopUi(rootView.context)) {
-            previewPager.addClickableViewId(R.id.home_preview_label_container)
-            previewPager.addClickableViewId(R.id.lock_preview_label_container)
-            val lockPreviewLabelContainer: View =
-                previewPager.requireViewById(R.id.lock_preview_label_container)
-            val homePreviewLabelContainer: View =
-                previewPager.requireViewById(R.id.home_preview_label_container)
-            homePreviewLabelContainer.setOnClickListener {
-                customizationPickerViewModel.selectPreviewScreen(HOME_SCREEN)
-            }
-            lockPreviewLabelContainer.setOnClickListener {
-                customizationPickerViewModel.selectPreviewScreen(LOCK_SCREEN)
-            }
-        }
 
         // Inflate the clock and attach to the lock preview and bind clock view
         val lockPreview: View = previewPager.requireViewById(R.id.lock_preview)
