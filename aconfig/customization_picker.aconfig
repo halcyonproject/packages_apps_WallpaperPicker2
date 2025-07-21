@@ -69,3 +69,10 @@ flag {
         purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    name: "refactor_individual_picker_flag"
+    namespace: "customization_picker"
+    description: "Migrates the individual picker screen to use the recommended architecture, Compose WallpaperModel and CategoryModel "
+    bug: "433284926"
+}
