@@ -140,15 +140,9 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
                     ? WallpaperOnlyFragment.newInstance()
                     : CustomizationPickerFragment.newInstance(startFromLockScreen));
 
-
-            if (flags.isWallpaperCategoryRefactoringEnabled()) {
-                // initializing the dependency graph for categories
-                mCategoriesViewModel = new ViewModelProvider(this).get(CategoriesViewModel.class);
-                mCategoriesViewModel.initialize();
-            } else {
-                // Cache the categories, but only if we're not restoring state (b/276767415).
-                mDelegate.prefetchCategories();
-            }
+            // initializing the dependency graph for categories
+            mCategoriesViewModel = new ViewModelProvider(this).get(CategoriesViewModel.class);
+            mCategoriesViewModel.initialize();
         }
 
         if (savedInstanceState == null) {

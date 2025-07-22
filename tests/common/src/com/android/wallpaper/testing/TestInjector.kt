@@ -254,10 +254,6 @@ constructor(
                         return true
                     }
 
-                    override fun isWallpaperCategoryRefactoringEnabled(): Boolean {
-                        return true
-                    }
-
                     override fun getCachedFlags(
                         context: Context
                     ): List<CustomizationProviderClient.Flag> {
