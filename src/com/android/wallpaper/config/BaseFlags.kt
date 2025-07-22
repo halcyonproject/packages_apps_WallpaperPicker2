@@ -34,6 +34,7 @@ import com.android.wallpaper.Flags.desktopUiFlag
 import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
+import com.android.wallpaper.Flags.refactorIndividualPickerFlag
 import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
@@ -49,9 +50,6 @@ abstract class BaseFlags {
     // local flag to gate the entry points for magic portrait
     open fun isMagicPortraitEntryPointsEnabled() = true
 
-    // local flag to enable the refactored version of IPF2
-    open fun isWallpapersFragmentEnabled() = false
-
     open fun isStagingBackdropContentEnabled() = false
 
     open fun isWallpaperEffectEnabled() = false
@@ -61,6 +59,9 @@ abstract class BaseFlags {
     open fun isWallpaperEffectModelDownloadEnabled() = true
 
     open fun isInterruptModelDownloadEnabled() = false
+
+    // local flag to enable the refactored version of IPF2
+    open fun isWallpapersFragmentEnabled() = refactorIndividualPickerFlag()
 
     open fun isWallpaperRestorerEnabled() = wallpaperRestorerFlag()
 
