@@ -67,7 +67,8 @@ object CustomizationPickerBinder2 {
         navigateToMoreLockScreenSettingsActivity: () -> Unit,
         navigateToColorContrastSettingsActivity: () -> Unit,
         navigateToLockScreenNotificationsSettingsActivity: () -> Unit,
-        navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
+        navigateToPreviewScreen:
+            ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToPackThemeActivity: (Intent) -> Unit,
         navigateToScreenSaverSettingsActivity: () -> Unit,
         navigateToWallpaperCollectionScreen:

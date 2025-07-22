@@ -78,7 +78,8 @@ object WallpaperPickerEntryBinder {
         colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
         navigateToWallpaperCategoriesScreen: (screen: Screen) -> Unit,
-        navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
+        navigateToPreviewScreen:
+            ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
@@ -203,7 +204,8 @@ object WallpaperPickerEntryBinder {
         colorUpdateViewModel: ColorUpdateViewModel,
         shouldAnimateColor: () -> Boolean,
         lifecycleOwner: LifecycleOwner,
-        navigateToPreviewScreen: ((wallpaperModel: WallpaperModel) -> Unit)?,
+        navigateToPreviewScreen:
+            ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToWallpaperCollectionScreen:
             ((collectionId: String, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
@@ -281,7 +283,10 @@ object WallpaperPickerEntryBinder {
                                 )
                             }
                             is NavigateToPreviewScreen -> {
-                                navigateToPreviewScreen?.invoke(navigationEvent.wallpaperModel)
+                                navigateToPreviewScreen?.invoke(
+                                    navigationEvent.wallpaperModel,
+                                    navigationEvent.entryPoint,
+                                )
                             }
                             is NavigateToExtendedWallpaperEffects -> {
                                 navigateToExtendedWallpaperEffects?.invoke()

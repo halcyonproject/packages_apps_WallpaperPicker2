@@ -25,6 +25,7 @@ import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.stats.style.StyleEnums
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -105,6 +106,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                     wallpaperModel = wallpaperModel,
                     isCreativeCategories = false,
                     shouldNavigateToExtendedWallpaperEffects = false,
+                    setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
                 )
             }
 
@@ -124,6 +126,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                     wallpaperModel = wallpaperModel,
                     isCreativeCategories = false,
                     shouldNavigateToExtendedWallpaperEffects = true,
+                    setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
                 )
             }
     }
@@ -219,6 +222,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                         isCreativeCategories =
                             navigationEvent.categoryType == CategoryType.CreativeCategories,
                         shouldNavigateToExtendedWallpaperEffects = false,
+                        setWallpaperEntryPoint = navigationEvent.entryPoint,
                     )
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToExtendedWallpaperEffects -> {
@@ -233,6 +237,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         wallpaperModel: WallpaperModel,
         isCreativeCategories: Boolean,
         shouldNavigateToExtendedWallpaperEffects: Boolean,
+        @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
     ) {
         val screen = arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java)
         val isDestinationHome = screen?.let { it == Screen.HOME_SCREEN } ?: true
@@ -245,6 +250,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
             isViewAsHome = isDestinationHome,
             requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
             isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
+            setWallpaperEntryPoint = setWallpaperEntryPoint,
         )
     }
 
@@ -343,6 +349,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val itemComponentName =
             ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
         val launchIntent = Intent(Intent.ACTION_SET_WALLPAPER)
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         launchIntent.component = itemComponentName
         ActivityUtils.startActivityForResultSafely(srcActivity, launchIntent, requestCode)
     }
