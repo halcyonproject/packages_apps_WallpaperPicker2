@@ -22,6 +22,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.os.OutcomeReceiver
+import android.stats.style.StyleEnums
 import android.util.Log
 import android.view.Window
 import android.widget.Toast
@@ -35,6 +36,7 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.ImageWallpaperInfo
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.BasePreviewActivity
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
@@ -168,6 +170,11 @@ class WallpaperPreviewActivity :
         WindowCompat.setDecorFitsSystemWindows(window, ActivityUtils.isSUWMode(this))
         val isAssetIdPresent = intent.getBooleanExtra(IS_ASSET_ID_PRESENT, false)
         wallpaperPreviewViewModel.isNewTask = intent.getBooleanExtra(IS_NEW_TASK, false)
+        wallpaperPreviewViewModel.wallpaperEntryPoint =
+            intent.getIntExtra(
+                WALLPAPER_ENTRYPOINT,
+                StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+            )
         val whichPreview =
             if (isAssetIdPresent) WallpaperConnection.WhichPreview.EDIT_NON_CURRENT
             else WallpaperConnection.WhichPreview.EDIT_CURRENT
@@ -367,6 +374,8 @@ class WallpaperPreviewActivity :
             isNewTask: Boolean = false,
             shouldCategoryRefresh: Boolean,
             shouldNavigateToExtendedWallpaperEffects: Boolean = false,
+            @UserEventLogger.SetWallpaperEntryPoint
+            setWallpaperEntryPoint: Int = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
         ): Intent {
             val isNewPickerUi = BaseFlags.get().isNewPickerUi()
             val isCategoriesRefactorEnabled =
@@ -381,6 +390,7 @@ class WallpaperPreviewActivity :
                 SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS,
                 shouldNavigateToExtendedWallpaperEffects,
             )
+            intent.putExtra(WALLPAPER_ENTRYPOINT, setWallpaperEntryPoint)
             intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent)
             intent.putExtra(EXTRA_VIEW_AS_HOME, isViewAsHome)
             intent.putExtra(IS_NEW_TASK, isNewTask)

@@ -17,9 +17,12 @@
 package com.android.wallpaper.picker.customization.ui.viewmodel
 
 import android.content.Context
+import android.stats.style.StyleEnums
+import android.stats.style.StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN
 import com.android.wallpaper.R
 import com.android.wallpaper.asset.ContentUriAsset
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.category.domain.interactor.CreativeCategoryInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CuratedPhotosInteractor
 import com.android.wallpaper.picker.category.domain.interactor.OnDeviceWallpapersInteractor
@@ -82,6 +85,7 @@ constructor(
                         navigateToPreviewScreen(
                             wallpaperModelWithIndex.value,
                             CategoryType.CuratedPhotos,
+                            SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
                         )
                     }
                 } ?: emptyList()
@@ -214,10 +218,16 @@ constructor(
     private fun navigateToPreviewScreen(
         wallpaperModel: WallpaperModel,
         categoryType: CategoryType,
+        @UserEventLogger.SetWallpaperEntryPoint
+        setWallpaperEntryPoint: Int = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
     ) {
         viewModelScope.launch {
             _navigationEvents.emit(
-                NavigationEvent.NavigateToPreviewScreen(wallpaperModel, categoryType)
+                NavigationEvent.NavigateToPreviewScreen(
+                    wallpaperModel = wallpaperModel,
+                    categoryType = categoryType,
+                    entryPoint = setWallpaperEntryPoint,
+                )
             )
         }
     }
@@ -246,6 +256,7 @@ constructor(
         data class NavigateToPreviewScreen(
             val wallpaperModel: WallpaperModel,
             val categoryType: CategoryType,
+            val entryPoint: Int,
         ) : NavigationEvent()
 
         data class NavigateToWallpaperCollection(

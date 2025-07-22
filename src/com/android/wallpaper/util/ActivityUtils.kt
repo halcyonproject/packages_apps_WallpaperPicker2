@@ -25,6 +25,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.android.wallpaper.R
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_SETTINGS
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_SETTINGS_HOMEPAGE
@@ -112,6 +113,7 @@ object ActivityUtils {
         isViewAsHome: Boolean,
         requestCode: Int,
         isMultiPanesEnabled: Boolean,
+        @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
     ) {
         val context = activity.applicationContext
 
