@@ -17,9 +17,11 @@ package com.android.wallpaper.modules
 
 import com.android.wallpaper.effects.DefaultEffectsController
 import com.android.wallpaper.effects.EffectsController
+import com.android.wallpaper.module.DefaultExtendedEffectsHelper
 import com.android.wallpaper.module.DefaultPartnerProvider
 import com.android.wallpaper.module.DefaultRecentWallpaperManager
 import com.android.wallpaper.module.DefaultWallpaperPreferences
+import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.Injector
 import com.android.wallpaper.module.PartnerProvider
 import com.android.wallpaper.module.RecentWallpaperManager
@@ -103,6 +105,12 @@ abstract class WallpaperPicker2AppModule {
     @Binds
     @Singleton
     abstract fun bindEffectsController(impl: DefaultEffectsController): EffectsController
+
+    @Binds
+    @Singleton
+    abstract fun bindExtendedEffectsHelper(
+        impl: DefaultExtendedEffectsHelper
+    ): ExtendedEffectsHelper
 
     @Binds
     @Singleton

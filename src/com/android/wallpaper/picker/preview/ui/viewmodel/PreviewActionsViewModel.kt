@@ -29,6 +29,7 @@ import androidx.activity.result.ActivityResultLauncher
 import com.android.wallpaper.R
 import com.android.wallpaper.effects.Effect
 import com.android.wallpaper.effects.EffectsController.EffectEnumInterface
+import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.data.LiveWallpaperData
@@ -92,14 +93,11 @@ constructor(
     private val wallpaperConnectionUtils: WallpaperConnectionUtils,
     wallpaperPreviewInteractor: WallpaperPreviewInteractor,
     liveWallpaperDeleteUtil: LiveWallpaperDeleteUtil,
+    extendedEffectsHelper: ExtendedEffectsHelper,
     @ApplicationContext private val context: Context,
     @MainDispatcher private val mainScope: CoroutineScope,
 ) {
     private val flags = InjectorProvider.getInjector().getFlags()
-    private val extendedWallpaperEffectPkgName =
-        context.getString(R.string.extended_wallpaper_effects_package)
-    private val extendedWallpaperEffectActivityName =
-        context.getString(R.string.extended_wallpaper_effects_activity)
     val hideInformationFloatingSheet = MutableStateFlow(false)
 
     /** [INFORMATION] */
@@ -443,11 +441,7 @@ constructor(
     private val _isEffectsChecked: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isEffectsChecked: Flow<Boolean> = _isEffectsChecked.asStateFlow()
 
-    private val extendedWallpaperIntent =
-        Intent().apply {
-            component =
-                ComponentName(extendedWallpaperEffectPkgName, extendedWallpaperEffectActivityName)
-        }
+    private val extendedWallpaperIntent = extendedEffectsHelper.getExtendedEffectIntent()
 
     private val isExtendedEffectAvailable: Flow<Boolean> =
         wallpaperPreviewInteractor.wallpaperModel.map {
