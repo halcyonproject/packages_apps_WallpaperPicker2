@@ -83,7 +83,6 @@ android_library {
 
     resource_dirs: [
         "res",
-        "res_override",
     ],
 
     srcs: [
