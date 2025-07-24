@@ -49,6 +49,10 @@ import com.android.wallpaper.picker.network.data.DefaultNetworkStatusRepository
 import com.android.wallpaper.picker.network.data.NetworkStatusRepository
 import com.android.wallpaper.picker.network.domain.DefaultNetworkStatusInteractor
 import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
+import com.android.wallpaper.picker.wallpapers.data.repository.DefaultWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.data.repository.WallpapersRepository
+import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapers
+import com.android.wallpaper.picker.wallpapers.domain.interactor.DefaultCategoryWallpapers
 import com.android.wallpaper.system.PowerManagerWrapper
 import com.android.wallpaper.system.UiModeManagerWrapper
 import com.android.wallpaper.testing.FakeCategoriesLoadingStatusInteractor
@@ -176,6 +180,14 @@ internal abstract class SharedAppTestModule {
     @Binds @Singleton abstract fun bindWallpaperClient(impl: FakeWallpaperClient): WallpaperClient
 
     @Binds @Singleton abstract fun bindWallpaperParser(impl: FakeWallpaperParser): WallpaperParser
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpapersInteractor(impl: DefaultCategoryWallpapers): CategoryWallpapers
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpapersRepository(impl: DefaultWallpapersRepository): WallpapersRepository
 
     companion object {
 
