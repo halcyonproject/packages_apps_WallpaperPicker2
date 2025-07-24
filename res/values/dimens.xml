@@ -439,6 +439,7 @@
     <dimen name="wallpaper_picker_entry_bottom_space">4dp</dimen>
     <dimen name="wallpaper_picker_entry_background_top_corner_radius">42dp</dimen>
     <dimen name="wallpaper_picker_entry_button_drawable_padding">12dp</dimen>
+    <dimen name="picker_motion_layout_bottom_padding">0dp</dimen>
 
     <!-- Dimensions for the floating tab toolbar -->
     <dimen name="floating_tab_toolbar_padding_vertical">8dp</dimen>
