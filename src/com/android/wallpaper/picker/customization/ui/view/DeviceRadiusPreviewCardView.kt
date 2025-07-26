@@ -22,6 +22,7 @@ import android.util.AttributeSet
 import android.view.RoundedCorner.POSITION_TOP_LEFT
 import android.view.ViewTreeObserver
 import androidx.cardview.widget.CardView
+import com.android.wallpaper.R
 
 /**
  * This [CardView] displays wallpaper previews while respecting the shape if the device's window. It
@@ -34,6 +35,11 @@ class DeviceRadiusPreviewCardView(context: Context, attrs: AttributeSet?) :
     private var fullCornerRadius: Float = 0f
     private var screenHeight: Int = 0
 
+    // in the event that the corner radius can't be determined, this value is used a fallback
+    // this seems to be the case with unfolded screens failing to get the screen corner radius
+    private val cornerRadiusFallback =
+        resources.getDimensionPixelSize(R.dimen.preview_corner_radius)
+
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             viewTreeObserver.addOnPreDrawListener(
@@ -44,7 +50,8 @@ class DeviceRadiusPreviewCardView(context: Context, attrs: AttributeSet?) :
                         val insets = rootWindowInsets ?: return true
                         val roundedCorners = insets.getRoundedCorner(POSITION_TOP_LEFT)
 
-                        fullCornerRadius = roundedCorners?.radius?.toFloat() ?: 0f
+                        fullCornerRadius =
+                            roundedCorners?.radius?.toFloat() ?: cornerRadiusFallback.toFloat()
                         screenHeight = context.resources.displayMetrics.heightPixels
 
                         requestLayout() // Re-measure with new radius

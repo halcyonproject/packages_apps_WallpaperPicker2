@@ -76,3 +76,10 @@ flag {
     description: "Migrates the individual picker screen to use the recommended architecture, Compose WallpaperModel and CategoryModel "
     bug: "433284926"
 }
+
+flag {
+    name: "refactor_wallpaper_preview_screen_flag"
+    namespace: "customization_picker"
+    description: "Refactor the wallpaper preview screen into Compose."
+    bug: "423956081"
+}

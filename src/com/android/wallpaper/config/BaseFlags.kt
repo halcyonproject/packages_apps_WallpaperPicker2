@@ -36,6 +36,7 @@ import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
 import com.android.wallpaper.Flags.refactorIndividualPickerFlag
 import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
+import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
 import com.android.wallpaper.module.InjectorProvider
@@ -87,6 +88,8 @@ abstract class BaseFlags {
     open fun isComposeRefactorEnabled() = composeRefactorFlag()
 
     open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
+
+    open fun isRefactorWallpaperPreviewScreenEnabled() = refactorWallpaperPreviewScreenFlag()
 
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
