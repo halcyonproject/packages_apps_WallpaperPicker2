@@ -167,9 +167,14 @@ class ClickableMotionLayout(context: Context, attrs: AttributeSet?) : MotionLayo
                     if (isAtLeftBoundary && deltaX > 0) {
                         // Swiping right when already at left boundary (lock preview)
                         if (currentState == R.id.lock_preview_selected) {
-                            setTransition(R.id.leftEdgeTransition)
-                            transitionToEnd()
-                            edgeTransitionInProgress = true
+                            post {
+                                val leftEdgeTransition = getTransition(R.id.leftEdgeTransition)
+                                if (leftEdgeTransition != null) {
+                                    setTransition(R.id.leftEdgeTransition)
+                                    transitionToEnd()
+                                    edgeTransitionInProgress = true
+                                }
+                            }
                             return true
                         } else {
                             if (DEBUG) {
@@ -182,9 +187,14 @@ class ClickableMotionLayout(context: Context, attrs: AttributeSet?) : MotionLayo
                     } else if (isAtRightBoundary && deltaX < 0) {
                         // Swiping left when already at right boundary (home preview)
                         if (currentState == R.id.home_preview_selected) {
-                            setTransition(R.id.rightEdgeTransition)
-                            transitionToEnd()
-                            edgeTransitionInProgress = true
+                            post {
+                                val rightEdgeTransition = getTransition(R.id.rightEdgeTransition)
+                                if (rightEdgeTransition != null) {
+                                    setTransition(R.id.rightEdgeTransition)
+                                    transitionToEnd()
+                                    edgeTransitionInProgress = true
+                                }
+                            }
                             return true
                         } else {
                             if (DEBUG) {
