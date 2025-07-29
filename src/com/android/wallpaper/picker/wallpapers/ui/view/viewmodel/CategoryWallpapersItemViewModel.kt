@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.wallpapers.view.viewmodel
+package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 
 import com.android.wallpaper.asset.Asset
 
 /**
  * A sealed class that represents the different types of items or sections on the Wallpapers screen.
  */
-sealed class WallpapersItemViewModel {
+sealed class CategoryWallpapersItemViewModel {
 
     /**
      * Represents the primary header section which holds the main title of the Wallpapers screen.
      *
      * @property title The title text to display in the primary header.
      */
-    data class PrimaryHeaderViewModel(val title: String) : WallpapersItemViewModel()
+    data class PrimaryHeaderViewModelCategory(val title: String) :
+        CategoryWallpapersItemViewModel()
 
     /**
      * Represents the secondary header section which holds any secondary label on the Wallpapers
@@ -36,16 +37,18 @@ sealed class WallpapersItemViewModel {
      *
      * @property title The title text to display in the secondary header.
      */
-    data class SecondaryHeaderViewModel(val title: String) : WallpapersItemViewModel()
+    data class SecondaryHeaderViewModelCategory(val title: String) :
+        CategoryWallpapersItemViewModel()
 
     /**
      * Represents a section that holds a dual row view of template thumbnails.
      *
-     * @property thumbnailAssets A list of [ThumbnailsViewModel] representing the template
+     * @property thumbnailAssets A list of [ThumbnailsViewModelCategory] representing the template
      *   thumbnails to display.
      */
-    data class TemplateThumbnailsViewModel(val thumbnailAssets: List<ThumbnailsViewModel>) :
-        WallpapersItemViewModel()
+    data class TemplateThumbnailsViewModelCategory(
+        val thumbnailAssets: List<ThumbnailsViewModelCategory>
+    ) : CategoryWallpapersItemViewModel()
 
     /**
      * Represents a section that holds a single thumbnail preview of a wallpaper or template.
@@ -55,10 +58,10 @@ sealed class WallpapersItemViewModel {
      * @property contentDescription An optional content description for accessibility.
      * @property onSectionClicked An optional callback invoked when the thumbnail is clicked.
      */
-    data class ThumbnailsViewModel(
+    data class ThumbnailsViewModelCategory(
         val thumbnailAsset: Asset,
         val title: String?,
         val contentDescription: String?,
         val onSectionClicked: (() -> Unit)? = null,
-    ) : WallpapersItemViewModel()
+    ) : CategoryWallpapersItemViewModel()
 }

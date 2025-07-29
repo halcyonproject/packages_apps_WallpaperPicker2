@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.wallpapers.view.viewmodel
+package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 
 /**
  * View model representing the overall layout of the Wallpapers screen.
  *
  * @property rotationEnabled Indicates whether wallpaper rotation (e.g., daily refresh) is supported
  *   for the current category.
- * @property wallpaperItems A list of [WallpapersItemViewModel] representing the various sections or
- *   items displayed on the screen.
+ * @property wallpaperItems A list of [CategoryWallpapersItemViewModel] representing the various
+ *   sections or items displayed on the screen.
  */
-data class WallpapersContentViewModel(
+data class CategoryWallpapersContentViewModel(
     val rotationEnabled: Boolean,
-    val wallpaperItems: List<WallpapersItemViewModel>,
+    val wallpaperItems: List<CategoryWallpapersItemViewModel>,
 )

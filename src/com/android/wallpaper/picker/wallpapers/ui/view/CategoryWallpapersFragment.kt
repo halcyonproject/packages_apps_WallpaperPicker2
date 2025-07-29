@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.wallpapercollection.ui.view
+package com.android.wallpaper.picker.wallpapers.ui.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -24,12 +24,9 @@ import androidx.compose.ui.platform.ComposeView
 import com.android.wallpaper.picker.AppbarFragment
 import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * This fragment displays the collection of wallpapers for the selected category (which is
- * represented by the input argument collection_id [String])
- */
+/** This fragment displays the collection of wallpapers for the selected category */
 @AndroidEntryPoint(AppbarFragment::class)
-class WallpaperCollectionFragment : Hilt_WallpaperCollectionFragment() {
+class CategoryWallpapersFragment : Hilt_CategoryWallpapersFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,15 +39,10 @@ class WallpaperCollectionFragment : Hilt_WallpaperCollectionFragment() {
     }
 
     companion object {
-        private const val TAG = "WallpaperCollectionFragment"
+        private const val TAG = "CategoryWallpapersFragment"
 
-        private const val ARG_CATEGORY_COLLECTION_ID = "category_collection_id"
-
-        fun newInstance(collectionId: String): WallpaperCollectionFragment {
-            val args = Bundle()
-            args.putString(ARG_CATEGORY_COLLECTION_ID, collectionId)
-            val fragment = WallpaperCollectionFragment()
-            fragment.arguments = args
+        fun newInstance(): CategoryWallpapersFragment {
+            val fragment = CategoryWallpapersFragment()
             return fragment
         }
     }
