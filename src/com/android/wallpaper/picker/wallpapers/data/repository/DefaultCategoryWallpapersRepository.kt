@@ -29,12 +29,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 @Singleton
-open class DefaultWallpapersRepository
+open class DefaultCategoryWallpapersRepository
 @Inject
 constructor(
     @ApplicationContext val context: Context,
     @BackgroundDispatcher private val backgroundScope: CoroutineScope,
-) : WallpapersRepository {
+) : CategoryWallpapersRepository {
 
     /** The selected [CategoryModel] */
     private var selectedCategory: CategoryModel? = null

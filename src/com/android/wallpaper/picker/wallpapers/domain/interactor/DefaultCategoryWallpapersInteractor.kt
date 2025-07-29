@@ -17,23 +17,20 @@
 package com.android.wallpaper.picker.wallpapers.domain.interactor
 
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.StateFlow
 
-/** Interface that defines stateful wallpapers data for the selected category */
-interface CategoryWallpapers {
+/** This class provides the wallpaper related [Flow] data for the selected [CategoryModel] */
+@Singleton
+class DefaultCategoryWallpapersInteractor
+@Inject
+constructor(private val categoryWallpapersRepository: CategoryWallpapersRepository) :
+    CategoryWallpapersInteractor {
+    override val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>>
+        get() = categoryWallpapersRepository.selectedCategoryWallpapers
 
-    /**
-     * A [StateFlow] that emits the list of [WallpaperModel]s for the currently selected category.
-     *
-     * This flow is updated whenever the user selects a new category, and reflects the current set
-     * of wallpapers associated with that category.
-     */
-    val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>>
-
-    /**
-     * A [StateFlow] that indicates whether the wallpaper data is currently being fetched.
-     *
-     * Emits `true` while wallpapers are loading, and `false` when loading is complete or idle.
-     */
-    val isWallpapersFetching: StateFlow<Boolean>
+    override val isWallpapersFetching: StateFlow<Boolean>
+        get() = categoryWallpapersRepository.isWallpapersFetching
 }

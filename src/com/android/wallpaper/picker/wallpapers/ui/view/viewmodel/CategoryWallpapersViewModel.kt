@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.wallpapers.view.viewmodel
+package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapers
+import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -26,33 +26,33 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * [WallpapersViewModel] is responsible for preparing and managing UI-related data for the
+ * [CategoryWallpapersViewModel] is responsible for preparing and managing UI-related data for the
  * Wallpapers screen in a lifecycle-aware manner.
  */
 @HiltViewModel
-class WallpapersViewModel
+class CategoryWallpapersViewModel
 @Inject
 constructor(
-    private val categoryWallpapers: CategoryWallpapers,
+    private val categoryWallpapersInteractor: CategoryWallpapersInteractor,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     /**
-     * This [Flow] emits [WallpapersContentViewModel] by mapping the [List<WallpaperModel>] of a
-     * category to [List<WallpapersItemViewModel>]
+     * This [Flow] emits [CategoryWallpapersContentViewModel] by mapping the [List<WallpaperModel>]
+     * of a category to [List<CategoryWallpapersItemViewModel>]
      */
-    private val wallpapersContentViewModel: Flow<WallpapersContentViewModel> =
-        categoryWallpapers.selectedCategoryWallpapers.map { wallpapers ->
-            val wallpaperItems: List<WallpapersItemViewModel> =
+    private val categoryWallpapersContentViewModel: Flow<CategoryWallpapersContentViewModel> =
+        categoryWallpapersInteractor.selectedCategoryWallpapers.map { wallpapers ->
+            val wallpaperItems: List<CategoryWallpapersItemViewModel> =
                 wallpapers.map {
-                    WallpapersItemViewModel.ThumbnailsViewModel(
+                    CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
                         thumbnailAsset = it.commonWallpaperData.thumbAsset,
                         title = it.commonWallpaperData.title,
                         contentDescription = it.commonWallpaperData.title,
                     )
                 }
 
-            return@map WallpapersContentViewModel(
+            return@map CategoryWallpapersContentViewModel(
                 rotationEnabled = false,
                 wallpaperItems = wallpaperItems,
             )
