@@ -71,8 +71,6 @@ abstract class BaseFlags {
     open fun isCreativeWallpaperCollectionFieldEnabled() =
         creativeWallpaperFieldCollectionWallpaper()
 
-    open fun isColorContrastControlEnabled() = enableColorContrastControl()
-
     open fun isExtendedWallpaperEnabled() = extendedWallpaperEffects()
 
     open fun isExtendibleThemeManager() = extendibleThemeManager()
