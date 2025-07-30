@@ -51,6 +51,16 @@ sealed class CategoryWallpapersItemViewModel {
     ) : CategoryWallpapersItemViewModel()
 
     /**
+     * Represents a section that holds plain wallpaper thumbnails
+     *
+     * @property thumbnailAssets A list of [ThumbnailsViewModelCategory] representing the thumbnails
+     *   to display.
+     */
+    data class PlainThumbnailsViewModelCategory(
+        val thumbnailAssets: List<ThumbnailsViewModelCategory>
+    ) : CategoryWallpapersItemViewModel()
+
+    /**
      * Represents a section that holds a single thumbnail preview of a wallpaper or template.
      *
      * @property thumbnailAsset The [Asset] associated with the thumbnail.
