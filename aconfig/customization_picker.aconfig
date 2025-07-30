@@ -9,13 +9,6 @@ flag {
 }
 
 flag {
-    name: "refactor_wallpaper_category_flag"
-    namespace: "customization_picker"
-    description: "Enables wallpaper category selection according to recommended architecture when flag is turned on."
-    bug: "290840060"
-}
-
-flag {
     name: "enable_pack_theme_entry"
     namespace: "customization_picker"
     description: "Enable the entry of the theme."

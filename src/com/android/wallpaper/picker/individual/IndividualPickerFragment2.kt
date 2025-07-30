@@ -153,7 +153,6 @@ class IndividualPickerFragment2 :
     private lateinit var categoryProvider: CategoryProvider
     private var appliedWallpaperIds: Set<String> = setOf()
     private var mIsCreativeWallpaperEnabled = false
-    private var categoryRefactorFlag = false
     private var isNewPickerUi = false
 
     private var refreshCreativeCategories: CategoryType? = null
@@ -174,7 +173,6 @@ class IndividualPickerFragment2 :
         wallpaperManager = WallpaperManager.getInstance(appContext)
         packageStatusNotifier = injector.getPackageStatusNotifier(appContext)
         wallpaperCategoryWrapper = injector.getWallpaperCategoryWrapper()
-        categoryRefactorFlag = injector.getFlags().isWallpaperCategoryRefactoringEnabled()
         isNewPickerUi = BaseFlags.get().isNewPickerUi()
 
         refreshCreativeCategories =
@@ -190,7 +188,7 @@ class IndividualPickerFragment2 :
             Glide.get(requireContext()).clearMemory()
         }
         categoryProvider = injector.getCategoryProvider(appContext)
-        if (categoryRefactorFlag && wallpaperCategoryWrapper != null) {
+        if (wallpaperCategoryWrapper != null) {
             lifecycleScope.launch {
                 getCategories(register = true, forceRefreshLiveWallpaperCategory = false)
             }
@@ -379,11 +377,7 @@ class IndividualPickerFragment2 :
             appStatusListener =
                 PackageStatusNotifier.Listener { pkgName: String?, status: Int ->
                     if (category.isCategoryDownloadable) {
-                        if (categoryRefactorFlag) {
-                            refreshDownloadableCategories()
-                        } else {
-                            fetchCategories(forceRefresh = true, register = false)
-                        }
+                        refreshDownloadableCategories()
                     } else if (
                         (status != PackageStatusNotifier.PackageStatus.REMOVED ||
                             category.containsThirdParty(pkgName))

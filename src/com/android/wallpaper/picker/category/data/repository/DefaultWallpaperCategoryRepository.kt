@@ -18,7 +18,6 @@ package com.android.wallpaper.picker.category.data.repository
 
 import android.content.Context
 import android.util.Log
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Category
 import com.android.wallpaper.picker.category.client.DefaultWallpaperCategoryClient
 import com.android.wallpaper.picker.data.category.CategoryModel
@@ -92,9 +91,7 @@ constructor(
         _isDefaultCategoriesFetched.asStateFlow()
 
     init {
-        if (BaseFlags.get().isWallpaperCategoryRefactoringEnabled()) {
-            backgroundScope.launch { fetchAllCategories() }
-        }
+        backgroundScope.launch { fetchAllCategories() }
     }
 
     private suspend fun fetchAllCategories() {
