@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
  * This interface exposes a [Flow] for observing the currently selected category's wallpapers and
  * the fetching status.
  */
-interface WallpapersRepository {
+interface CategoryWallpapersRepository {
 
     /**
      * A [StateFlow] that emits the list of [WallpaperModel]s associated with the currently selected

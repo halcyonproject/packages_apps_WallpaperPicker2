@@ -36,7 +36,6 @@ import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
 import com.android.wallpaper.Flags.refactorIndividualPickerFlag
-import com.android.wallpaper.Flags.refactorWallpaperCategoryFlag
 import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
@@ -66,8 +65,6 @@ abstract class BaseFlags {
     open fun isWallpapersFragmentEnabled() = refactorIndividualPickerFlag()
 
     open fun isWallpaperRestorerEnabled() = wallpaperRestorerFlag()
-
-    open fun isWallpaperCategoryRefactoringEnabled() = refactorWallpaperCategoryFlag()
 
     open fun isNewCreativeWallpaperCategoryEnabled() = newCreativeWallpaperCategory()
 
