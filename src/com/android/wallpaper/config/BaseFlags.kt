@@ -18,7 +18,6 @@ package com.android.wallpaper.config
 import android.app.Flags.updateRecentsFromSystem
 import android.app.WallpaperManager
 import android.content.Context
-import com.android.settings.accessibility.Flags.enableColorContrastControl
 import com.android.systemui.shared.Flags.clockReactiveVariants
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
@@ -53,8 +52,6 @@ abstract class BaseFlags {
 
     open fun isStagingBackdropContentEnabled() = false
 
-    open fun isWallpaperEffectEnabled() = false
-
     open fun isPackThemeEnabled() = enablePackThemeEntry()
 
     open fun isWallpaperEffectModelDownloadEnabled() = true
@@ -70,8 +67,6 @@ abstract class BaseFlags {
 
     open fun isCreativeWallpaperCollectionFieldEnabled() =
         creativeWallpaperFieldCollectionWallpaper()
-
-    open fun isColorContrastControlEnabled() = enableColorContrastControl()
 
     open fun isExtendedWallpaperEnabled() = extendedWallpaperEffects()
 
