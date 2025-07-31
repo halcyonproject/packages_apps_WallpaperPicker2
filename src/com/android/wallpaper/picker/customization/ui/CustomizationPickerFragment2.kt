@@ -207,6 +207,13 @@ class CustomizationPickerFragment2 :
         return wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (BaseFlags.get().isPackThemeEnabled()) {
+            customizationPickerViewModel.customizationOptionsViewModel.refetchThemeInfo()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
