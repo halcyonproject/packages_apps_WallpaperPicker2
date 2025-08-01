@@ -83,6 +83,8 @@ class WallpaperPreviewActivity :
     private val categoriesViewModel: CategoriesViewModel by viewModels()
 
     private val isNewPickerUi = BaseFlags.get().isNewPickerUi()
+    private val isRefactorWallpaperPreviewScreenEnabled =
+        BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()
 
     private var isFirstRun = false
     private var navigateToExtendedWallpaperEffects: Boolean? = null
@@ -135,7 +137,12 @@ class WallpaperPreviewActivity :
             (supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
                     as NavHostFragment)
                 .navController
-        val graph = navController.navInflater.inflate(R.navigation.wallpaper_preview_nav_graph)
+        val graph =
+            navController.navInflater.inflate(
+                if (isRefactorWallpaperPreviewScreenEnabled)
+                    R.navigation.wallpaper_preview_nav_graph_compose_refactor
+                else R.navigation.wallpaper_preview_nav_graph
+            )
         val startDestinationArgs: Bundle =
             Bundle().apply {
                 if (navigateToExtendedWallpaperEffects == true) {
