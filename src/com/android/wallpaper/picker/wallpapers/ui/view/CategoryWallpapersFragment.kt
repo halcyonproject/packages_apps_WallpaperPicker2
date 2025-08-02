@@ -20,13 +20,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.wallpapers.ui.view.compose.WallpapersScreenContent
+import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /** This fragment displays the collection of wallpapers for the selected category */
 @AndroidEntryPoint(AppbarFragment::class)
 class CategoryWallpapersFragment : Hilt_CategoryWallpapersFragment() {
+
+    private val viewModel: CategoryWallpapersViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,7 +41,11 @@ class CategoryWallpapersFragment : Hilt_CategoryWallpapersFragment() {
         savedInstanceState: Bundle?,
     ): View {
         return ComposeView(requireContext()).apply {
-            // Call the bind method here
+            setContent {
+                val state by
+                    viewModel.categoryWallpapersContentViewModel.collectAsStateWithLifecycle(null)
+                state?.let { WallpapersScreenContent(it) }
+            }
         }
     }
 
