@@ -42,6 +42,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -205,6 +206,13 @@ class CustomizationPickerFragment2 :
         val imageUri = result.data
         val imageWallpaperInfo = ImageWallpaperInfo(imageUri)
         return wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (BaseFlags.get().isPackThemeEnabled()) {
+            customizationPickerViewModel.customizationOptionsViewModel.refetchThemeInfo()
+        }
     }
 
     override fun onCreateView(
@@ -807,6 +815,11 @@ class CustomizationPickerFragment2 :
             shouldAnimate = { false },
             lifecycleOwner = viewLifecycleOwner,
         )
+
+        navButton.isVisible =
+            !(multiPanesChecker.isMultiPanesEnabled(requireContext()) &&
+                displayUtils.isLargeScreenOrUnfoldedDisplay(requireContext()))
+
         toolbarBinder.bind(
             navButton,
             toolbar,
