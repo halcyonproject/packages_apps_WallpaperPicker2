@@ -41,9 +41,9 @@ constructor(
      * This [Flow] emits [CategoryWallpapersContentViewModel] by mapping the [List<WallpaperModel>]
      * of a category to [List<CategoryWallpapersItemViewModel>]
      */
-    private val categoryWallpapersContentViewModel: Flow<CategoryWallpapersContentViewModel> =
+    val categoryWallpapersContentViewModel: Flow<CategoryWallpapersContentViewModel> =
         categoryWallpapersInteractor.selectedCategoryWallpapers.map { wallpapers ->
-            val wallpaperItems: List<CategoryWallpapersItemViewModel> =
+            val wallpaperItems =
                 wallpapers.map {
                     CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
                         thumbnailAsset = it.commonWallpaperData.thumbAsset,
@@ -52,9 +52,18 @@ constructor(
                     )
                 }
 
+            // this is just a placeholder to test the view layer
             return@map CategoryWallpapersContentViewModel(
                 rotationEnabled = false,
-                wallpaperItems = wallpaperItems,
+                wallpaperItems =
+                    listOf(
+                        CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory(
+                            wallpaperItems
+                        ),
+                        CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(
+                            wallpaperItems
+                        ),
+                    ),
             )
         }
 }
