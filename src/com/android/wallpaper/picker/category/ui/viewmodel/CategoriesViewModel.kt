@@ -18,6 +18,7 @@ package com.android.wallpaper.picker.category.ui.viewmodel
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ResolveInfo
 import android.service.wallpaper.WallpaperService
 import android.stats.style.StyleEnums
@@ -30,6 +31,7 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.PackageStatusNotifier.PackageStatus
 import com.android.wallpaper.module.logging.UserEventLogger
+import com.android.wallpaper.picker.broadcast.BroadcastDispatcher
 import com.android.wallpaper.picker.category.domain.interactor.CategoriesLoadingStatusInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CategoryInteractor
 import com.android.wallpaper.picker.category.domain.interactor.CreativeCategoryInteractor
@@ -41,10 +43,12 @@ import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.util.PhotoMediaUtils
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.category.CategoryModel
+import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -68,6 +72,8 @@ constructor(
     private val networkStatusInteractor: NetworkStatusInteractor,
     private val packageStatusNotifier: PackageStatusNotifier,
     @ApplicationContext private val context: Context,
+    private val broadcastDispatcher: BroadcastDispatcher,
+    @BackgroundDispatcher private val bgScope: CoroutineScope,
 ) : ViewModel() {
 
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
@@ -82,6 +88,21 @@ constructor(
     init {
         registerLiveWallpaperReceiver()
         registerThirdPartyWallpaperCategories()
+        if (BaseFlags.get().isPackThemeEnabled()) {
+            refetchPackThemeCategoryReceiver()
+        }
+    }
+
+    fun refetchPackThemeCategoryReceiver() {
+        val refetchCategoryReceiver =
+            broadcastDispatcher.broadcastFlow(IntentFilter(REFETCH_PACK_THEME_CATEGORY_ACTION)) {
+                _,
+                _ ->
+            }
+
+        bgScope.launch {
+            refetchCategoryReceiver.collect { creativeCategoryInteractor.updatePackThemeCategory() }
+        }
     }
 
     // TODO: b/379138560: Add tests for this method and method below
@@ -524,5 +545,7 @@ constructor(
 
     companion object {
         private const val TAG = "CategoriesViewModel"
+        private const val REFETCH_PACK_THEME_CATEGORY_ACTION =
+            "com.google.android.apps.wallpaper.action.REFETCH_PACK_THEME_CATEGORY_ACTION"
     }
 }
