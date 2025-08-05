@@ -16,7 +16,6 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
-import android.app.Flags.liveWallpaperContentHandling
 import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
@@ -639,8 +638,7 @@ constructor(
             val attributions = commonWallpaperData.attributions
             val description = (this as? LiveWallpaperModel)?.liveWallpaperData?.description
             val hasDescription =
-                liveWallpaperContentHandling() &&
-                    description != null &&
+                description != null &&
                     (description.description.isNotEmpty() ||
                         !description.title.isNullOrEmpty() ||
                         description.contextUri != null)
