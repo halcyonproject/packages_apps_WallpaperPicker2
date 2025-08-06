@@ -115,8 +115,21 @@ constructor(
                 defaultWallpaperClient.getThirdPartyLiveWallpaperCategory(excludedPackageNames)
             val processedCategories =
                 thirdPartyLiveWallpaperFetchedCategories.map {
-                    categoryFactory.getCategoryModel(it)
+                    val categoryModel = categoryFactory.getCategoryModel(it)
+                    categoryModel.copy(
+                        commonCategoryData =
+                            categoryModel.commonCategoryData.copy(
+                                // can't set the fetchWallpapers lambda in the [CategoryFactory]
+                                // factory class because
+                                // the lambda depends on [CategoryModel]
+                                fetchWallpapers = { _ ->
+                                    // just returning the cached wallpapers for now
+                                    categoryModel.collectionCategoryData?.wallpaperModels
+                                }
+                            )
+                    )
                 }
+
             _thirdPartyLiveWallpaperCategory.value = processedCategories
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching third party live wallpaper categories", e)
@@ -127,7 +140,18 @@ constructor(
         try {
             systemFetchedCategories = defaultWallpaperClient.getSystemCategories()
             val processedCategories =
-                systemFetchedCategories.map { categoryFactory.getCategoryModel(it) }
+                systemFetchedCategories.map {
+                    val categoryModel = categoryFactory.getCategoryModel(it)
+                    categoryModel.copy(
+                        commonCategoryData =
+                            categoryModel.commonCategoryData.copy(
+                                fetchWallpapers = { _ ->
+                                    // just returning the cached wallpapers for now
+                                    categoryModel.collectionCategoryData?.wallpaperModels
+                                }
+                            )
+                    )
+                }
             _systemCategories.value = processedCategories
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching system categories", e)
@@ -138,7 +162,19 @@ constructor(
         try {
             myPhotosFetchedCategory = defaultWallpaperClient.getMyPhotosCategory()
             myPhotosFetchedCategory.let { category ->
-                _myPhotosCategory.value = category?.let { categoryFactory.getCategoryModel(it) }
+                _myPhotosCategory.value =
+                    category?.let {
+                        val categoryModel = categoryFactory.getCategoryModel(it)
+                        categoryModel.copy(
+                            commonCategoryData =
+                                categoryModel.commonCategoryData.copy(
+                                    fetchWallpapers = { _ ->
+                                        // just returning the cached wallpapers for now
+                                        categoryModel.collectionCategoryData?.wallpaperModels
+                                    }
+                                )
+                        )
+                    }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching My Photos category", e)
@@ -163,8 +199,21 @@ constructor(
         try {
             onDeviceFetchedCategory =
                 (defaultWallpaperClient as? DefaultWallpaperCategoryClient)?.getOnDeviceCategory()
-            _onDeviceCategory.value =
-                onDeviceFetchedCategory?.let { categoryFactory.getCategoryModel(it) }
+            val processedCategory =
+                onDeviceFetchedCategory?.let {
+                    val categoryModel = categoryFactory.getCategoryModel(it)
+                    categoryModel.copy(
+                        commonCategoryData =
+                            categoryModel.commonCategoryData.copy(
+                                fetchWallpapers = { _ ->
+                                    // just returning the cached wallpapers for now
+                                    categoryModel.collectionCategoryData?.wallpaperModels
+                                }
+                            )
+                    )
+                }
+
+            _onDeviceCategory.value = processedCategory
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching On Device category", e)
         }
@@ -177,7 +226,16 @@ constructor(
                 defaultWallpaperClient.getThirdPartyCategory(excludedPackageNames)
             val processedCategories =
                 thirdPartyFetchedCategory.map { category ->
-                    categoryFactory.getCategoryModel(category)
+                    val categoryModel = categoryFactory.getCategoryModel(category)
+                    categoryModel.copy(
+                        commonCategoryData =
+                            categoryModel.commonCategoryData.copy(
+                                fetchWallpapers = { _ ->
+                                    // just returning the cached wallpapers for now
+                                    categoryModel.collectionCategoryData?.wallpaperModels
+                                }
+                            )
+                    )
                 }
             _thirdPartyAppCategory.value = processedCategories
         } catch (e: Exception) {
