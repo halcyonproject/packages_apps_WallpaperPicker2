@@ -140,6 +140,11 @@ object WallpaperPickerEntryBinder {
                     view.moreWallpapersButton.setOnClickListener {
                         navigateToWallpaperCategoriesScreen.invoke(previewScreen)
                     }
+                    if (shouldShowDesktopUi) {
+                        view.suggestedPhotosText.setOnClickListener {
+                            navigateToWallpaperCategoriesScreen.invoke(previewScreen)
+                        }
+                    }
                 }
             }
         }
