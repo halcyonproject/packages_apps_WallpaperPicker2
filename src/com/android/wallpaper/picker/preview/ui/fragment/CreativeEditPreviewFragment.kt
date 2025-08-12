@@ -16,7 +16,6 @@
 package com.android.wallpaper.picker.preview.ui.fragment
 
 import android.app.Activity.RESULT_OK
-import android.app.Flags.liveWallpaperContentHandling
 import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.content.Intent
@@ -98,9 +97,7 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
                     // RESULT_OK means the user clicked on the check button; RESULT_CANCELED
                     // otherwise.
                     if (it.resultCode == RESULT_OK) {
-                        if (liveWallpaperContentHandling()) {
-                            updatePreview(it.resultCode, it.data)
-                        }
+                        updatePreview(it.resultCode, it.data)
                         // When clicking on the check button, navigate to the small preview
                         // fragment.
                         findNavController()
@@ -121,9 +118,7 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
 
                         override fun parseResult(resultCode: Int, intent: Intent?): Int {
                             wallpaperPreviewViewModel.isCurrentlyEditingCreativeWallpaper = false
-                            if (liveWallpaperContentHandling()) {
-                                updatePreview(resultCode, intent)
-                            }
+                            updatePreview(resultCode, intent)
                             return resultCode
                         }
                     },
@@ -144,7 +139,6 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
 
     // Updates the current preview using the WallpaperDescription returned with the Intent if any
     private fun updatePreview(resultCode: Int, intent: Intent?) {
-        if (!liveWallpaperContentHandling()) return
         if (resultCode == RESULT_OK) {
             wallpaperPreviewViewModel.wallpaper.value?.let {
                 ContentHandlingUtil.updatePreview(
