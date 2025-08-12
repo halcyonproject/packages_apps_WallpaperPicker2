@@ -816,9 +816,21 @@ class CustomizationPickerFragment2 :
             lifecycleOwner = viewLifecycleOwner,
         )
 
-        navButton.isVisible =
-            !(multiPanesChecker.isMultiPanesEnabled(requireContext()) &&
-                displayUtils.isLargeScreenOrUnfoldedDisplay(requireContext()))
+        // The navButton (close button) should be visible on a customization option screen.
+        // When on the main screen, the nav button (back button) is hidden for large screen devices
+        // with multi-pane layouts.
+        viewLifecycleOwner.lifecycleScope.launch {
+            customizationPickerViewModel.customizationOptionsViewModel.selectedOption.collect {
+                selectedOption ->
+                navButton.isVisible =
+                    if (selectedOption != null) {
+                        true
+                    } else {
+                        !(multiPanesChecker.isMultiPanesEnabled(requireContext()) &&
+                            displayUtils.isLargeScreenOrUnfoldedDisplay(requireContext()))
+                    }
+            }
+        }
 
         toolbarBinder.bind(
             navButton,
