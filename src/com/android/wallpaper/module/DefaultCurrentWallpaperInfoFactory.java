@@ -15,8 +15,6 @@
  */
 package com.android.wallpaper.module;
 
-import static android.app.Flags.liveWallpaperContentHandling;
-
 import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -125,11 +123,9 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
                     if (homeWallpaperMetadata instanceof LiveWallpaperMetadata) {
                         homeWallpaper = mLiveWallpaperInfoFactory.getLiveWallpaperInfo(
                                 homeWallpaperMetadata.getWallpaperComponent());
-                        if (liveWallpaperContentHandling()) {
-                            ((LiveWallpaperInfo) homeWallpaper).setWallpaperDescription(
-                                    ((LiveWallpaperMetadata) homeWallpaperMetadata)
-                                            .getDescription());
-                        }
+                        ((LiveWallpaperInfo) homeWallpaper).setWallpaperDescription(
+                                ((LiveWallpaperMetadata) homeWallpaperMetadata)
+                                        .getDescription());
                         updateIfCreative(homeWallpaper, homeWallpaperMetadata);
                     } else {
                         Uri imageUri = homeWallpaperMetadata.getWallpaperImageUri();
@@ -153,11 +149,9 @@ public class DefaultCurrentWallpaperInfoFactory implements CurrentWallpaperInfoF
                         if (lockWallpaperMetadata instanceof LiveWallpaperMetadata) {
                             lockWallpaper = mLiveWallpaperInfoFactory.getLiveWallpaperInfo(
                                     lockWallpaperMetadata.getWallpaperComponent());
-                            if (liveWallpaperContentHandling()) {
-                                ((LiveWallpaperInfo) lockWallpaper).setWallpaperDescription(
-                                        ((LiveWallpaperMetadata) lockWallpaperMetadata)
-                                                .getDescription());
-                            }
+                            ((LiveWallpaperInfo) lockWallpaper).setWallpaperDescription(
+                                    ((LiveWallpaperMetadata) lockWallpaperMetadata)
+                                            .getDescription());
                             updateIfCreative(lockWallpaper, lockWallpaperMetadata);
                         } else {
                             if (isLockWallpaperBuiltIn(context)) {

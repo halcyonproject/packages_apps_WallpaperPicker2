@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.module;
 
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 
@@ -148,25 +147,21 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
             } else {
                 Uri previewUri = mCreativeHelper.getCreativePreviewUri(mAppContext, homeInfo,
                         WallpaperDestination.HOME);
-                if (liveWallpaperContentHandling()) {
-                    WallpaperDescription description = mWallpaperManager.getWallpaperInstance(
-                            FLAG_SYSTEM).getDescription();
-                    if (description.getId() == null && description.getContent()
-                            .keySet().isEmpty()) {
-                        // There's no content, so this may be a creative that was set before
-                        // enabling content handling
-                        WallpaperDescription updatedDescription =
-                                mCreativeHelper.getCreativeDescription(mAppContext, homeInfo,
-                                        WallpaperDestination.HOME);
-                        if (updatedDescription != null) {
-                            description = updatedDescription;
-                        }
+                WallpaperDescription description = mWallpaperManager.getWallpaperInstance(
+                        FLAG_SYSTEM).getDescription();
+                if (description.getId() == null && description.getContent()
+                        .keySet().isEmpty()) {
+                    // There's no content, so this may be a creative that was set before
+                    // enabling content handling
+                    WallpaperDescription updatedDescription =
+                            mCreativeHelper.getCreativeDescription(mAppContext, homeInfo,
+                                    WallpaperDestination.HOME);
+                    if (updatedDescription != null) {
+                        description = updatedDescription;
                     }
-                    wallpaperMetadatas.add(new LiveWallpaperMetadata(homeInfo, previewUri,
-                            description));
-                } else {
-                    wallpaperMetadatas.add(new LiveWallpaperMetadata(homeInfo, previewUri));
                 }
+                wallpaperMetadatas.add(new LiveWallpaperMetadata(homeInfo, previewUri,
+                        description));
             }
 
             // Return only home metadata if pre-N device or lock screen wallpaper is not explicitly
@@ -196,25 +191,21 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
             } else {
                 Uri previewUri = mCreativeHelper.getCreativePreviewUri(mAppContext, lockInfo,
                         WallpaperDestination.LOCK);
-                if (liveWallpaperContentHandling()) {
-                    WallpaperDescription description = mWallpaperManager.getWallpaperInstance(
-                            FLAG_LOCK).getDescription();
-                    if (description.getId() == null && description.getContent()
-                            .keySet().isEmpty()) {
-                        // There's no content, so this may be a creative that was set before
-                        // enabling content handling
-                        WallpaperDescription updatedDescription =
-                                mCreativeHelper.getCreativeDescription(mAppContext, lockInfo,
-                                        WallpaperDestination.LOCK);
-                        if (updatedDescription != null) {
-                            description = updatedDescription;
-                        }
+                WallpaperDescription description = mWallpaperManager.getWallpaperInstance(
+                        FLAG_LOCK).getDescription();
+                if (description.getId() == null && description.getContent()
+                        .keySet().isEmpty()) {
+                    // There's no content, so this may be a creative that was set before
+                    // enabling content handling
+                    WallpaperDescription updatedDescription =
+                            mCreativeHelper.getCreativeDescription(mAppContext, lockInfo,
+                                    WallpaperDestination.LOCK);
+                    if (updatedDescription != null) {
+                        description = updatedDescription;
                     }
-                    wallpaperMetadatas.add(new LiveWallpaperMetadata(lockInfo, previewUri,
-                            description));
-                } else {
-                    wallpaperMetadatas.add(new LiveWallpaperMetadata(lockInfo, previewUri));
                 }
+                wallpaperMetadatas.add(new LiveWallpaperMetadata(lockInfo, previewUri,
+                        description));
             }
 
             return wallpaperMetadatas;

@@ -1,6 +1,5 @@
 package com.android.wallpaper.util.wallpaperconnection
 
-import android.app.Flags.liveWallpaperContentHandling
 import android.app.WallpaperColors
 import android.app.WallpaperInfo
 import android.app.wallpaper.WallpaperDescription
@@ -159,12 +158,10 @@ class WallpaperEngineConnection(
                     is NoSuchMethodException,
                     is InvocationTargetException,
                     is IllegalAccessException -> {
-                        if (liveWallpaperContentHandling()) {
-                            Log.w(
-                                TAG,
-                                "live wallpaper content handling enabled, but pre-U attach method called",
-                            )
-                        }
+                        Log.w(
+                            TAG,
+                            "live wallpaper content handling enabled, but pre-U attach method called",
+                        )
                         return false
                     }
 
@@ -217,12 +214,10 @@ class WallpaperEngineConnection(
                     is NoSuchMethodException,
                     is InvocationTargetException,
                     is IllegalAccessException -> {
-                        if (liveWallpaperContentHandling()) {
-                            Log.w(
-                                TAG,
-                                "live wallpaper content handling enabled, but pre-B attach method called",
-                            )
-                        }
+                        Log.w(
+                            TAG,
+                            "live wallpaper content handling enabled, but pre-B attach method called",
+                        )
                         return false
                     }
 

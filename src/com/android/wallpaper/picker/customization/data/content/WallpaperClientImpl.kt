@@ -17,7 +17,6 @@
 
 package com.android.wallpaper.picker.customization.data.content
 
-import android.app.Flags.liveWallpaperContentHandling
 import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.app.WallpaperManager.FLAG_LOCK
@@ -401,12 +400,10 @@ constructor(
                 wallpaperModel.commonWallpaperData.id.componentName,
                 destination.toSetWallpaperFlags(),
             )
-            if (liveWallpaperContentHandling()) {
-                Log.w(
-                    TAG,
-                    "live wallpaper content handling enabled, but Android U setWallpaperComponentWithFlags called",
-                )
-            }
+            Log.w(
+                TAG,
+                "live wallpaper content handling enabled, but Android U setWallpaperComponentWithFlags called",
+            )
             return true
         } catch (e: NoSuchMethodException) {
             return false

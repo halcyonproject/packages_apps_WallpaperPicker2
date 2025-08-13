@@ -17,7 +17,6 @@
 package com.android.wallpaper.util
 
 import android.app.Activity.RESULT_OK
-import android.app.Flags.liveWallpaperContentHandling
 import android.app.WallpaperManager.FLAG_LOCK
 import android.app.WallpaperManager.FLAG_SYSTEM
 import android.app.wallpaper.WallpaperDescription
@@ -89,29 +88,26 @@ object ExtendedWallpaperEffectsUtils {
                 }
 
                 override fun parseResult(resultCode: Int, intent: Intent?): Int {
-                    if (liveWallpaperContentHandling()) {
-                        if (resultCode == RESULT_OK) {
-                            wallpaperPreviewViewModel.wallpaper.value?.let { unpackedWallpaperModel
-                                ->
-                                context?.let { unpackedContext ->
-                                    ContentHandlingUtil.updatePreview(
-                                        context = unpackedContext.applicationContext,
-                                        wallpaperModel = unpackedWallpaperModel,
-                                        wallpaperDescription =
-                                            intent
-                                                ?.extras
-                                                ?.getParcelable(
-                                                    WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
-                                                    WallpaperDescription::class.java,
-                                                ),
-                                    ) { wallpaperModel ->
-                                        wallpaperPreviewViewModel.setShouldUpdateSelectedPreviewTab(
-                                            true
-                                        )
-                                        wallpaperPreviewViewModel.setPreviewWallpaperModel(
-                                            wallpaperModel
-                                        )
-                                    }
+                    if (resultCode == RESULT_OK) {
+                        wallpaperPreviewViewModel.wallpaper.value?.let { unpackedWallpaperModel ->
+                            context?.let { unpackedContext ->
+                                ContentHandlingUtil.updatePreview(
+                                    context = unpackedContext.applicationContext,
+                                    wallpaperModel = unpackedWallpaperModel,
+                                    wallpaperDescription =
+                                        intent
+                                            ?.extras
+                                            ?.getParcelable(
+                                                WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
+                                                WallpaperDescription::class.java,
+                                            ),
+                                ) { wallpaperModel ->
+                                    wallpaperPreviewViewModel.setShouldUpdateSelectedPreviewTab(
+                                        true
+                                    )
+                                    wallpaperPreviewViewModel.setPreviewWallpaperModel(
+                                        wallpaperModel
+                                    )
                                 }
                             }
                         }
