@@ -18,6 +18,7 @@ package com.android.wallpaper.util
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.CurrentWallpaperInfo
 import com.android.wallpaper.model.Screen
@@ -60,6 +61,7 @@ object CurrentWallpaperInfoUtils {
                         onFetchUri.invoke(homeWallpaper, Screen.HOME_SCREEN),
                     )
                 } else {
+                    Log.i("ABCD", "I am in else condition for home")
                     homeWallpaper
                 }
             val lw =
@@ -77,6 +79,7 @@ object CurrentWallpaperInfoUtils {
                         onFetchUri.invoke(lockWallpaper, Screen.LOCK_SCREEN),
                     )
                 } else {
+                    Log.i("ABCD", "I am in else condition for lock")
                     lockWallpaper
                 }
 
@@ -97,13 +100,7 @@ object CurrentWallpaperInfoUtils {
         updateRecents: Boolean,
         sharableUri: Uri?,
     ): CurrentWallpaperInfo {
-        val cropHints =
-            if (InjectorProvider.getInjector().getFlags().isMultiCropEnabled()) {
-                wallpaperCropHints
-            } else {
-                null
-            }
-
+        val cropHints = wallpaperCropHints
         return object :
                 CurrentWallpaperInfo(
                     getAttributions(context),

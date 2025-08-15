@@ -59,7 +59,6 @@ import com.android.wallpaper.picker.ViewOnlyPreviewActivity
 import com.android.wallpaper.picker.broadcast.BroadcastDispatcher
 import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper
 import com.android.wallpaper.picker.customization.data.repository.WallpaperColorsRepository
-import com.android.wallpaper.picker.customization.data.repository.WallpaperRepository
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperInteractor
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperSnapshotRestorer
 import com.android.wallpaper.picker.individual.IndividualPickerFragment2
@@ -276,22 +275,7 @@ constructor(
     }
 
     override fun getWallpaperInteractor(context: Context): WallpaperInteractor {
-        if (getFlags().isMultiCropEnabled()) {
-            return injectedWallpaperInteractor
-        }
-
-        return wallpaperInteractor
-            ?: WallpaperInteractor(
-                    repository =
-                        WallpaperRepository(
-                            scope = getApplicationCoroutineScope(),
-                            client = getWallpaperClient(context),
-                            wallpaperPreferences = getPreferences(context = context),
-                            backgroundDispatcher = Dispatchers.IO,
-                            broadcastDispatcher = broadcastDispatcher,
-                        )
-                )
-                .also { wallpaperInteractor = it }
+        return injectedWallpaperInteractor
     }
 
     override fun getWallpaperSnapshotRestorer(context: Context): WallpaperSnapshotRestorer {
