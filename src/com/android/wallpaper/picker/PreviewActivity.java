@@ -131,9 +131,12 @@ public class PreviewActivity extends BasePreviewActivity implements AppbarFragme
             final boolean isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext);
 
             if (flags.isMultiCropEnabled()) {
-                return WallpaperPreviewActivity.Companion.newIntent(appContext,
-                        wallpaper, isAssetIdPresent, mIsViewAsHome, /* isNewTask= */ isMultiPanel,
-                        shouldRefreshCategory);
+                return WallpaperPreviewActivity.intentBuilder(appContext, isAssetIdPresent)
+                        .wallpaperInfo(wallpaper)
+                        .viewAsHome(mIsViewAsHome)
+                        .newTask(isMultiPanel)
+                        .refreshCategory(shouldRefreshCategory)
+                        .build();
             }
 
             // Launch a full preview activity for devices supporting multipanel mode
