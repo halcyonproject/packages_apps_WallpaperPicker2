@@ -118,14 +118,12 @@ object ActivityUtils {
         val context = activity.applicationContext
 
         val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context,
-                true,
-                isViewAsHome,
-                isMultiPanesEnabled,
-                isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects,
-            )
+            WallpaperPreviewActivity.intentBuilder(context, true)
+                .viewAsHome(isViewAsHome)
+                .newTask(isMultiPanesEnabled)
+                .refreshCategory(isCreativeCategories)
+                .navigateToExtendedEffects(shouldNavigateToExtendedWallpaperEffects)
+                .build()
 
         startActivityForResultSafely(activity, previewIntent, requestCode)
     }

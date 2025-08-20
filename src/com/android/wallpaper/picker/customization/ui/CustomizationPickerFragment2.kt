@@ -986,15 +986,13 @@ class CustomizationPickerFragment2 :
                 val multiPanesChecker = LargeScreenMultiPanesChecker()
                 val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
                 startForResult.launch(
-                    WallpaperPreviewActivity.newIntent(
-                        context = appContext,
-                        isAssetIdPresent = false,
-                        isViewAsHome = screen == HOME_SCREEN,
-                        isNewTask = isMultiPanel,
+                    WallpaperPreviewActivity.intentBuilder(appContext, false)
+                        .viewAsHome(screen == HOME_SCREEN)
+                        .newTask(isMultiPanel)
                         // Hide info sheet for current wallpapers because attribution is not
                         // updated when language updates, see b/418619944
-                        hideInfoSheet = true,
-                    )
+                        .hideInfoSheet(true)
+                        .build()
                 )
             },
             onTransitionToScreen = {

@@ -143,9 +143,11 @@ public class StandalonePreviewActivity extends BasePreviewActivity implements Ap
         BaseFlags flags = InjectorProvider.getInjector().getFlags();
         Intent intent = getIntent();
         if (flags.isMultiCropEnabled()) {
-            Intent wallpaperIntent = WallpaperPreviewActivity.Companion.newIntent(
-                    this.getApplicationContext(), intent, /* isAssetIdPresent= */ false,
-                    /* isViewAsHome= */ true, /* isNewTask= */ false);
+            Intent wallpaperIntent =
+                    WallpaperPreviewActivity.intentBuilder(this.getApplicationContext(), false)
+                    .fromOriginalIntent(intent)
+                    .viewAsHome(true)
+                    .build();
             startActivity(wallpaperIntent);
             finish();
             return;
