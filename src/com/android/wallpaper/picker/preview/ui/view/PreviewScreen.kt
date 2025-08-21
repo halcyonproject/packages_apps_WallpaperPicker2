@@ -16,32 +16,19 @@
 
 package com.android.wallpaper.picker.preview.ui.view
 
-import androidx.compose.foundation.background
+import android.view.View
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import com.android.wallpaper.R
+import androidx.compose.ui.viewinterop.AndroidView
 
-/** The lock screen preview in the wallpaper preview screen. */
+/** The screen that hosts the lock/home screen preview */
 @Composable
-fun WallpaperPreviewLockScreen(modifier: Modifier) {
-    Box(
-        modifier = modifier.clip(RoundedCornerShape(percent = 10)).background(Color(0xFF4A90E2)),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.lock_screen_tab),
-            color = Color.White,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-        )
+fun PreviewScreen(preview: View, modifier: Modifier) {
+    Box(modifier = modifier.clip(RoundedCornerShape(percent = 10))) {
+        AndroidView(modifier = Modifier.fillMaxSize(), factory = { preview })
     }
 }

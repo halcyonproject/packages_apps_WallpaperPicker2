@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.preview.ui.view
 
+import android.view.View
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,16 +63,19 @@ import com.android.wallpaper.R
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import kotlinx.coroutines.CoroutineScope
 
 /**
- * [SmallWallpaperPreviewScreen] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout.
+ * [SmallWallpaperPreviewScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout.
  * It is bound to the [WallpaperPreviewFragment] and is not expected to be used somewhere else.
  */
 @Composable
-fun ContentScope.SmallWallpaperPreviewScreen(
+fun ContentScope.SmallWallpaperPreviewScene(
     sceneState: MutableSceneTransitionLayoutState,
     pagerState: PagerState,
+    lockScreenPreview: View,
+    homeScreenPreview: View,
 ) {
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
@@ -91,6 +95,8 @@ fun ContentScope.SmallWallpaperPreviewScreen(
             modifier = Modifier.fillMaxWidth().weight(1f),
             sceneState = sceneState,
             pagerState = pagerState,
+            lockScreenPreview = lockScreenPreview,
+            homeScreenPreview = homeScreenPreview,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -135,6 +141,8 @@ fun ContentScope.SmallWallpaperPreviewScreen(
 private fun ContentScope.PreviewPager(
     sceneState: MutableSceneTransitionLayoutState,
     pagerState: PagerState,
+    lockScreenPreview: View,
+    homeScreenPreview: View,
     modifier: Modifier = Modifier,
 ) {
     val phoneAspectRatio: Float =
@@ -170,39 +178,50 @@ private fun ContentScope.PreviewPager(
             val isCurrentPage = pagerState.currentPage == page
             when (page) {
                 0 ->
-                    WallpaperPreviewLockScreen(
-                        modifier =
-                            Modifier.element(Elements.LockScreen)
-                                .width(pageWidth)
-                                .height(pageHeight)
-                                .clickable(
-                                    enabled =
-                                        isCurrentPage &&
-                                            sceneState.currentScene == Scenes.SmallPreview
-                                ) {
-                                    sceneState.setTargetScene(
-                                        Scenes.FullLockPreview,
-                                        animationScope = coroutineScope,
-                                    )
-                                }
-                    )
+                    MovableElement(
+                        key = SharedElements.LockScreen,
+                        Modifier.size(pageWidth, pageHeight),
+                    ) {
+                        content {
+                            PreviewScreen(
+                                preview = lockScreenPreview,
+                                modifier =
+                                    Modifier.fillMaxSize().clickable(
+                                        enabled =
+                                            isCurrentPage &&
+                                                sceneState.currentScene == Scenes.SmallPreview
+                                    ) {
+                                        sceneState.setTargetScene(
+                                            Scenes.FullLockPreview,
+                                            animationScope = coroutineScope,
+                                        )
+                                    },
+                            )
+                        }
+                    }
+
                 1 ->
-                    WallpaperPreviewHomeScreen(
-                        modifier =
-                            Modifier.element(Elements.HomeScreen)
-                                .width(pageWidth)
-                                .height(pageHeight)
-                                .clickable(
-                                    enabled =
-                                        isCurrentPage &&
-                                            sceneState.currentScene == Scenes.SmallPreview
-                                ) {
-                                    sceneState.setTargetScene(
-                                        Scenes.FullHomePreview,
-                                        animationScope = coroutineScope,
-                                    )
-                                }
-                    )
+                    MovableElement(
+                        key = SharedElements.HomeScreen,
+                        Modifier.size(pageWidth, pageHeight),
+                    ) {
+                        content {
+                            PreviewScreen(
+                                preview = homeScreenPreview,
+                                modifier =
+                                    Modifier.fillMaxSize().clickable(
+                                        enabled =
+                                            isCurrentPage &&
+                                                sceneState.currentScene == Scenes.SmallPreview
+                                    ) {
+                                        sceneState.setTargetScene(
+                                            Scenes.FullHomePreview,
+                                            animationScope = coroutineScope,
+                                        )
+                                    },
+                            )
+                        }
+                    }
             }
         }
     }
