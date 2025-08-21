@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.preview.ui.view
 
+import android.view.View
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -65,11 +66,11 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 
 /**
- * [ApplyWallpaperScreen] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout. It is
+ * [ApplyWallpaperScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout. It is
  * bound to the [WallpaperPreviewFragment] and is not expected to be used somewhere else.
  */
 @Composable
-fun ContentScope.ApplyWallpaperScreen() {
+fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview: View) {
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
     val windowSize: IntSize = LocalWindowInfo.current.containerSize
@@ -112,10 +113,17 @@ fun ContentScope.ApplyWallpaperScreen() {
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        WallpaperPreviewLockScreen(
-                            modifier =
-                                Modifier.element(Elements.LockScreen).aspectRatio(phoneAspectRatio)
-                        )
+                        MovableElement(
+                            key = WallpaperPreviewFragment.SharedElements.LockScreen,
+                            modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                        ) {
+                            content {
+                                PreviewScreen(
+                                    preview = lockScreenPreview,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -130,10 +138,17 @@ fun ContentScope.ApplyWallpaperScreen() {
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Column(Modifier.weight(1f)) {
-                        WallpaperPreviewHomeScreen(
-                            modifier =
-                                Modifier.element(Elements.HomeScreen).aspectRatio(phoneAspectRatio)
-                        )
+                        MovableElement(
+                            key = WallpaperPreviewFragment.SharedElements.HomeScreen,
+                            modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                        ) {
+                            content {
+                                PreviewScreen(
+                                    preview = homeScreenPreview,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.width(8.dp))
 
