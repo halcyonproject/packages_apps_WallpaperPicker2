@@ -29,5 +29,5 @@ data class CommonCategoryData(
     /**
      * This lambda retrieves the associated collection of [WallpaperModel] for this [CategoryModel]
      */
-    val fetchWallpapers: ((collectionId: String) -> List<WallpaperModel>?)? = null,
+    val fetchWallpapers: (suspend (collectionId: String) -> List<WallpaperModel>?)? = null,
 )

@@ -27,6 +27,8 @@ import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.module.NetworkStatusNotifier
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
+import com.android.wallpaper.picker.data.category.CategoryModel
+import com.android.wallpaper.picker.data.category.CommonCategoryData
 import com.android.wallpaper.picker.preview.PreviewTestActivity
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestNetworkStatusNotifier
@@ -178,11 +180,20 @@ class CategoriesViewModelTest {
 
                 onClick()
 
+                val expectedCategoryModel =
+                    CategoryModel(
+                        CommonCategoryData(
+                            EXPECTED_TITLE_PHOTO_TILE,
+                            CATEGORY_ID_CELESTIAL_DREAMSCAPES,
+                            1,
+                        )
+                    )
+
                 testDispatcher.scheduler.advanceUntilIdle()
                 assertThat(collectedValues[0])
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
-                            CATEGORY_ID_CELESTIAL_DREAMSCAPES,
+                            expectedCategoryModel,
                             CategoryType.DefaultCategories,
                         )
                     )
@@ -202,10 +213,19 @@ class CategoriesViewModelTest {
 
                 testDispatcher.scheduler.advanceUntilIdle()
 
+                val expectedCategoryModel =
+                    CategoryModel(
+                        CommonCategoryData(
+                            EXPECTED_TITLE_CYBER_PUNK,
+                            CATEGORY_ID_CYBERPUNK_CITYSCAPE,
+                            7,
+                        )
+                    )
+
                 assertThat(collectedValues[0])
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
-                            CATEGORY_ID_CYBERPUNK_CITYSCAPE,
+                            expectedCategoryModel,
                             CategoryType.DefaultCategories,
                         )
                     )
@@ -220,12 +240,20 @@ class CategoriesViewModelTest {
                         categoriesViewModel.navigationEvents.collect { collectedValues.add(it) }
                     }
 
+                val expectedCategoryModel =
+                    CategoryModel(
+                        CommonCategoryData(
+                            EXPECTED_TITLE_COSMIC_NEBULA,
+                            CATEGORY_ID_COSMIC_NEBULA,
+                            9,
+                        )
+                    )
                 onClick()
                 testDispatcher.scheduler.advanceUntilIdle()
                 assertThat(collectedValues[0])
                     .isEqualTo(
                         CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection(
-                            CATEGORY_ID_COSMIC_NEBULA,
+                            expectedCategoryModel,
                             CategoryType.DefaultCategories,
                         )
                     )
@@ -294,6 +322,8 @@ class CategoriesViewModelTest {
         const val EXPECTED_SIZE_MY_PHOTOS_CATEGORY = 1
         const val EXPECTED_POSITION_PHOTO_TILE = 0
         const val EXPECTED_TITLE_PHOTO_TILE = "Celestial Dreamscape"
+        const val EXPECTED_TITLE_CYBER_PUNK = "Cyberpunk Cityscape"
+        const val EXPECTED_TITLE_COSMIC_NEBULA = "Cosmic Nebula"
 
         const val EXPECTED_POSITION_SINGLE_CATEGORIES = 3
         const val EXPECTED_SIZE_SINGLE_CATEGORIES = 19
