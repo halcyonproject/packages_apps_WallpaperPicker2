@@ -39,10 +39,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -243,6 +246,41 @@ class CustomizationPickerFragment2 :
         packThemeSuggestedChip?.visibility = View.INVISIBLE
 
         val pickerMotionContainer: MotionLayout = view.requireViewById(R.id.picker_motion_layout)
+
+        val bottomScrollView: NestedScrollView = view.requireViewById(R.id.bottom_scroll_view)
+        // Override bottom scroll view's accessibility delegate to enable collapse and expand of
+        // the preview and the wallpaper entry.
+        ViewCompat.setAccessibilityDelegate(
+            bottomScrollView,
+            object : AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(
+                    host: View,
+                    info: AccessibilityNodeInfoCompat,
+                ) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    if (pickerMotionContainer.currentState == R.id.expanded_header_primary) {
+                        info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_BACKWARD)
+                    } else {
+                        info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD)
+                    }
+                }
+
+                override fun performAccessibilityAction(
+                    host: View,
+                    action: Int,
+                    args: Bundle?,
+                ): Boolean {
+                    if (action == AccessibilityNodeInfoCompat.ACTION_SCROLL_BACKWARD) {
+                        pickerMotionContainer.transitionToState(R.id.collapsed_header_primary)
+                        return true
+                    } else if (action == AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD) {
+                        pickerMotionContainer.transitionToState(R.id.expanded_header_primary)
+                        return true
+                    }
+                    return super.performAccessibilityAction(host, action, args)
+                }
+            },
+        )
 
         var isMotionContainerInitialized = false
         val optionContainer: ConstraintLayout =
