@@ -514,5 +514,5 @@
     <dimen name="suggested_chip_icon_padding">12dp</dimen>
     <dimen name="suggested_chip_text_size">14sp</dimen>
     <dimen name="suggested_chip_image_size">24dp</dimen>
-    <dimen name="suggested_chip_cancel_button_size">20dp</dimen>
+    <dimen name="suggested_chip_cancel_button_size">48dp</dimen>
 </resources>
