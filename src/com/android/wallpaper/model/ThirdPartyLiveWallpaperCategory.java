@@ -91,4 +91,8 @@ public class ThirdPartyLiveWallpaperCategory extends WallpaperCategory {
         }
         return super.containsThirdParty(packageName);
     }
+
+    public Set<String> getExcludedPackages() {
+        return mExcludedPackages;
+    }
 }

@@ -23,10 +23,13 @@ import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Singleton
 open class DefaultCategoryWallpapersRepository
@@ -34,6 +37,7 @@ open class DefaultCategoryWallpapersRepository
 constructor(
     @ApplicationContext val context: Context,
     @BackgroundDispatcher private val backgroundScope: CoroutineScope,
+    @BackgroundDispatcher private val backgroundDispatcher: CoroutineDispatcher,
 ) : CategoryWallpapersRepository {
 
     /** The selected [CategoryModel] */
@@ -64,5 +68,20 @@ constructor(
     override fun setSelectedCategory(category: CategoryModel) {
         selectedCategory = category
         // trigger fetching of wallpapers or retrieve from cache
+        getWallpapers(category)
+    }
+
+    private fun getWallpapers(category: CategoryModel) {
+        _isWallpapersFetching.value = true
+        backgroundScope.launch {
+            val result =
+                withContext(backgroundDispatcher) {
+                    category.commonCategoryData.fetchWallpapers?.invoke(
+                        category.commonCategoryData.collectionId
+                    )
+                }
+            _selectedCategoryWallpapers.value = result ?: emptyList()
+            _isWallpapersFetching.value = false
+        }
     }
 }

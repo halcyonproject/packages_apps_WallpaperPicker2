@@ -60,6 +60,8 @@ import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.ui.view.CategoryWallpapersFragment
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.android.wallpaper.util.SizeCalculator
@@ -82,6 +84,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
     @Inject lateinit var bannerProvider: BannerProvider
     @Inject lateinit var curatedPhotosTimeUtil: CuratedPhotosTimeUtil
     @Inject lateinit var userEventLogger: UserEventLogger
+    @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
     private lateinit var photoPickerLauncher: ActivityResultLauncher<Intent>
     private lateinit var extendedWallpaperEffectsLauncher: ActivityResultLauncher<Intent>
 
@@ -196,15 +199,23 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         ) { navigationEvent, callback ->
             when (navigationEvent) {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
-                    val screen: Screen? =
-                        arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java)
-                    switchFragment(
-                        individualPickerFactory.getIndividualPickerInstance(
-                            navigationEvent.categoryId,
-                            navigationEvent.categoryType,
-                            screen,
+                    if (BaseFlags.get().isWallpapersFragmentEnabled()) {
+                        categoryWallpapersRepository.setSelectedCategory(
+                            navigationEvent.categoryModel
                         )
-                    )
+                        switchFragment(CategoryWallpapersFragment())
+                    } else {
+                        val screen: Screen? =
+                            arguments?.getSerializable(DESTINATION_SCREEN, Screen::class.java)
+
+                        switchFragment(
+                            individualPickerFactory.getIndividualPickerInstance(
+                                navigationEvent.categoryModel.commonCategoryData.collectionId,
+                                navigationEvent.categoryType,
+                                screen,
+                            )
+                        )
+                    }
                 }
                 is CategoriesViewModel.NavigationEvent.NavigateToPhotosPicker -> {
                     startPhotoPicker(shouldNavigateToExtendedWallpaperEffects = false, callback)
