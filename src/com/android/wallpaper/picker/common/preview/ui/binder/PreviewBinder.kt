@@ -16,11 +16,14 @@
 
 package com.android.wallpaper.picker.common.preview.ui.binder
 
+import android.app.WallpaperColors
 import android.content.Context
 import android.graphics.Point
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Message
+import android.os.RemoteException
+import android.service.wallpaper.IWallpaperEngine
 import android.util.Log
 import android.view.Display
 import android.view.SurfaceControl
@@ -28,7 +31,9 @@ import android.view.SurfaceControlViewHost
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT
+import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -37,11 +42,14 @@ import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.customization.shared.model.WallpaperColorsModel
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.preview.ui.binder.StaticWallpaperPreviewBinder2
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WorkspacePreviewConfigViewModel
 import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.SurfaceViewUtils
+import com.android.wallpaper.util.WallpaperConnection.WhichPreview
+import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,8 +71,10 @@ object PreviewBinder {
         deviceDisplayType: DeviceDisplayType,
         display: Display,
         hostToken: IBinder,
+        windowToken: IBinder,
+        liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils,
     ) {
-        val staticWallpaperSurfaceControlViewHost: MutableStateFlow<SurfaceControlViewHost?> =
+        val wallpaperSurfaceControl: MutableStateFlow<WallpaperSurfaceControl?> =
             MutableStateFlow(null)
         val workspaceSurfaceControl: MutableStateFlow<SurfaceControl?> = MutableStateFlow(null)
         var surfaceViewCallback: SurfaceViewUtils.SurfaceCallback? = null
@@ -79,12 +89,33 @@ object PreviewBinder {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 launch {
                     viewModel.smallWallpaper.collect { smallWallpaper ->
-                        val (wallpaper, _) = smallWallpaper
+                        val (wallpaper, whichPreview) = smallWallpaper
 
-                        if (wallpaper is WallpaperModel.LiveWallpaperModel) {
-                            // TODO(b/423956081): handle live wallpaper
+                        if (wallpaper is LiveWallpaperModel) {
+                            val liveWallpaperSurfaceControl: WallpaperSurfaceControl.Live? =
+                                renderLiveWallpaperPreview(
+                                    context = applicationContext,
+                                    wallpaperModel = wallpaper,
+                                    displaySize = displaySize,
+                                    whichPreview = whichPreview,
+                                    windowToken = windowToken,
+                                    destinationFlag = screen.toFlag(),
+                                    liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
+                                    onEngineCreated = { engine ->
+                                        preview.viewTreeObserver
+                                            .addOnWindowVisibilityChangeListener { visibility ->
+                                                engine.trySetIsVisible(visibility == View.VISIBLE)
+                                            }
+                                    },
+                                    onWallpaperColorsChanged = { colors, displayId ->
+                                        // TODO(b/423956081): Handle color updates.
+                                    },
+                                )
+                            // Release before assigning a new surface control
+                            wallpaperSurfaceControl.value?.release()
+                            wallpaperSurfaceControl.value = liveWallpaperSurfaceControl
                         } else if (wallpaper is WallpaperModel.StaticWallpaperModel) {
-                            val surfaceControlViewHost =
+                            val staticWallpaperSurfaceControl =
                                 renderStaticWallpaperPreview(
                                     applicationContext = applicationContext,
                                     lifecycleOwner = viewLifecycleOwner,
@@ -94,8 +125,8 @@ object PreviewBinder {
                                     hostToken = hostToken,
                                 )
                             // Release before assigning a new surface control view host
-                            staticWallpaperSurfaceControlViewHost.value?.release()
-                            staticWallpaperSurfaceControlViewHost.value = surfaceControlViewHost
+                            wallpaperSurfaceControl.value?.release()
+                            wallpaperSurfaceControl.value = staticWallpaperSurfaceControl
                         }
                     }
                 }
@@ -122,14 +153,13 @@ object PreviewBinder {
 
                 launch {
                     combine(
-                            staticWallpaperSurfaceControlViewHost.filterNotNull(),
+                            wallpaperSurfaceControl.filterNotNull(),
                             workspaceSurfaceControl.filterNotNull(),
                             ::Pair,
                         )
-                        .collect { (staticWallpaperSurfaceControlViewHost, workspaceSurfaceControl)
-                            ->
+                        .collect { (wallpaperSurfaceControl, workspaceSurfaceControl) ->
                             fun reparent() {
-                                preview.reparentWallpaper(staticWallpaperSurfaceControlViewHost)
+                                preview.reparentWallpaper(wallpaperSurfaceControl)
                                 preview.reparentWorkspace(workspaceSurfaceControl)
                             }
 
@@ -142,18 +172,49 @@ object PreviewBinder {
                                     }
                                     .also { surfaceViewCallback = it }
                             )
-
-                            reparent()
+                            // Note that the surface view's visibility should be GONE before setting
+                            // VISIBLE here. By setting VISIBLE here, we can trigger surfaceCreated
+                            // and thus reparent the surface controls.
+                            preview.isVisible = true
                         }
                 }
             }
             // Release when destroyed
-            staticWallpaperSurfaceControlViewHost.value?.release()
-            staticWallpaperSurfaceControlViewHost.value = null
+            wallpaperSurfaceControl.value?.release()
+            wallpaperSurfaceControl.value = null
             workspaceSurfaceControl.value?.release()
             workspaceSurfaceControl.value = null
             surfaceViewCallback?.let { preview.holder.removeCallback(it) }
             surfaceViewCallback = null
+        }
+    }
+
+    private suspend fun renderLiveWallpaperPreview(
+        context: Context,
+        wallpaperModel: LiveWallpaperModel,
+        displaySize: Point,
+        whichPreview: WhichPreview,
+        windowToken: IBinder,
+        destinationFlag: Int,
+        liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils,
+        onEngineCreated: (engine: IWallpaperEngine) -> Unit,
+        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+    ): WallpaperSurfaceControl.Live? {
+        val engine =
+            liveWallpaperConnectionUtils.connect(
+                context = context,
+                wallpaperModel = wallpaperModel,
+                forceSingleEngine = true,
+                destinationFlag = destinationFlag,
+                displaySize = displaySize,
+                windowToken = windowToken,
+                displayId = 0, // TODO(b/423956081): give a proper ID here
+                whichPreview = whichPreview,
+                onEngineCreated = onEngineCreated,
+                onWallpaperColorsChanged = onWallpaperColorsChanged,
+            )
+        return engine.mirrorSurfaceControl()?.let { surfaceControl ->
+            WallpaperSurfaceControl.Live(surfaceControl, engine)
         }
     }
 
@@ -164,7 +225,7 @@ object PreviewBinder {
         displaySize: Point,
         display: Display,
         hostToken: IBinder,
-    ): SurfaceControlViewHost {
+    ): WallpaperSurfaceControl.Static {
         val scaleImageView = SubsamplingScaleImageView(applicationContext)
         val surfaceControlViewHost =
             SurfaceControlViewHost(applicationContext, display, hostToken).apply {
@@ -178,7 +239,7 @@ object PreviewBinder {
             lifecycleOwner = lifecycleOwner,
         )
         // TODO(b/423956081): PreviewEffectsLoadingBinder to bind loading effect
-        return surfaceControlViewHost
+        return WallpaperSurfaceControl.Static(surfaceControlViewHost)
     }
 
     private suspend fun renderWorkspacePreview(
@@ -239,7 +300,40 @@ object PreviewBinder {
         return result
     }
 
-    private fun SurfaceView.reparentWallpaper(surfaceControlViewHost: SurfaceControlViewHost) {
+    private fun SurfaceView.reparentWallpaper(wallpaperSurfaceControl: WallpaperSurfaceControl) {
+        when (wallpaperSurfaceControl) {
+            is WallpaperSurfaceControl.Live -> {
+                reparentLiveWallpaper(wallpaperSurfaceControl.liveWallpaperSurfaceControl)
+            }
+            is WallpaperSurfaceControl.Static -> {
+                reparentStaticWallpaper(
+                    wallpaperSurfaceControl.staticWallpaperSurfaceControlViewHost
+                )
+            }
+        }
+    }
+
+    private fun SurfaceView.reparentLiveWallpaper(surfaceControl: SurfaceControl) {
+        val surfaceViewRootSurfaceControl = this.rootSurfaceControl
+        if (surfaceViewRootSurfaceControl == null) {
+            Log.w(
+                TAG,
+                "Unable to reparent workspace SurfaceControl to $this, since SurfaceView's " +
+                    "rootSurfaceControl is null.",
+            )
+            return
+        }
+        val transaction =
+            SurfaceControl.Transaction()
+                .reparent(surfaceControl, this.surfaceControl)
+                .setLayer(surfaceControl, 0)
+                .show(surfaceControl)
+        surfaceViewRootSurfaceControl.applyTransactionOnDraw(transaction)
+    }
+
+    private fun SurfaceView.reparentStaticWallpaper(
+        surfaceControlViewHost: SurfaceControlViewHost
+    ) {
         val surfacePackage = surfaceControlViewHost.surfacePackage
         if (surfacePackage != null) {
             this.setChildSurfacePackage(surfacePackage)
@@ -270,10 +364,42 @@ object PreviewBinder {
         surfaceViewRootSurfaceControl.applyTransactionOnDraw(transaction)
     }
 
+    private fun IWallpaperEngine.trySetIsVisible(isVisible: Boolean) {
+        try {
+            setVisibility(isVisible)
+        } catch (e: RemoteException) {
+            Log.w(TAG, "Error setting engine visibility", e)
+        }
+    }
+
     private data class WorkspaceRenderResult(
         val surfaceControl: SurfaceControl,
         val callback: Message,
     )
+
+    sealed class WallpaperSurfaceControl {
+        abstract fun release()
+
+        /**
+         * @param engine We need to keep the reference of the engine to set visibility when surface
+         *   is created and destroyed.
+         */
+        data class Live(
+            val liveWallpaperSurfaceControl: SurfaceControl,
+            val engine: IWallpaperEngine,
+        ) : WallpaperSurfaceControl() {
+            override fun release() {
+                liveWallpaperSurfaceControl.release()
+            }
+        }
+
+        data class Static(val staticWallpaperSurfaceControlViewHost: SurfaceControlViewHost) :
+            WallpaperSurfaceControl() {
+            override fun release() {
+                staticWallpaperSurfaceControlViewHost.release()
+            }
+        }
+    }
 
     private const val TAG = "PreviewBinder"
 }
