@@ -152,9 +152,9 @@
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Обои"</string>
     <string name="small_preview_tooltip" msgid="1920430079013352071">"Нажмите, чтобы изменить фотографию"</string>
     <string name="full_preview_tooltip" msgid="4648994028015322759">"Положение, масштаб и угол наклона фото можно изменить"</string>
-    <string name="discard_changes_dialog_message" msgid="8462485277292103457">"Отменить изменения?"</string>
+    <string name="discard_changes_dialog_message" msgid="8462485277292103457">"Не сохранять изменения?"</string>
     <string name="discard_changes_dialog_button_keep_editing" msgid="9118931326834547216">"Продолжить"</string>
-    <string name="discard_changes_dialog_button_discard" msgid="6585071548322908206">"Отменить"</string>
+    <string name="discard_changes_dialog_button_discard" msgid="6585071548322908206">"Не сохранять"</string>
     <string name="action_zoom_in" msgid="3326782160671405449">"Увеличить"</string>
     <string name="action_zoom_out" msgid="5454911090443175449">"Уменьшить"</string>
     <string name="zoomed_to_percent" msgid="1243039994190840132">"Масштаб: %d %%"</string>

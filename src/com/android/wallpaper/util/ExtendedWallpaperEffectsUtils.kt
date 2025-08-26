@@ -24,11 +24,14 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Point
+import android.graphics.Rect
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
+import com.android.systemui.shared.Flags.panAndZoomInExtendedWallpaperEffects
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.WallpaperInfoContract.WALLPAPER_DESCRIPTION_CONTENT_HANDLING
 import com.android.wallpaper.module.ExtendedEffectsHelper
@@ -51,6 +54,7 @@ object ExtendedWallpaperEffectsUtils {
 
     /** Parameters of the Intent that starts the editor activity */
     const val PHOTO_URI = "PHOTO_URI"
+    const val PHOTO_CROPS = "PHOTO_CROPS"
     const val SOURCE_BITMAP_SCREEN = "SOURCE_BITMAP_SCREEN"
 
     private lateinit var extendedEffectsHelper: ExtendedEffectsHelper
@@ -170,7 +174,8 @@ object ExtendedWallpaperEffectsUtils {
             Log.d(TAG, "destination: ${wallpaper.commonWallpaperData.destination}")
             when (wallpaper.commonWallpaperData.destination) {
                 Destination.NOT_APPLIED -> {
-                    (wallpaper as StaticWallpaperModel).imageWallpaperData?.uri?.let { photoUri ->
+                    wallpaper as StaticWallpaperModel
+                    wallpaper.imageWallpaperData?.uri?.let { photoUri ->
                         Log.d(TAG, "Using photoUri: $photoUri")
                         context.grantUriPermission(
                             extendedWallpaperPackageName,
@@ -178,6 +183,13 @@ object ExtendedWallpaperEffectsUtils {
                             Intent.FLAG_GRANT_READ_URI_PERMISSION,
                         )
                         extendedWallpaperIntent.putExtra(PHOTO_URI, photoUri)
+                        if (panAndZoomInExtendedWallpaperEffects()) {
+                            val parcelableMap =
+                                HashMap<Point, Rect>(
+                                    wallpaper.staticWallpaperData.cropHints ?: emptyMap()
+                                )
+                            extendedWallpaperIntent.putExtra(PHOTO_CROPS, parcelableMap)
+                        }
                     }
                 }
 

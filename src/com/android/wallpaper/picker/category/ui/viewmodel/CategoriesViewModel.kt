@@ -148,10 +148,13 @@ constructor(
         thirdPartyCategoryInteractor.refreshThirdPartyAppCategories()
     }
 
-    private fun navigateToWallpaperCollection(collectionId: String, categoryType: CategoryType) {
+    private fun navigateToWallpaperCollection(
+        categoryModel: CategoryModel,
+        categoryType: CategoryType,
+    ) {
         viewModelScope.launch {
             _navigationEvents.emit(
-                NavigationEvent.NavigateToWallpaperCollection(collectionId, categoryType)
+                NavigationEvent.NavigateToWallpaperCollection(categoryModel, categoryType)
             )
         }
     }
@@ -252,7 +255,7 @@ constructor(
                                         )
                                     } else {
                                         navigateToWallpaperCollection(
-                                            category.commonCategoryData.collectionId,
+                                            category,
                                             CategoryType.DefaultCategories,
                                         )
                                     }
@@ -322,7 +325,7 @@ constructor(
                                 )
                             } else {
                                 navigateToWallpaperCollection(
-                                    category.commonCategoryData.collectionId,
+                                    category,
                                     CategoryType.CreativeCategories,
                                 )
                             }
@@ -525,7 +528,7 @@ constructor(
 
     sealed class NavigationEvent {
         data class NavigateToWallpaperCollection(
-            val categoryId: String,
+            val categoryModel: CategoryModel,
             val categoryType: CategoryType,
         ) : NavigationEvent()
 

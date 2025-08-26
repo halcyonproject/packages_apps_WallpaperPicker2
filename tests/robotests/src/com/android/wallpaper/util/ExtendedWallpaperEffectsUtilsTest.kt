@@ -22,6 +22,8 @@ import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Point
+import android.graphics.Rect
 import android.net.Uri
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -30,12 +32,14 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.app.ActivityOptionsCompat
 import androidx.test.core.app.ActivityScenario
+import com.android.systemui.shared.Flags.FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.preview.PreviewTestActivity
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.WallpaperModelUtils
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.PHOTO_CROPS
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.PHOTO_URI
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.SOURCE_BITMAP_SCREEN
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
@@ -138,8 +142,9 @@ class ExtendedWallpaperEffectsUtilsTest {
         }
 
     @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
+    @DisableFlags(FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS)
     @Test
-    fun startEffects_recentsFromSystem_notApplied_addsPhotoUri() =
+    fun startEffects_recentsFromSystem_noPanAndZoom_notApplied_addsPhotoUri() =
         testScope.runTest {
             val photoUri = Uri.parse("content://bogus")
             val model =
@@ -166,11 +171,44 @@ class ExtendedWallpaperEffectsUtilsTest {
             assertThat(intent.hasExtra(SOURCE_BITMAP_SCREEN)).isFalse()
         }
 
+    @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM, FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS)
+    @Test
+    fun startEffects_notApplied_addsPhotoUriAndCrops() =
+        testScope.runTest {
+            val photoUri = Uri.parse("content://bogus")
+            val crops = mapOf(Point(1, 2) to Rect(3, 4, 5, 6))
+            val model =
+                WallpaperModelUtils.getStaticWallpaperModel(
+                    wallpaperId = "id",
+                    collectionId = "collection",
+                    destination = Destination.NOT_APPLIED,
+                    imageWallpaperUri = photoUri,
+                    cropHints = crops,
+                )
+
+            ExtendedWallpaperEffectsUtils.startExtendedWallpaperEffects(
+                model,
+                launcher,
+                context,
+                wallpaperConnectionUtils,
+                BaseFlags.get(),
+            )
+
+            assertThat(launcher.lastIntent).isNotNull()
+            val intent = launcher.lastIntent!!
+            assertThat(intent).isNotNull()
+            assertThat(intent.hasExtra(PHOTO_URI)).isTrue()
+            assertThat(intent.getParcelableExtra(PHOTO_URI, Uri::class.java)).isEqualTo(photoUri)
+            assertThat(intent.hasExtra(PHOTO_CROPS)).isTrue()
+            assertThat(intent.getParcelableExtra(PHOTO_CROPS, Map::class.java))
+                .containsExactlyEntriesIn(crops)
+            assertThat(intent.hasExtra(SOURCE_BITMAP_SCREEN)).isFalse()
+        }
+
     @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
     @Test
     fun startEffects_recentsFromSystem_appliedToSystem_setsSource() =
         testScope.runTest {
-            val photoUri = Uri.parse("content://bogus")
             val model =
                 WallpaperModelUtils.getStaticWallpaperModel(
                     wallpaperId = "id",
@@ -198,7 +236,6 @@ class ExtendedWallpaperEffectsUtilsTest {
     @Test
     fun startEffects_recentsFromSystem_appliedToBoth_setsSource() =
         testScope.runTest {
-            val photoUri = Uri.parse("content://bogus")
             val model =
                 WallpaperModelUtils.getStaticWallpaperModel(
                     wallpaperId = "id",
@@ -226,7 +263,6 @@ class ExtendedWallpaperEffectsUtilsTest {
     @Test
     fun startEffects_recentsFromSystem_appliedToLock_setsSource() =
         testScope.runTest {
-            val photoUri = Uri.parse("content://bogus")
             val model =
                 WallpaperModelUtils.getStaticWallpaperModel(
                     wallpaperId = "id",

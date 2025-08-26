@@ -22,6 +22,7 @@ import com.android.wallpaper.model.ImageCategory
 import com.android.wallpaper.model.ThirdPartyLiveWallpaperCategory
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.picker.category.client.LiveWallpapersClient
 import com.android.wallpaper.picker.category.data.repository.DefaultWallpaperCategoryRepository
 import com.android.wallpaper.testing.FakeDefaultCategoryFactory
 import com.android.wallpaper.testing.FakeDefaultWallpaperCategoryClient
@@ -53,6 +54,7 @@ class DefaultWallpaperCategoryRepositoryTest {
     @Inject @ApplicationContext lateinit var context: Context
     @Inject lateinit var defaultCategoryFactory: FakeDefaultCategoryFactory
     @Inject lateinit var defaultWallpaperCategoryClient: FakeDefaultWallpaperCategoryClient
+    @Inject lateinit var liveWallpapersClient: LiveWallpapersClient
     @Inject lateinit var testScope: TestScope
     @Inject lateinit var testInjector: TestInjector
 
@@ -108,6 +110,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                     context,
                     defaultWallpaperCategoryClient,
                     defaultCategoryFactory,
+                    liveWallpapersClient,
                     testScope,
                 )
             testScope.advanceUntilIdle()
@@ -123,6 +126,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
+                liveWallpapersClient,
                 testScope,
             )
         assertThat(repository.systemCategories.value).isEmpty()
@@ -136,6 +140,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
+                liveWallpapersClient,
                 testScope,
             )
 
@@ -153,6 +158,7 @@ class DefaultWallpaperCategoryRepositoryTest {
                 context,
                 defaultWallpaperCategoryClient,
                 defaultCategoryFactory,
+                liveWallpapersClient,
                 testScope,
             )
 
