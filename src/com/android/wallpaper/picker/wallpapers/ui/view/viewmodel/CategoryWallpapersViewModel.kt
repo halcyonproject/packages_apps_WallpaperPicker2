@@ -17,7 +17,9 @@
 package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -43,27 +45,103 @@ constructor(
      */
     val categoryWallpapersContentViewModel: Flow<CategoryWallpapersContentViewModel> =
         categoryWallpapersInteractor.selectedCategoryWallpapers.map { wallpapers ->
-            val wallpaperItems =
-                wallpapers.map {
-                    CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
-                        thumbnailAsset = it.commonWallpaperData.thumbAsset,
-                        title = it.commonWallpaperData.title,
-                        contentDescription = it.commonWallpaperData.title,
-                    )
-                }
+            if (DEBUG) {
+                Log.d(TAG, "WallpaperModels: ${wallpapers.size}")
+            }
 
-            // this is just a placeholder to test the view layer
+            val groupedWallpapers =
+                wallpapers
+                    .groupBy { wallpaper ->
+                        val groupName =
+                            when (wallpaper) {
+                                is WallpaperModel.LiveWallpaperModel ->
+                                    wallpaper.liveWallpaperData.groupName
+                                is WallpaperModel.StaticWallpaperModel ->
+                                    wallpaper.downloadableWallpaperData?.groupName
+                                else -> null
+                            }
+
+                        if (groupName.isNullOrEmpty()) {
+                            DEFAULT_GROUP
+                        } else {
+                            groupName
+                        }
+                    }
+                    .toMutableMap()
+
+            if (DEBUG) {
+                Log.d(TAG, "Wallpaper groups: ")
+                for ((groupName, wallpapers) in groupedWallpapers) {
+                    Log.d(TAG, "Group NAME: ${groupName}")
+                    for (wallpaper in wallpapers) {
+                        Log.d(TAG, "${wallpaper}")
+                    }
+                }
+            }
+
+            val firstEntry = groupedWallpapers.keys.firstOrNull()
+
+            val templates = buildList {
+                if (
+                    firstEntry != null &&
+                        firstEntry != DEFAULT_GROUP &&
+                        (groupedWallpapers[firstEntry]?.get(0)
+                            is WallpaperModel.LiveWallpaperModel) &&
+                        (groupedWallpapers[firstEntry]?.get(0)
+                                as? WallpaperModel.LiveWallpaperModel)
+                            ?.creativeWallpaperData != null &&
+                        (groupedWallpapers[firstEntry]?.size ?: 0) > 1
+                ) {
+                    add(CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory(firstEntry))
+                    val items =
+                        groupedWallpapers[firstEntry]?.map {
+                            CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
+                                thumbnailAsset = it.commonWallpaperData.thumbAsset,
+                                title = it.commonWallpaperData.title,
+                                contentDescription = it.commonWallpaperData.title,
+                            )
+                        }
+                    items?.let {
+                        add(CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory(it))
+                        groupedWallpapers.remove(firstEntry)
+                    }
+                }
+            }
+
+            val wallpaperItems = buildList {
+                for ((groupName, wallpapers) in groupedWallpapers) {
+                    if (groupName != DEFAULT_GROUP) {
+                        add(
+                            CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory(
+                                groupName
+                            )
+                        )
+                    }
+                    val items =
+                        wallpapers.map {
+                            CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
+                                thumbnailAsset = it.commonWallpaperData.thumbAsset,
+                                title = it.commonWallpaperData.title,
+                                contentDescription = it.commonWallpaperData.title,
+                            )
+                        }
+                    add(CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(items))
+                }
+            }
+
+            if (DEBUG) {
+                Log.d(TAG, "here is the list of wallpaperItems yo: ${wallpaperItems}")
+            }
+
             return@map CategoryWallpapersContentViewModel(
                 rotationEnabled = false,
-                wallpaperItems =
-                    listOf(
-                        CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory(
-                            wallpaperItems
-                        ),
-                        CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(
-                            wallpaperItems
-                        ),
-                    ),
+                wallpaperItems = templates + wallpaperItems,
             )
         }
+
+    companion object {
+        const val DEBUG = false
+        const val TAG = "CategoryWallpapersViewModel"
+        const val DEFAULT_GROUP = "default_group"
+    }
 }
