@@ -79,6 +79,9 @@ constructor(
 
     private var disconnectOnWallpaperChange = false
 
+    // Set true to enable debug logging (engine create/destroy, etc.)
+    private val debug = false
+
     init {
         // We need to clear existing previews when a wallpaper is set since it's possible they will
         // be stale. See b/414490885.
@@ -118,6 +121,9 @@ constructor(
                 wallpaperModel.liveWallpaperData.systemWallpaperInfo.component,
                 destinationFlag,
             )
+        val shortKey = engineKey.split(":").let { it.slice(2 until it.size) }.joinToString(":")
+
+        if (debug) Log.d(TAG, "${toHex(this)}: requesting connection with key $engineKey")
 
         traceAsync(TAG, "connect") {
             // Update the creative wallpaper uri before starting the service.
@@ -157,6 +163,8 @@ constructor(
                                     surfaceView,
                                     listener,
                                     wallpaperModel.liveWallpaperData.description,
+                                    this@WallpaperConnectionUtils,
+                                    shortKey,
                                 )
                             }
 
@@ -176,8 +184,9 @@ constructor(
             latestConnectionMap[serviceKey] =
                 wallpaperConnectionMap[engineKey] as Deferred<WallpaperConnection>
 
-            wallpaperConnectionMap[engineKey]?.await()?.let { (engineConnection, _, _, _) ->
-                engineConnection.get()?.engine?.let {
+            wallpaperConnectionMap[engineKey]?.await()?.let { connection ->
+                if (debug) Log.d(TAG, "${toHex(this)}: MIR: $connection")
+                connection.engineConnection.get()?.engine?.let {
                     mirrorAndReparent(
                         engineKey,
                         it,
@@ -192,6 +201,7 @@ constructor(
     }
 
     suspend fun disconnectAll() {
+        if (debug) Log.d(TAG, "${toHex(this)}: disconnectAll()")
         surfaceControlMap.keys.map { key ->
             mutex.withLock {
                 surfaceControlMap[key]?.let { surfaceControls ->
@@ -206,6 +216,7 @@ constructor(
 
     suspend fun disconnect(packageName: String) {
         mutex.withLock {
+            if (debug) Log.d(TAG, "${toHex(this)}: disconnect(packageName)")
             surfaceControlMap.apply {
                 filterKeys { key -> key.startsWith(packageName) }
                     .keys
@@ -222,6 +233,7 @@ constructor(
 
     suspend fun disconnect(connection: WallpaperConnection) {
         mutex.withLock {
+            if (debug) Log.d(TAG, "${toHex(this)}: disconnect(connection)")
             wallpaperConnectionMap
                 .filterValues { engine ->
                     engine.await().engineConnection.get().let {
@@ -267,6 +279,7 @@ constructor(
      * when switching from static to live wallpapers again.
      */
     suspend fun disconnectAllServices() {
+        if (debug) Log.d(TAG, "${toHex(this)}: disconnectAllServices()")
         wallpaperConnectionMap.keys.map { key ->
             mutex.withLock { wallpaperConnectionMap.remove(key)?.await()?.disconnect(context) }
         }
@@ -364,6 +377,8 @@ constructor(
         surfaceView: SurfaceView,
         listener: WallpaperEngineConnection.WallpaperEngineConnectionListener?,
         description: WallpaperDescription,
+        owner: WallpaperConnectionUtils? = null,
+        shortKey: String = "",
     ): WallpaperConnection {
         // Bind service and get service connection and wallpaper service
         val (serviceConnection, wallpaperService) = bindWallpaperService(context, wallpaperIntent)
@@ -375,10 +390,12 @@ constructor(
                 WeakReference(serviceConnection),
                 WeakReference(wallpaperService),
                 WeakReference(surfaceView.windowToken),
+                debug,
             )
         (serviceConnection as WallpaperServiceConnection).deadConnectionListener =
             object : WallpaperServiceConnection.DeadConnectionListener {
                 override fun onConnectionDead(serviceConnection: ServiceConnection) {
+                    if (debug) Log.d(TAG, "${toHex(this)}: connection dead")
                     connection.disconnect(context)
                 }
             }
@@ -386,7 +403,15 @@ constructor(
         engineConnection
             .getEngine(wallpaperService, destinationFlag, surfaceView, description)
             .let { engine ->
-                engine.asBinder()?.linkToDeath({ connection.disconnect(context) }, /* flags= */ 0)
+                engine
+                    .asBinder()
+                    ?.linkToDeath(
+                        {
+                            if (debug) Log.d(TAG, "${toHex(this)}: engine dead")
+                            connection.disconnect(context)
+                        },
+                        /* flags= */ 0,
+                    )
             }
         surfaceView.viewTreeObserver.addOnWindowVisibilityChangeListener { visibility ->
             try {
@@ -395,7 +420,17 @@ constructor(
                 Log.w(TAG, "Error setting engine visibility", e)
             }
         }
-        wallpaperService.asBinder().linkToDeath({ connection.disconnect(context) }, 0)
+        wallpaperService
+            .asBinder()
+            .linkToDeath(
+                {
+                    if (debug) Log.d(TAG, "${toHex(this)}: service dead")
+                    connection.disconnect(context)
+                },
+                0,
+            )
+
+        if (debug) Log.d(TAG, "${toHex(owner)}: ADD: $connection: $shortKey")
 
         return connection
     }
@@ -550,11 +585,13 @@ constructor(
         val serviceConnection: WeakReference<ServiceConnection>,
         val wallpaperService: WeakReference<IWallpaperService>,
         val windowToken: WeakReference<IBinder>,
+        val debug: Boolean = false,
     ) {
         private val disconnected = AtomicBoolean(false)
 
         fun disconnect(context: Context) {
             if (disconnected.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+                if (debug) Log.d(TAG, "DSC: $this")
                 engineConnection.get()?.apply {
                     engine.let {
                         engine = null
