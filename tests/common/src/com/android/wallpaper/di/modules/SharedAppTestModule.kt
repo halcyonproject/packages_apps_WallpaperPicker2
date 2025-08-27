@@ -52,10 +52,10 @@ import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
 import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.picker.wallpapers.data.repository.DefaultCategoryWallpapersRepository
 import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
-import com.android.wallpaper.picker.wallpapers.domain.interactor.DefaultCategoryWallpapersInteractor
 import com.android.wallpaper.system.PowerManagerWrapper
 import com.android.wallpaper.system.UiModeManagerWrapper
 import com.android.wallpaper.testing.FakeCategoriesLoadingStatusInteractor
+import com.android.wallpaper.testing.FakeCategoryWallpapersInteractor
 import com.android.wallpaper.testing.FakeCreativeHelper
 import com.android.wallpaper.testing.FakeCreativeWallpaperInteractor
 import com.android.wallpaper.testing.FakeDefaultCategoryFactory
@@ -184,7 +184,7 @@ internal abstract class SharedAppTestModule {
     @Binds
     @Singleton
     abstract fun bindWallpapersInteractor(
-        impl: DefaultCategoryWallpapersInteractor
+        impl: FakeCategoryWallpapersInteractor
     ): CategoryWallpapersInteractor
 
     @Binds

@@ -22,6 +22,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * This is fake [CategoryWallpapersInteractor] implementation to enable testing lower level classes
@@ -29,7 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 @Singleton
 class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpapersInteractor {
-    private val fakeWallpapers =
+    private val fakeWallpapers: List<WallpaperModel> =
         listOf(
             WallpaperModelUtils.getStaticWallpaperModel(
                 wallpaperId = "testId1",
@@ -153,8 +154,13 @@ class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpaper
             ),
         )
 
+    private val _selectedCategoryWallpapers = MutableStateFlow(fakeWallpapers)
     override val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>> =
-        MutableStateFlow(fakeWallpapers)
+        _selectedCategoryWallpapers.asStateFlow()
 
     override val isWallpapersFetching: StateFlow<Boolean> = MutableStateFlow(false)
+
+    fun setWallpapers(wallpaperModels: List<WallpaperModel>) {
+        _selectedCategoryWallpapers.value = wallpaperModels
+    }
 }

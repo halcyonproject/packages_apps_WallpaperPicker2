@@ -16,6 +16,8 @@
 
 package com.android.wallpaper.picker.wallpapers.ui.view.compose
 
+import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,11 +25,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -41,14 +45,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.android.compose.modifiers.width
 import com.android.wallpaper.R
+import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersContentViewModel
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersItemViewModel
+import com.android.wallpaper.util.ResourceUtils
 import com.android.wallpaper.util.SizeCalculator
 
 /** Scale factor used to calculate the height of template tiles */
@@ -129,6 +139,7 @@ fun HorizontalGridSection(
 
     val heightDp =
         with(density) { (THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
+    val tileSize = getTileSizeAsDp()
     LazyHorizontalGrid(
         rows = GridCells.Fixed(maxRows),
         modifier =
@@ -154,7 +165,9 @@ fun HorizontalGridSection(
                 horizontal = dimensionResource(R.dimen.featured_wallpaper_grid_edge_space)
             ),
     ) {
-        items(thumbnails) { thumbnail -> ThumbnailCard(thumbnail) }
+        items(thumbnails) { thumbnail ->
+            ThumbnailCard(thumbnail, modifier.size(width = tileSize.width, height = heightDp))
+        }
     }
 }
 
@@ -171,6 +184,7 @@ fun ThumbnailGridSection(
     modifier: Modifier = Modifier,
 ) {
     val rows = (thumbnails.size + columns - 1) / columns
+    val tileSize = getTileSizeAsDp()
 
     Column(
         modifier = modifier.fillMaxWidth().padding(8.dp),
@@ -184,12 +198,34 @@ fun ThumbnailGridSection(
                 for (colIndex in 0 until columns) {
                     val itemIndex = rowIndex * columns + colIndex
                     if (itemIndex < thumbnails.size) {
-                        ThumbnailCard(thumbnails[itemIndex])
+                        ThumbnailCard(
+                            thumbnails[itemIndex],
+                            modifier.size(width = tileSize.width, height = tileSize.height),
+                        )
+                    } else {
+                        // Add an empty space to keep the columns aligned
+                        Spacer(
+                            modifier =
+                                modifier.size(width = tileSize.width, height = tileSize.height)
+                        )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun getTileSizeAsDp(): DpSize {
+    val activity = LocalActivity.current
+    val density = LocalDensity.current
+
+    val tileSize = activity?.let { SizeCalculator.getIndividualTileSize(it) }
+
+    val widthInDp = with(density) { (tileSize?.x ?: 0).toDp() }
+    val heightInDp = with(density) { (tileSize?.y ?: 0).toDp() }
+
+    return DpSize(width = widthInDp, height = heightInDp)
 }
 
 /**
@@ -204,12 +240,15 @@ fun ThumbnailCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.size(120.dp).clickable { thumbnail.onSectionClicked?.invoke() },
+        modifier = modifier.clickable { thumbnail.onSectionClicked?.invoke() },
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
         elevation = CardDefaults.cardElevation(),
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            // Replace this with an image loader
+            AssetImageView(
+                thumbnailAsset = thumbnail.thumbnailAsset,
+                modifier = Modifier.fillMaxSize(),
+            )
             Text(
                 text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
                 modifier = modifier.align(Alignment.BottomStart).padding(8.dp),
@@ -217,4 +256,31 @@ fun ThumbnailCard(
             )
         }
     }
+}
+
+// TODO(b/441293395): Deprecate Asset class and migrate image loading to use GlideImageView
+@Composable
+fun AssetImageView(thumbnailAsset: Asset, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    AndroidView(
+        factory = { context ->
+            ImageView(context).apply {
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                layoutParams =
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    )
+            }
+        },
+        update = { imageView ->
+            thumbnailAsset.loadDrawable(
+                context,
+                imageView,
+                ResourceUtils.getColorAttr(context, android.R.attr.colorSecondary),
+            )
+        },
+        modifier = modifier,
+    )
 }
