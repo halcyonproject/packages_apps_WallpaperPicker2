@@ -27,6 +27,7 @@ import android.platform.test.flag.junit.SetFlagsRule
 import androidx.activity.viewModels
 import androidx.test.core.app.ActivityScenario
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.preview.PreviewTestActivity
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersItemViewModel
@@ -72,6 +73,7 @@ class CategoryWallpapersViewModelTest {
     @Inject lateinit var testInjector: TestInjector
 
     @Inject lateinit var fakeCategoryWallpapersInteractor: FakeCategoryWallpapersInteractor
+    @Inject lateinit var persistentWallpaperModelRepository: PersistentWallpaperModelRepository
 
     @Before
     fun setUp() {
@@ -302,5 +304,41 @@ class CategoryWallpapersViewModelTest {
                     ?.size
             )
             .isEqualTo(5)
+    }
+
+    @Test
+    fun sections_verifyOnClickAction() = runTest {
+        fakeCategoryWallpapersInteractor.setWallpapers(
+            listOf(
+                WallpaperModelUtils.getStaticWallpaperModel(
+                    wallpaperId = "testId3",
+                    collectionId = "testCollection1",
+                    title = "static wp 1",
+                ),
+                WallpaperModelUtils.getStaticWallpaperModel(
+                    wallpaperId = "testId4",
+                    collectionId = "testCollection2",
+                    title = "static wp 2",
+                ),
+            )
+        )
+
+        val categories =
+            collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
+                ?.wallpaperItems
+        assertThat(categories).isNotNull()
+        assertThat(categories).hasSize(1)
+
+        val category =
+            categories?.get(0) as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory
+        val thumbnail = category?.thumbnailAssets?.get(1)
+        val onClick = thumbnail?.onSectionClicked
+
+        assertThat(onClick).isNotNull()
+        onClick?.invoke()
+        val selectedWallpaperModel = persistentWallpaperModelRepository.wallpaperModel.value
+
+        // verify that the lambda correctly set the selected WallpaperModel
+        assertThat(selectedWallpaperModel?.commonWallpaperData?.title).isEqualTo("static wp 2")
     }
 }
