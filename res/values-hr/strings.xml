@@ -33,7 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Odaberite pozadinu"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Predložene fotografije"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Izradi pozadinu"</string>
-    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Studio za pozadine"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Početni zaslon"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Zaključani zaslon"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Početni i zaključani zaslon"</string>
@@ -100,7 +100,7 @@
     <string name="configure_wallpaper" msgid="849882179182976621">"Postavke…"</string>
     <string name="delete_live_wallpaper" msgid="589212696102662329">"Izbriši"</string>
     <string name="edit_live_wallpaper" msgid="3132060073690558045">"Uredi"</string>
-    <string name="delete_wallpaper_confirmation" msgid="1905114562243802354">"Izbrisati ovu pozadinu s uređaja?"</string>
+    <string name="delete_wallpaper_confirmation" msgid="1905114562243802354">"Želite li izbrisati ovu pozadinu s uređaja?"</string>
     <string name="bottom_action_bar_back" msgid="2620581414970740784">"Idi na vrh"</string>
     <string name="bottom_action_bar_edit" msgid="1214742990893082138">"Uredi"</string>
     <string name="bottom_action_bar_download" msgid="3983122338076389421">"Preuzmi"</string>
