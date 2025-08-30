@@ -59,7 +59,7 @@
     <string name="settings_button_label" msgid="8724734130079207955">"सेटिङहरू"</string>
     <string name="explore" msgid="7468719504199497281">"अन्वेषण गर्नुहोस्"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"अर्को वालपेपर"</string>
-    <string name="wallpaper_disabled_message" msgid="7309484130562148185">"यस यन्त्रमा वालपेपर सेट गर्ने सुविधालाई असक्षम पारिएको छ"</string>
+    <string name="wallpaper_disabled_message" msgid="7309484130562148185">"यस यन्त्रमा वालपेपर सेट गर्ने सुविधालाई अफ गरिएको छ"</string>
     <string name="wallpaper_disabled_by_administrator_message" msgid="1551430406714747884">"तपाईंको डिभाइसको प्रशासकले वालपेपर सेट गर्ने सुविधालाई असक्षम पार्नुभएको छ"</string>
     <string name="wallpaper_set_successfully_message" msgid="2958998799111688578">"वालपेपर सफलतापूर्वक सेट गरियो"</string>
     <string name="wallpapers_unavailable_offline_message" msgid="8136405438621689532">"वालपेपरहरू हेर्न तपाईंसँग इन्टरनेट जडान हुनु आवश्यक हुन्छ। कृपया जडान गरेर फेरि प्रयास गर्नुहोस।"</string>

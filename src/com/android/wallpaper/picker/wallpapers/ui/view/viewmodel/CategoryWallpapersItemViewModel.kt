@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 
+import android.content.Intent
 import com.android.wallpaper.asset.Asset
 
 /**
@@ -72,6 +73,6 @@ sealed class CategoryWallpapersItemViewModel {
         val thumbnailAsset: Asset,
         val title: String?,
         val contentDescription: String?,
-        val onSectionClicked: (() -> Unit)? = null,
+        val onSectionClicked: (() -> Intent)? = null,
     ) : CategoryWallpapersItemViewModel()
 }

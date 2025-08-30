@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.modifiers.width
 import com.android.wallpaper.R
-import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersContentViewModel
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersItemViewModel
 import com.android.wallpaper.util.ResourceUtils
@@ -245,10 +244,7 @@ fun ThumbnailCard(
         elevation = CardDefaults.cardElevation(),
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            AssetImageView(
-                thumbnailAsset = thumbnail.thumbnailAsset,
-                modifier = Modifier.fillMaxSize(),
-            )
+            AssetImageView(thumbnail = thumbnail, modifier = Modifier.fillMaxSize())
             Text(
                 text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
                 modifier = modifier.align(Alignment.BottomStart).padding(8.dp),
@@ -260,7 +256,10 @@ fun ThumbnailCard(
 
 // TODO(b/441293395): Deprecate Asset class and migrate image loading to use GlideImageView
 @Composable
-fun AssetImageView(thumbnailAsset: Asset, modifier: Modifier = Modifier) {
+fun AssetImageView(
+    thumbnail: CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
 
     AndroidView(
@@ -275,12 +274,16 @@ fun AssetImageView(thumbnailAsset: Asset, modifier: Modifier = Modifier) {
             }
         },
         update = { imageView ->
-            thumbnailAsset.loadDrawable(
+            thumbnail.thumbnailAsset.loadDrawable(
                 context,
                 imageView,
                 ResourceUtils.getColorAttr(context, android.R.attr.colorSecondary),
             )
         },
-        modifier = modifier,
+        modifier =
+            modifier.clickable {
+                val intent = thumbnail.onSectionClicked?.invoke()
+                context.startActivity(intent)
+            },
     )
 }

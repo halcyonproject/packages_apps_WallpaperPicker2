@@ -19,7 +19,9 @@ package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,6 +38,7 @@ class CategoryWallpapersViewModel
 @Inject
 constructor(
     private val categoryWallpapersInteractor: CategoryWallpapersInteractor,
+    private val persistentWallpaperModelRepository: PersistentWallpaperModelRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -99,6 +102,15 @@ constructor(
                                 thumbnailAsset = it.commonWallpaperData.thumbAsset,
                                 title = it.commonWallpaperData.title,
                                 contentDescription = it.commonWallpaperData.title,
+                                onSectionClicked = {
+                                    persistentWallpaperModelRepository.setWallpaperModel(it)
+                                    val previewIntent =
+                                        WallpaperPreviewActivity.intentBuilder(context, true)
+                                            .refreshCategory(true)
+                                            .navigateToExtendedEffects(false)
+                                            .build()
+                                    return@ThumbnailsViewModelCategory previewIntent
+                                },
                             )
                         }
                     items?.let {
@@ -123,6 +135,15 @@ constructor(
                                 thumbnailAsset = it.commonWallpaperData.thumbAsset,
                                 title = it.commonWallpaperData.title,
                                 contentDescription = it.commonWallpaperData.title,
+                                onSectionClicked = {
+                                    persistentWallpaperModelRepository.setWallpaperModel(it)
+                                    val previewIntent =
+                                        WallpaperPreviewActivity.intentBuilder(context, true)
+                                            .refreshCategory(true)
+                                            .navigateToExtendedEffects(false)
+                                            .build()
+                                    return@ThumbnailsViewModelCategory previewIntent
+                                },
                             )
                         }
                     add(CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(items))

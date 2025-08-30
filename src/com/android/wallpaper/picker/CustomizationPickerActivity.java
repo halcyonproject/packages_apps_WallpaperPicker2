@@ -34,7 +34,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.wallpaper.R;
-import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.model.Category;
 import com.android.wallpaper.model.CustomizationSectionController.CustomizationSectionNavigationController;
 import com.android.wallpaper.model.PermissionRequester;
@@ -95,11 +94,7 @@ public class CustomizationPickerActivity extends Hilt_CustomizationPickerActivit
         mNetworkStatus = mNetworkStatusNotifier.getNetworkStatus();
         mDisplayUtils = injector.getDisplayUtils(this);
         enforcePortraitForHandheldAndFoldedDisplay();
-
-        BaseFlags flags = injector.getFlags();
-        if (flags.isMultiCropEnabled()) {
-            getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
-        }
+        getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
 
         // Restore this Activity's state before restoring contained Fragments state.
         super.onCreate(savedInstanceState);

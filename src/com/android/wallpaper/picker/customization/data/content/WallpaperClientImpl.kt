@@ -650,9 +650,6 @@ constructor(
         @SetWallpaperFlags which: Int,
     ): Map<Point, Rect>? {
         val flags = InjectorProvider.getInjector().getFlags()
-        if (!flags.isMultiCropEnabled()) {
-            return null
-        }
         val cropHints: List<Rect>? =
             wallpaperManager.getBitmapCrops(displaySizes, which, /* originalBitmap= */ true)
 

@@ -25,7 +25,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.android.wallpaper.R;
-import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.model.ImageWallpaperInfo;
 import com.android.wallpaper.model.InlinePreviewIntentFactory;
 import com.android.wallpaper.model.WallpaperInfo;
@@ -126,26 +125,14 @@ public class PreviewActivity extends BasePreviewActivity implements AppbarFragme
         public Intent newIntent(Context context, WallpaperInfo wallpaper,
                 boolean isAssetIdPresent, boolean shouldRefreshCategory) {
             Context appContext = context.getApplicationContext();
-            final BaseFlags flags = InjectorProvider.getInjector().getFlags();
             LargeScreenMultiPanesChecker multiPanesChecker = new LargeScreenMultiPanesChecker();
             final boolean isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext);
-
-            if (flags.isMultiCropEnabled()) {
-                return WallpaperPreviewActivity.intentBuilder(appContext, isAssetIdPresent)
-                        .wallpaperInfo(wallpaper)
-                        .viewAsHome(mIsViewAsHome)
-                        .newTask(isMultiPanel)
-                        .refreshCategory(shouldRefreshCategory)
-                        .build();
-            }
-
-            // Launch a full preview activity for devices supporting multipanel mode
-            if (isMultiPanel) {
-                return FullPreviewActivity.newIntent(appContext, wallpaper, mIsViewAsHome,
-                        isAssetIdPresent);
-            }
-            return PreviewActivity.newIntent(appContext, wallpaper, mIsViewAsHome,
-                    isAssetIdPresent);
+            return WallpaperPreviewActivity.intentBuilder(appContext, isAssetIdPresent)
+                    .wallpaperInfo(wallpaper)
+                    .viewAsHome(mIsViewAsHome)
+                    .newTask(isMultiPanel)
+                    .refreshCategory(shouldRefreshCategory)
+                    .build();
         }
 
         @Override
