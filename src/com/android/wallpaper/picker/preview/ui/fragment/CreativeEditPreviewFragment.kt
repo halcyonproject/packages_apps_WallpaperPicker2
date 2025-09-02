@@ -34,11 +34,13 @@ import androidx.navigation.fragment.findNavController
 import com.android.wallpaper.R
 import com.android.wallpaper.model.WallpaperInfoContract
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.binder.FullWallpaperPreviewBinder
 import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment.Companion.ARG_EDIT_INTENT
 import com.android.wallpaper.picker.preview.ui.util.ContentHandlingUtil
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.EXTRA_WALLPAPER_DESCRIPTION
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
@@ -65,7 +67,7 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         currentView = inflater.inflate(R.layout.fragment_full_preview, container, false)
         setUpToolbar(currentView, true, true)
 
@@ -82,6 +84,14 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
                 ?: throw IllegalArgumentException(
                     "To render the first screen in the create new creative wallpaper flow, the intent for rendering the edit activity overlay can not be null."
                 )
+        // The repository WallpaperModel is updated every time the creative wallpaper is updated,
+        // including when the create new flow is launched. Typically the models are the same, but
+        // if we're returning to editing after choosing creative options the repository will have
+        // the updated wallpaper, so update the content from there.
+        val updatedData =
+            (wallpaperPreviewViewModel.wallpaper.value as? LiveWallpaperModel)?.liveWallpaperData
+        updatedData?.description?.content?.let { intent.putExtra(EXTRA_WALLPAPER_DESCRIPTION, it) }
+
         val isCreateNew =
             intent.getBooleanExtra(PreviewActionsViewModel.EXTRA_KEY_IS_CREATE_NEW, false)
         val creativeWallpaperEditActivityResult =
