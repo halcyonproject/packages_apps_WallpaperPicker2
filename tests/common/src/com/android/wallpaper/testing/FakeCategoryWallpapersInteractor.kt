@@ -154,6 +154,9 @@ class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpaper
             ),
         )
 
+    override val categoryTitle: StateFlow<String>
+        get() = MutableStateFlow("sample title")
+
     private val _selectedCategoryWallpapers = MutableStateFlow(fakeWallpapers)
     override val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>> =
         _selectedCategoryWallpapers.asStateFlow()

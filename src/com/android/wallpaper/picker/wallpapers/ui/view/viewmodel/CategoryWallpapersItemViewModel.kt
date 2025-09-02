@@ -73,6 +73,8 @@ sealed class CategoryWallpapersItemViewModel {
         val thumbnailAsset: Asset,
         val title: String?,
         val contentDescription: String?,
+        val isApplied: Boolean = false,
+        val isDownloadable: Boolean = false,
         val onSectionClicked: (() -> Intent)? = null,
     ) : CategoryWallpapersItemViewModel()
 }

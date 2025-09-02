@@ -27,6 +27,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 /**
@@ -47,7 +48,10 @@ constructor(
      * of a category to [List<CategoryWallpapersItemViewModel>]
      */
     val categoryWallpapersContentViewModel: Flow<CategoryWallpapersContentViewModel> =
-        categoryWallpapersInteractor.selectedCategoryWallpapers.map { wallpapers ->
+        combine(
+            categoryWallpapersInteractor.selectedCategoryWallpapers,
+            categoryWallpapersInteractor.categoryTitle,
+        ) { wallpapers, title ->
             if (DEBUG) {
                 Log.d(TAG, "WallpaperModels: ${wallpapers.size}")
             }
@@ -135,6 +139,9 @@ constructor(
                                 thumbnailAsset = it.commonWallpaperData.thumbAsset,
                                 title = it.commonWallpaperData.title,
                                 contentDescription = it.commonWallpaperData.title,
+                                isDownloadable =
+                                    (it as? WallpaperModel.StaticWallpaperModel)
+                                        ?.downloadableWallpaperData != null,
                                 onSectionClicked = {
                                     persistentWallpaperModelRepository.setWallpaperModel(it)
                                     val previewIntent =
@@ -154,8 +161,9 @@ constructor(
                 Log.d(TAG, "here is the list of wallpaperItems yo: ${wallpaperItems}")
             }
 
-            return@map CategoryWallpapersContentViewModel(
+            return@combine CategoryWallpapersContentViewModel(
                 rotationEnabled = false,
+                title = title,
                 wallpaperItems = templates + wallpaperItems,
             )
         }
