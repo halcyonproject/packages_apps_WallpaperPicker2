@@ -182,6 +182,7 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
             savedInstanceState = savedInstanceState,
             wallpaperConnectionUtils = wallpaperConnectionUtils,
             isFirstBindingDeferred = CompletableDeferred(savedInstanceState == null),
+            signalConfigChange = true,
         )
     }
 

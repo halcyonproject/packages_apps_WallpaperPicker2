@@ -109,6 +109,7 @@ constructor(
         disconnectOnWallpaperChange: Boolean,
         totalEngineNum: Int = 1,
         listener: WallpaperEngineConnection.WallpaperEngineConnectionListener? = null,
+        signalConfigChange: Boolean = false,
         onPreviewReady: (() -> Unit)? = null,
     ) {
         this.disconnectOnWallpaperChange = disconnectOnWallpaperChange
@@ -149,7 +150,9 @@ constructor(
                 }
             }
 
-            val isConfigChange = !isFirstBindingDeferred.await()
+            val isConfigChange = signalConfigChange && !isFirstBindingDeferred.await()
+
+            if (debug) Log.d(TAG, "isConfigChange: $isConfigChange")
 
             if (!wallpaperConnectionMap.containsKey(engineKey)) {
                 mutex.withLock {
