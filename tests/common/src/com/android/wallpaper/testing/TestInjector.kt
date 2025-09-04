@@ -15,14 +15,11 @@
  */
 package com.android.wallpaper.testing
 
-import android.app.WallpaperColors
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.LifecycleOwner
-import com.android.customization.model.color.DefaultWallpaperColorResources
-import com.android.customization.model.color.WallpaperColorResources
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.EffectsController
@@ -259,13 +256,6 @@ constructor(
                     interactor = getWallpaperInteractor(context),
                 )
                 .also { wallpaperSnapshotRestorer = it }
-    }
-
-    override fun getWallpaperColorResources(
-        wallpaperColors: WallpaperColors,
-        context: Context,
-    ): WallpaperColorResources {
-        return DefaultWallpaperColorResources(wallpaperColors)
     }
 
     override fun getWallpaperColorsRepository(): WallpaperColorsRepository {

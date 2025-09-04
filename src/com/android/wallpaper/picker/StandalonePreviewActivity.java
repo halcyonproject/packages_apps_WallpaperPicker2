@@ -133,8 +133,7 @@ public class StandalonePreviewActivity extends BasePreviewActivity implements Ap
     }
 
     /**
-     * Creates a new instance of {@link PreviewFragment} and loads the fragment into this
-     * activity's fragment container so that it's shown to the user.
+     * Re-routes to {@link WallpaperPreviewActivity}.
      */
     private void loadPreviewFragment() {
         Intent intent = getIntent();

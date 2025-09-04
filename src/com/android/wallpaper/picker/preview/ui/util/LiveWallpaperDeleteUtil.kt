@@ -22,7 +22,7 @@ import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.text.TextUtils
-import com.android.wallpaper.picker.LivePreviewFragment
+import com.android.wallpaper.model.LiveWallpaperInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,7 +37,7 @@ class LiveWallpaperDeleteUtil @Inject constructor(private val wallpaperManager: 
         }
         val deleteActionIntent = Intent(deleteAction)
         deleteActionIntent.setPackage(wallpaperInfo.packageName)
-        deleteActionIntent.putExtra(LivePreviewFragment.EXTRA_LIVE_WALLPAPER_INFO, wallpaperInfo)
+        deleteActionIntent.putExtra(LiveWallpaperInfo.KEY_EXTRA_WALLPAPERINFO, wallpaperInfo)
         return deleteActionIntent
     }
 
@@ -66,6 +66,10 @@ class LiveWallpaperDeleteUtil @Inject constructor(private val wallpaperManager: 
             return null
         }
         val metaData = serviceInfo.metaData
-        return metaData?.getString(LivePreviewFragment.KEY_ACTION_DELETE_LIVE_WALLPAPER)
+        return metaData?.getString(KEY_ACTION_DELETE_LIVE_WALLPAPER)
+    }
+
+    companion object {
+        const val KEY_ACTION_DELETE_LIVE_WALLPAPER: String = "action_delete_live_wallpaper"
     }
 }
