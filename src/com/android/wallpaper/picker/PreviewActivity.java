@@ -15,103 +15,21 @@
  */
 package com.android.wallpaper.picker;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
-import com.android.wallpaper.R;
-import com.android.wallpaper.model.ImageWallpaperInfo;
 import com.android.wallpaper.model.InlinePreviewIntentFactory;
 import com.android.wallpaper.model.WallpaperInfo;
-import com.android.wallpaper.module.InjectorProvider;
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker;
-import com.android.wallpaper.picker.AppbarFragment.AppbarFragmentHost;
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity;
-import com.android.wallpaper.util.ActivityUtils;
 
 /**
  * Activity that displays a preview of a specific wallpaper and provides the ability to set the
  * wallpaper as the user's current wallpaper.
+ *
+ * <p>TODO (b/442864280): Remove when cleaning up new picker UI flag
  */
-public class PreviewActivity extends BasePreviewActivity implements AppbarFragmentHost {
-    public static final int RESULT_MY_PHOTOS = 0;
-
-    /**
-     * Returns a new Intent with the provided WallpaperInfo instance put as an extra.
-     */
-    public static Intent newIntent(Context packageContext, WallpaperInfo wallpaperInfo,
-            boolean viewAsHome, boolean isAssetIdPresent) {
-        Intent intent = new Intent(packageContext, PreviewActivity.class);
-        intent.putExtra(EXTRA_WALLPAPER_INFO, wallpaperInfo);
-        intent.putExtra(IS_ASSET_ID_PRESENT, isAssetIdPresent);
-        intent.putExtra(EXTRA_VIEW_AS_HOME, viewAsHome);
-        return intent;
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_preview);
-
-        enableFullScreen();
-
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
-
-        if (fragment == null) {
-            Intent intent = getIntent();
-            WallpaperInfo wallpaper = intent.getParcelableExtra(EXTRA_WALLPAPER_INFO);
-            boolean viewAsHome = intent.getBooleanExtra(EXTRA_VIEW_AS_HOME, false);
-            boolean isAssetIdPresent = intent.getBooleanExtra(IS_ASSET_ID_PRESENT,
-                    false);
-            fragment = InjectorProvider.getInjector().getPreviewFragment(
-                    /* context */ this,
-                    wallpaper,
-                    viewAsHome,
-                    isAssetIdPresent,
-                    /* isNewTask= */ false);
-            fm.beginTransaction()
-                    .add(R.id.fragment_container, fragment)
-                    .commit();
-        }
-    }
-
-    @Override
-    public void onUpArrowPressed() {
-        onBackPressed();
-    }
-
-    @Override
-    public boolean isUpArrowSupported() {
-        return !ActivityUtils.isSUWMode(getBaseContext());
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RESULT_MY_PHOTOS && resultCode == Activity.RESULT_OK) {
-            Uri imageUri = (data == null) ? null : data.getData();
-            if (imageUri != null) {
-                ImageWallpaperInfo imageWallpaper = new ImageWallpaperInfo(imageUri);
-                FragmentManager fm = getSupportFragmentManager();
-                Fragment fragment = InjectorProvider.getInjector().getPreviewFragment(
-                        /* context= */ this,
-                        imageWallpaper,
-                        /* viewAsHome= */ true,
-                        /* isAssetIdPresent= */ true,
-                        /* isNewTask= */ false);
-                fm.beginTransaction()
-                        .replace(R.id.fragment_container, fragment)
-                        .commit();
-            }
-        }
-    }
+public class PreviewActivity {
 
     /**
      * Implementation that provides an intent to start a PreviewActivity.
