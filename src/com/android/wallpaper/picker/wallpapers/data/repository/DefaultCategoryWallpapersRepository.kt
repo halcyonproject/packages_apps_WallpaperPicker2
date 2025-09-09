@@ -87,4 +87,8 @@ constructor(
             _isWallpapersFetching.value = false
         }
     }
+
+    override fun refreshWallpapers() {
+        _selectedCategoryModel.value?.let { getWallpapers(it) }
+    }
 }

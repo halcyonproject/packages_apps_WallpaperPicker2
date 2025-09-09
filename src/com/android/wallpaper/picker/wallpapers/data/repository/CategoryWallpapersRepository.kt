@@ -55,4 +55,7 @@ interface CategoryWallpapersRepository {
      * @param category The new category to select for displaying wallpapers.
      */
     fun setSelectedCategory(category: CategoryModel)
+
+    /** Updates the selected wallpaper category to reload its wallpaper data. */
+    fun refreshWallpapers()
 }
