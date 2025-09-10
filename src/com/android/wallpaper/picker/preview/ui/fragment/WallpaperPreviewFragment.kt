@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.IntSize
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentScope
@@ -57,6 +58,7 @@ import com.android.wallpaper.picker.preview.ui.view.PreviewScreen
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -117,6 +119,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     }
 
     @Inject lateinit var displayUtils: DisplayUtils
+    @Inject lateinit var liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils
 
     private val wallpaperPreviewViewModel by activityViewModels<WallpaperPreviewViewModel>()
 
@@ -125,8 +128,20 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val lockScreenPreview = SurfaceView(context)
-        val homeScreenPreview = SurfaceView(context)
+        val lockScreenPreview =
+            SurfaceView(context).also {
+                // Hide surface view until the to-be-parented surface controls are ready. This makes
+                // sure surfaceCreated is called and we can reparent the surface controls in the
+                // callback.
+                it.isVisible = false
+            }
+        val homeScreenPreview =
+            SurfaceView(context).also {
+                // Hide surface view until the to-be-parented surface controls are ready. This makes
+                // sure surfaceCreated is called and we can reparent the surface controls in the
+                // callback.
+                it.isVisible = false
+            }
         container?.addOnAttachStateChangeListener(
             object : OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(view: View) {
@@ -150,6 +165,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                         deviceDisplayType = DeviceDisplayType.SINGLE,
                         display = requireActivity().display,
                         hostToken = hostToken,
+                        windowToken = view.windowToken,
+                        liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
                     )
                     // Bind home screen preview
                     PreviewBinder.bind(
@@ -162,6 +179,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                         deviceDisplayType = DeviceDisplayType.SINGLE,
                         display = requireActivity().display,
                         hostToken = hostToken,
+                        windowToken = view.windowToken,
+                        liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
                     )
                 }
 
