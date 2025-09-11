@@ -20,7 +20,9 @@ import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 
 /** This class provides the wallpaper related [Flow] data for the selected [CategoryModel] */
 @Singleton
@@ -30,6 +32,12 @@ constructor(private val categoryWallpapersRepository: CategoryWallpapersReposito
     CategoryWallpapersInteractor {
     override val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>>
         get() = categoryWallpapersRepository.selectedCategoryWallpapers
+
+    override val categoryTitle: Flow<String>
+        get() =
+            categoryWallpapersRepository.selectedCategoryModel.map {
+                it?.commonCategoryData?.title ?: ""
+            }
 
     override val isWallpapersFetching: StateFlow<Boolean>
         get() = categoryWallpapersRepository.isWallpapersFetching

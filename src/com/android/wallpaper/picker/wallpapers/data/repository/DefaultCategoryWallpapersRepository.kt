@@ -41,7 +41,9 @@ constructor(
 ) : CategoryWallpapersRepository {
 
     /** The selected [CategoryModel] */
-    private var selectedCategory: CategoryModel? = null
+    private val _selectedCategoryModel = MutableStateFlow<CategoryModel?>(null)
+    override val selectedCategoryModel: StateFlow<CategoryModel?> =
+        _selectedCategoryModel.asStateFlow()
 
     /**
      * A mutable map that associates a unique [String] collection id with a [WallpaperModel] for the
@@ -66,7 +68,8 @@ constructor(
     override val isWallpapersFetching: StateFlow<Boolean> = _isWallpapersFetching.asStateFlow()
 
     override fun setSelectedCategory(category: CategoryModel) {
-        selectedCategory = category
+        _selectedCategoryModel.value = category
+
         // trigger fetching of wallpapers or retrieve from cache
         getWallpapers(category)
     }
@@ -83,5 +86,9 @@ constructor(
             _selectedCategoryWallpapers.value = result ?: emptyList()
             _isWallpapersFetching.value = false
         }
+    }
+
+    override fun refreshWallpapers() {
+        _selectedCategoryModel.value?.let { getWallpapers(it) }
     }
 }

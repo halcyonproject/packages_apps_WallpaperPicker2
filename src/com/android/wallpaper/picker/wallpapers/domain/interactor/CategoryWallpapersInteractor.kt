@@ -17,10 +17,13 @@
 package com.android.wallpaper.picker.wallpapers.domain.interactor
 
 import com.android.wallpaper.picker.data.WallpaperModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /** Interface that defines stateful wallpapers data for the selected category */
 interface CategoryWallpapersInteractor {
+
+    val categoryTitle: Flow<String>
 
     /**
      * A [StateFlow] that emits the list of [WallpaperModel]s for the currently selected category.

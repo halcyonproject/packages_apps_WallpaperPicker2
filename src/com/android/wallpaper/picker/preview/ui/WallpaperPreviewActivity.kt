@@ -51,6 +51,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.getEditActivityIntent
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.isNewCreativeWallpaper
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.WallpaperConnection
@@ -74,6 +75,7 @@ class WallpaperPreviewActivity :
     @Inject lateinit var creativeEffectsRepository: CreativeEffectsRepository
     @Inject lateinit var persistentWallpaperModelRepository: PersistentWallpaperModelRepository
     @Inject lateinit var liveWallpaperDownloader: LiveWallpaperDownloader
+    @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
     @MainDispatcher @Inject lateinit var mainScope: CoroutineScope
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
 
@@ -305,6 +307,8 @@ class WallpaperPreviewActivity :
         refreshCreativeCategories?.let {
             if (it) {
                 categoriesViewModel.refreshCategory()
+                // TODO(b/444262256): remove direct references of repos to correct view model
+                categoryWallpapersRepository.refreshWallpapers()
             }
         }
 

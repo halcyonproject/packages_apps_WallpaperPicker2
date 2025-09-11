@@ -23,10 +23,12 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * A repository interface for accessing wallpaper-related data for a [CategoryModel]
  *
- * This interface exposes a [Flow] for observing the currently selected category's wallpapers and
- * the fetching status.
+ * This interface exposes a [Flow] which emits the selected [CategoryModel] and he its wallpapers
+ * and the fetching status.
  */
 interface CategoryWallpapersRepository {
+
+    val selectedCategoryModel: StateFlow<CategoryModel?>
 
     /**
      * A [StateFlow] that emits the list of [WallpaperModel]s associated with the currently selected
@@ -53,4 +55,7 @@ interface CategoryWallpapersRepository {
      * @param category The new category to select for displaying wallpapers.
      */
     fun setSelectedCategory(category: CategoryModel)
+
+    /** Updates the selected wallpaper category to reload its wallpaper data. */
+    fun refreshWallpapers()
 }

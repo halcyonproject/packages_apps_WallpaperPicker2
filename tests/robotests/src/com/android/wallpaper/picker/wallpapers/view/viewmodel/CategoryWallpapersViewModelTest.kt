@@ -341,4 +341,12 @@ class CategoryWallpapersViewModelTest {
         // verify that the lambda correctly set the selected WallpaperModel
         assertThat(selectedWallpaperModel?.commonWallpaperData?.title).isEqualTo("static wp 2")
     }
+
+    @Test
+    fun sections_verifyTitle() = runTest {
+        val screenViewModel =
+            collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
+        assertThat(screenViewModel?.wallpaperItems?.size).isEqualTo(1)
+        assertThat(screenViewModel?.title).isEqualTo("sample title")
+    }
 }
