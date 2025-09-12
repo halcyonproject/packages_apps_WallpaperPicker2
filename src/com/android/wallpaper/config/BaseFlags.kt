@@ -115,14 +115,6 @@ abstract class BaseFlags {
             ?.value == true
     }
 
-    open fun isAIWallpaperEnabled(context: Context): Boolean {
-        return getCachedFlags(context)
-            .firstOrNull { flag ->
-                flag.name == Contract.FlagsTable.FLAG_NAME_WALLPAPER_PICKER_UI_FOR_AIWP
-            }
-            ?.value == true
-    }
-
     /**
      * This flag is to for refactoring the process of setting a wallpaper from the Wallpaper Picker,
      * such as changes in WallpaperSetter, WallpaperPersister and WallpaperPreferences.
