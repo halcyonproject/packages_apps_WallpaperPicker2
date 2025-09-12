@@ -19,8 +19,6 @@ import android.content.Context
 import android.graphics.Point
 import android.util.AttributeSet
 import androidx.viewpager.widget.ViewPager
-import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 
 /**
@@ -29,52 +27,13 @@ import com.android.wallpaper.model.wallpaper.DeviceDisplayType
  * [DualDisplayAspectRatioLayout] are determined after the their parent ViewPager is rendered. This
  * prevents the ViewPager from sizing itself to wrap its contents.
  */
+// TODO (b/444241867): Remove the whole DualPreviewViewPager
 class DualPreviewViewPager
 @JvmOverloads
 constructor(context: Context, attrs: AttributeSet? = null /* attrs */) : ViewPager(context, attrs) {
     private var previewDisplaySizes: Map<DeviceDisplayType, Point>? = null
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (previewDisplaySizes == null || BaseFlags.get().isNewPickerUi()) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-            return
-        }
-
-        val parentWidth =
-            this.measuredWidth -
-                context.resources.let {
-                    it.getDimension(R.dimen.small_dual_preview_edge_space) * 2 -
-                        it.getDimension(R.dimen.small_preview_inter_preview_margin) * 3
-                }
-
-        val smallDisplayAspectRatio =
-            getPreviewDisplaySize(DeviceDisplayType.FOLDED).let { it.x.toFloat() / it.y }
-
-        val largeDisplayAspectRatio =
-            getPreviewDisplaySize(DeviceDisplayType.UNFOLDED).let { it.x.toFloat() / it.y }
-
-        val viewPagerHeight = parentWidth / (largeDisplayAspectRatio + smallDisplayAspectRatio)
-
-        super.onMeasure(
-            widthMeasureSpec,
-            MeasureSpec.makeMeasureSpec(
-                viewPagerHeight.toInt(),
-                MeasureSpec.EXACTLY,
-            )
-        )
-    }
-
     fun setDisplaySizes(displaySizes: Map<DeviceDisplayType, Point>) {
         previewDisplaySizes = displaySizes
-    }
-
-    /**
-     * Gets the display size for a [DualDisplayAspectRatioLayout.Companion.PreviewView].
-     *
-     * Outside this class we should get display size via
-     * [DualDisplayAspectRatioLayout.getPreviewDisplaySize].
-     */
-    private fun getPreviewDisplaySize(display: DeviceDisplayType): Point {
-        return checkNotNull(previewDisplaySizes?.get(display))
     }
 }
