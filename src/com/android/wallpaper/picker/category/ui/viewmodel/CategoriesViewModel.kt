@@ -91,6 +91,16 @@ constructor(
         if (BaseFlags.get().isPackThemeEnabled()) {
             refetchPackThemeCategoryReceiver()
         }
+        registerLocaleChangeReceiver()
+    }
+
+    fun registerLocaleChangeReceiver() {
+        val localeChangeReceiver =
+            broadcastDispatcher.broadcastFlow(IntentFilter(Intent.ACTION_LOCALE_CHANGED))
+
+        bgScope.launch {
+            localeChangeReceiver.collect { singleCategoryInteractor.refreshDueToLocaleChange() }
+        }
     }
 
     fun refetchPackThemeCategoryReceiver() {
