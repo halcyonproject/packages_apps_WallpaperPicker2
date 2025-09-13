@@ -152,7 +152,6 @@ class IndividualPickerFragment2 :
     private var shouldReloadWallpapers = false
     private lateinit var categoryProvider: CategoryProvider
     private var appliedWallpaperIds: Set<String> = setOf()
-    private var mIsCreativeWallpaperEnabled = false
     private var isNewPickerUi = false
 
     private var refreshCreativeCategories: CategoryType? = null
@@ -169,7 +168,6 @@ class IndividualPickerFragment2 :
         super.onCreate(savedInstanceState)
         val injector = InjectorProvider.getInjector()
         val appContext = requireContext().applicationContext
-        mIsCreativeWallpaperEnabled = injector.getFlags().isAIWallpaperEnabled(appContext)
         wallpaperManager = WallpaperManager.getInstance(appContext)
         packageStatusNotifier = injector.getPackageStatusNotifier(appContext)
         wallpaperCategoryWrapper = injector.getWallpaperCategoryWrapper()
@@ -283,7 +281,7 @@ class IndividualPickerFragment2 :
                     WallpaperManager.getInstance(context).getWallpaperInfo(FLAG_LOCK)
 
                 // Handle first group (templates/items that allow to create a new wallpaper)
-                if (mIsCreativeWallpaperEnabled && firstEntry != null && supportsUserCreated) {
+                if (firstEntry != null && supportsUserCreated) {
                     val wallpapers = byGroup.getValue(firstEntry)
                     isCreativeCategory = true
 
@@ -567,7 +565,7 @@ class IndividualPickerFragment2 :
     }
 
     private fun isFewerColumnLayout(): Boolean =
-        (!mIsCreativeWallpaperEnabled || category?.supportsUserCreatedWallpapers() == false) &&
+        category?.supportsUserCreatedWallpapers() == false &&
             items.count { it is PickerItem.WallpaperItem } <= MAX_CAPACITY_IN_FEWER_COLUMN_LAYOUT
 
     private fun getGridItemPaddingHorizontal(): Int {

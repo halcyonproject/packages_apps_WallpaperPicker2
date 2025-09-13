@@ -227,10 +227,6 @@ constructor(
                         return true
                     }
 
-                    override fun isAIWallpaperEnabled(context: Context): Boolean {
-                        return true
-                    }
-
                     override fun getCachedFlags(
                         context: Context
                     ): List<CustomizationProviderClient.Flag> {
