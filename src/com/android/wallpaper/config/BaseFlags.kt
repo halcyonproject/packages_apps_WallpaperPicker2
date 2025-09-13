@@ -18,10 +18,8 @@ package com.android.wallpaper.config
 import android.app.Flags.updateRecentsFromSystem
 import android.app.WallpaperManager
 import android.content.Context
-import com.android.systemui.shared.Flags.clockReactiveVariants
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
-import com.android.systemui.shared.Flags.lockscreenCustomClocks
 import com.android.systemui.shared.Flags.newCustomizationPickerUi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
@@ -74,8 +72,6 @@ abstract class BaseFlags {
 
     open fun isNewPickerUi() = newCustomizationPickerUi()
 
-    open fun isClockReactiveVariantsEnabled() = clockReactiveVariants()
-
     open fun isComposeRefactorEnabled() = composeRefactorFlag()
 
     open fun isColorPickerUpdateEnabled() = colorPickerUpdateFlag()
@@ -98,15 +94,6 @@ abstract class BaseFlags {
                     Contract.FlagsTable.FLAG_NAME_CUSTOM_LOCK_SCREEN_QUICK_AFFORDANCES_ENABLED
             }
             ?.value == true
-    }
-
-    open fun isCustomClocksEnabled(context: Context): Boolean {
-        return lockscreenCustomClocks() ||
-            getCachedFlags(context)
-                .firstOrNull { flag ->
-                    flag.name == Contract.FlagsTable.FLAG_NAME_CUSTOM_CLOCKS_ENABLED
-                }
-                ?.value == true
     }
 
     /**
