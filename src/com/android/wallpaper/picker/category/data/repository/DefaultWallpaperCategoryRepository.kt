@@ -96,6 +96,12 @@ constructor(
         backgroundScope.launch { fetchAllCategories() }
     }
 
+    override fun refreshDueToLocaleChange() {
+        _isDefaultCategoriesFetched.value = false
+        defaultWallpaperClient.resetResources()
+        backgroundScope.launch { fetchAllCategories() }
+    }
+
     private suspend fun fetchAllCategories() {
         try {
             fetchSystemCategories()
