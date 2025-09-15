@@ -83,3 +83,10 @@ flag {
     description: "Refactor the wallpaper preview screen into Compose."
     bug: "423956081"
 }
+
+flag {
+    name: "photo_shuffle_flag"
+    namespace: "customization_picker"
+    description: "Flag for enabling the photo shuffle feature in the wallpaper picker app"
+    bug: "445051119"
+}

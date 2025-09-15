@@ -34,6 +34,7 @@ import com.android.wallpaper.Flags.desktopUiFlag
 import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
+import com.android.wallpaper.Flags.photoShuffleFlag
 import com.android.wallpaper.Flags.refactorIndividualPickerFlag
 import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
@@ -86,6 +87,8 @@ abstract class BaseFlags {
     open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
 
     open fun isRefactorWallpaperPreviewScreenEnabled() = refactorWallpaperPreviewScreenFlag()
+
+    open fun isPhotoShuffleEnabled() = photoShuffleFlag()
 
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
