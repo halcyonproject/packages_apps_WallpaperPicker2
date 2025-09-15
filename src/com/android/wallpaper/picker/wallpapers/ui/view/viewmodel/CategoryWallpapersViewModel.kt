@@ -190,6 +190,21 @@ constructor(
             )
         }
 
+    /**
+     * A [Flow] that emits the loading state for fetching wallpapers of the currently selected
+     * category.
+     *
+     * Emits `true` when a request to fetch wallpapers is active, and `false` otherwise. This flow
+     * is typically observed by the UI to show or hide a loading indicator.
+     */
+    val categoryWallpapersIsLoading: Flow<Boolean> =
+        categoryWallpapersInteractor.isWallpapersFetching
+
+    override fun onCleared() {
+        super.onCleared()
+        categoryWallpapersInteractor.clearSelectedCategory()
+    }
+
     // TODO(b/444284275): remove references to remote ids
     private fun getAppliedWallpaperIds(): Set<String> {
         val wallpaperInfo = wallpaperManager?.wallpaperInfo

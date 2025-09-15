@@ -58,4 +58,7 @@ interface CategoryWallpapersRepository {
 
     /** Updates the selected wallpaper category to reload its wallpaper data. */
     fun refreshWallpapers()
+
+    /** Clears the selected category and wallpapers for the category */
+    fun clearSelectedCategory()
 }

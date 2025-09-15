@@ -41,4 +41,8 @@ constructor(private val categoryWallpapersRepository: CategoryWallpapersReposito
 
     override val isWallpapersFetching: StateFlow<Boolean>
         get() = categoryWallpapersRepository.isWallpapersFetching
+
+    override fun clearSelectedCategory() {
+        categoryWallpapersRepository.clearSelectedCategory()
+    }
 }

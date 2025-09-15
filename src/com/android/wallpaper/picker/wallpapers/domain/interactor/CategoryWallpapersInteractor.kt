@@ -39,4 +39,7 @@ interface CategoryWallpapersInteractor {
      * Emits `true` while wallpapers are loading, and `false` when loading is complete or idle.
      */
     val isWallpapersFetching: StateFlow<Boolean>
+
+    /** Clears the selected category and wallpapers for the category */
+    fun clearSelectedCategory()
 }
