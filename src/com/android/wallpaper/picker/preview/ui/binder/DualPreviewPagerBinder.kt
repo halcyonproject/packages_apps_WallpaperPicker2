@@ -29,7 +29,6 @@ import com.android.wallpaper.R
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.preview.ui.view.DualDisplayAspectRatioLayout
 import com.android.wallpaper.picker.preview.ui.view.DualDisplayAspectRatioLayout.Companion.getViewId
-import com.android.wallpaper.picker.preview.ui.view.DualPreviewViewPager
 import com.android.wallpaper.picker.preview.ui.view.adapters.DualPreviewPagerAdapter
 import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
@@ -44,7 +43,7 @@ import kotlinx.coroutines.launch
 object DualPreviewPagerBinder {
 
     fun bind(
-        dualPreviewView: DualPreviewViewPager,
+        dualPreviewView: ViewPager,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
         applicationContext: Context,
         mainScope: CoroutineScope,
@@ -117,7 +116,6 @@ object DualPreviewPagerBinder {
                         wallpaperPreviewViewModel.wallpaperDisplaySize.value,
                 )
             dualDisplayAspectRatioLayout.setDisplaySizes(displaySizes)
-            dualPreviewView.setDisplaySizes(displaySizes)
 
             DeviceDisplayType.FOLDABLE_DISPLAY_TYPES.forEach { display ->
                 val previewDisplaySize = dualDisplayAspectRatioLayout.getPreviewDisplaySize(display)

@@ -19,7 +19,7 @@ import android.content.Context
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.transition.Transition
-import com.android.wallpaper.picker.preview.ui.view.DualPreviewViewPager
+import androidx.viewpager.widget.ViewPager
 import com.android.wallpaper.picker.preview.ui.view.PreviewTabs
 import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
@@ -35,7 +35,7 @@ object DualPreviewSelectorBinder {
 
     fun bind(
         tabs: PreviewTabs?,
-        dualPreviewView: DualPreviewViewPager,
+        dualPreviewView: ViewPager,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
         applicationContext: Context,
         mainScope: CoroutineScope,
