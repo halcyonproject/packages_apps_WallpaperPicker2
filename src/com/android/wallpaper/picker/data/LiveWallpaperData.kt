@@ -19,8 +19,12 @@ package com.android.wallpaper.picker.data
 import android.app.WallpaperInfo
 import android.app.wallpaper.WallpaperDescription
 
-/** Represents set of attributes that are specific to live wallpapers. */
-data class LiveWallpaperData(
+/**
+ * Represents set of attributes that are specific to live wallpapers.
+ *
+ * This is no longer a data class because we need different equality behavior per b/442618219.
+ */
+class LiveWallpaperData(
     val groupName: String,
     val systemWallpaperInfo: WallpaperInfo,
     val isTitleVisible: Boolean,
