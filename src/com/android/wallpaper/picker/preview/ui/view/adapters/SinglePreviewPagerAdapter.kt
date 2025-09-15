@@ -32,7 +32,7 @@ class SinglePreviewPagerAdapter(private val onBindViewHolder: (ViewHolder, Int) 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view =
             LayoutInflater.from(parent.context)
-                .inflate(R.layout.small_preview_handheld_card_view2, parent, false)
+                .inflate(R.layout.small_preview_handheld_card_view, parent, false)
 
         view.setPadding(
             0,
