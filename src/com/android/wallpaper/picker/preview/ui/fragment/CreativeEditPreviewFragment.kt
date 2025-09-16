@@ -32,6 +32,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.WallpaperInfoContract
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
@@ -53,6 +54,9 @@ import kotlinx.coroutines.CoroutineScope
 /** Shows full preview with an edit activity overlay. */
 @AndroidEntryPoint(AppbarFragment::class)
 class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
+
+    private val isRefactorWallpaperPreviewScreenEnabled =
+        BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()
 
     @Inject @ApplicationContext lateinit var appContext: Context
     @Inject @MainDispatcher lateinit var mainScope: CoroutineScope
@@ -108,12 +112,21 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
                     // otherwise.
                     if (it.resultCode == RESULT_OK) {
                         updatePreview(it.resultCode, it.data)
-                        // When clicking on the check button, navigate to the small preview
-                        // fragment.
-                        findNavController()
-                            .navigate(
-                                R.id.action_creativeEditPreviewFragment_to_smallPreviewFragment
-                            )
+                        if (isRefactorWallpaperPreviewScreenEnabled) {
+                            // When clicking on the check button, navigate to the preview fragment.
+                            findNavController()
+                                .navigate(
+                                    R.id
+                                        .action_creativeEditPreviewFragment_to_wallpaperPreviewFragment
+                                )
+                        } else {
+                            // When clicking on the check button, navigate to the small preview
+                            // fragment.
+                            findNavController()
+                                .navigate(
+                                    R.id.action_creativeEditPreviewFragment_to_smallPreviewFragment
+                                )
+                        }
                     } else {
                         activity?.finish()
                     }

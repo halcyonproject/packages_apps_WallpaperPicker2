@@ -65,6 +65,7 @@ data class LiveWallpaperConnections(
                     )
                 }
             }
+            wallpaperEngine.clear()
             windowToken.get()?.let { windowToken ->
                 wallpaperService.get()?.let { service ->
                     try {
@@ -79,6 +80,7 @@ data class LiveWallpaperConnections(
                     }
                 }
             }
+            windowToken.clear()
             serviceConnection.get()?.let {
                 try {
                     context.unbindService(it)
@@ -91,6 +93,7 @@ data class LiveWallpaperConnections(
                     )
                 }
             }
+            serviceConnection.clear()
         }
     }
 

@@ -49,6 +49,7 @@ import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.theme.PlatformTheme
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.AppbarFragment
@@ -63,8 +64,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * This fragment displays the preview of the selected wallpaper on all available workspaces and
- * device displays.
+ * This fragment hosts the wallpaper preview screen. The screen has two major functions:
+ * 1. preview wallpapers: it displays the preview of the selected wallpaper on all available
+ *    workspaces and devices displays.
+ * 2. apply wallpapers: users can apply the wallpaper to the devices.
+ *
+ * [WallpaperPreviewFragment] can only be used by refactor_wallpaper_previewScreen_flag.
  */
 @AndroidEntryPoint(AppbarFragment::class)
 class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
@@ -123,6 +128,16 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
 
     private val wallpaperPreviewViewModel by activityViewModels<WallpaperPreviewViewModel>()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+            throw IllegalStateException(
+                "$this can only be used when " +
+                    "refactor_wallpaper_preview_screen_flag is turned on."
+            )
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -142,53 +157,26 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                 // callback.
                 it.isVisible = false
             }
-        container?.addOnAttachStateChangeListener(
-            object : OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(view: View) {
-                    // We need to wait until the parent container view is attached to window to get
-                    // the surface control's token as the host token for rendering external
-                    // rendering.
-                    // The host token is used by the external rendering to listen to its lifecycle,
-                    // so that when the token is dead, the external rendering can release resources
-                    // accordingly.
-                    val hostToken = view.rootSurfaceControl?.inputTransferToken?.token ?: return
-                    val applicationContext: Context = view.context.applicationContext
-                    // Bind lock screen preview
-                    // TODO(b/332742248): Handle foldable case for DeviceDisplayType.
-                    PreviewBinder.bind(
-                        preview = lockScreenPreview,
-                        viewModel = wallpaperPreviewViewModel,
-                        applicationContext = applicationContext,
-                        viewLifecycleOwner = viewLifecycleOwner,
-                        screen = Screen.LOCK_SCREEN,
-                        displaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
-                        deviceDisplayType = DeviceDisplayType.SINGLE,
-                        display = requireActivity().display,
-                        hostToken = hostToken,
-                        windowToken = view.windowToken,
-                        liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
-                    )
-                    // Bind home screen preview
-                    PreviewBinder.bind(
-                        preview = homeScreenPreview,
-                        viewModel = wallpaperPreviewViewModel,
-                        applicationContext = applicationContext,
-                        viewLifecycleOwner = viewLifecycleOwner,
-                        screen = Screen.HOME_SCREEN,
-                        displaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
-                        deviceDisplayType = DeviceDisplayType.SINGLE,
-                        display = requireActivity().display,
-                        hostToken = hostToken,
-                        windowToken = view.windowToken,
-                        liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
-                    )
-                }
 
-                override fun onViewDetachedFromWindow(p0: View) {
-                    // Do nothing intended
+        // Note that we need to make sure the parent container view is attached to window, so that
+        // the surface control's token and the container's window token are ready.
+        // The host token is used by the external rendering to listen to its lifecycle, so that when
+        // the token is dead, the external rendering can release resources accordingly.
+        if (container?.isAttachedToWindow == true) {
+            bindPreviews(container, lockScreenPreview, homeScreenPreview)
+        } else {
+            container?.addOnAttachStateChangeListener(
+                object : OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(view: View) {
+                        bindPreviews(view, lockScreenPreview, homeScreenPreview)
+                    }
+
+                    override fun onViewDetachedFromWindow(p0: View) {
+                        // Do nothing intended
+                    }
                 }
-            }
-        )
+            )
+        }
 
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -200,6 +188,48 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     )
                 }
             }
+        }
+    }
+
+    private fun bindPreviews(
+        rootView: View,
+        lockScreenPreview: SurfaceView,
+        homeScreenPreview: SurfaceView,
+    ) {
+        val applicationContext: Context = rootView.context.applicationContext
+        val hostToken = rootView.rootSurfaceControl?.inputTransferToken?.token
+        val windowToken = rootView.windowToken
+
+        if (hostToken != null && windowToken != null) {
+            // TODO(b/332742248): Handle foldable case for DeviceDisplayType.
+            // Bind lock screen preview
+            PreviewBinder.bind(
+                preview = lockScreenPreview,
+                viewModel = wallpaperPreviewViewModel,
+                applicationContext = applicationContext,
+                viewLifecycleOwner = viewLifecycleOwner,
+                screen = Screen.LOCK_SCREEN,
+                displaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
+                deviceDisplayType = DeviceDisplayType.SINGLE,
+                display = requireActivity().display,
+                hostToken = hostToken,
+                windowToken = windowToken,
+                liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
+            )
+            // Bind home screen preview
+            PreviewBinder.bind(
+                preview = homeScreenPreview,
+                viewModel = wallpaperPreviewViewModel,
+                applicationContext = applicationContext,
+                viewLifecycleOwner = viewLifecycleOwner,
+                screen = Screen.HOME_SCREEN,
+                displaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
+                deviceDisplayType = DeviceDisplayType.SINGLE,
+                display = requireActivity().display,
+                hostToken = hostToken,
+                windowToken = windowToken,
+                liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
+            )
         }
     }
 

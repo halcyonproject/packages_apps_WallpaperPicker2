@@ -37,15 +37,16 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Handles connecting the rendering of live wallpapers.
  *
- * [LiveWallpaperConnectionUtils] is only used when the flag refactor_wallpaper_preview_screen_flag
- * is turned on and should be gated with the flag.
+ * [LiveWallpaperConnectionUtils] can only be used by refactor_wallpaper_preview_screen_flag.
  */
 @ActivityRetainedScoped
 class LiveWallpaperConnectionUtils @Inject constructor() {
 
     // Note that we only need to use mutex and cache the engine map when forceSingleEngine is true.
     // Otherwise, we always create a new engine when connect.
-    private val liveWallpaperEngine: MutableMap<String, IWallpaperEngine> = mutableMapOf()
+    // TODO (b/423956081): Make sure that previous engines are properly disconnected when not needed
+    //                     in both cases when forceSingleEngine is true / false.
+    private val liveWallpaperEngines: MutableMap<String, IWallpaperEngine> = mutableMapOf()
     private val mutex = Mutex()
 
     init {
@@ -69,37 +70,79 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
         onEngineCreated: (engine: IWallpaperEngine) -> Unit,
         onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
     ): IWallpaperEngine {
-        val connectionKey = wallpaperModel.getConnectionKey()
+        // When forcing single engine, we will use mutex lock to first check if the engine is
+        // created and cached in liveWallpaperEngines; otherwise, create one and cache it in
+        // liveWallpaperEngines.
         if (forceSingleEngine) {
-            mutex.withLock {
-                if (liveWallpaperEngine.contains(connectionKey)) {
-                    return liveWallpaperEngine.getValue(connectionKey)
+            val connectionKey = wallpaperModel.getConnectionKey()
+
+            return mutex.withLock {
+                val existingEngine = liveWallpaperEngines[connectionKey]
+                if (existingEngine != null) {
+                    return@withLock existingEngine // Found it, return immediately
                 }
+
+                val newEngine =
+                    bindWallpaperServiceAndCreateEngine(
+                        context = context,
+                        wallpaperModel = wallpaperModel,
+                        destinationFlag = destinationFlag,
+                        displaySize = displaySize,
+                        windowToken = windowToken,
+                        displayId = displayId,
+                        whichPreview = whichPreview,
+                        onEngineCreated = onEngineCreated,
+                        onWallpaperColorsChanged = onWallpaperColorsChanged,
+                    )
+
+                liveWallpaperEngines[connectionKey] = newEngine
+
+                return@withLock newEngine
             }
         }
 
+        return bindWallpaperServiceAndCreateEngine(
+            context = context,
+            wallpaperModel = wallpaperModel,
+            destinationFlag = destinationFlag,
+            displaySize = displaySize,
+            windowToken = windowToken,
+            displayId = displayId,
+            whichPreview = whichPreview,
+            onEngineCreated = onEngineCreated,
+            onWallpaperColorsChanged = onWallpaperColorsChanged,
+        )
+    }
+
+    private suspend fun bindWallpaperServiceAndCreateEngine(
+        context: Context,
+        wallpaperModel: LiveWallpaperModel,
+        destinationFlag: Int,
+        displaySize: Point,
+        windowToken: IBinder,
+        displayId: Int,
+        whichPreview: WhichPreview,
+        onEngineCreated: (engine: IWallpaperEngine) -> Unit,
+        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+    ): IWallpaperEngine {
         val (serviceConnection, wallpaperService) =
             LiveWallpaperServiceBinder.bindWallpaperService(
                 context = context,
                 wallpaperModel = wallpaperModel,
             )
+
         val engine: IWallpaperEngine =
             LiveWallpaperEngineCreator.createEngine(
-                    wallpaperService = wallpaperService,
-                    destinationFlag = destinationFlag,
-                    description = wallpaperModel.toDescription(),
-                    displaySize = displaySize,
-                    windowToken = windowToken,
-                    displayId = displayId, // TODO(b/423956081): give a proper ID here
-                    whichPreview = whichPreview,
-                    onWallpaperColorsChanged = onWallpaperColorsChanged,
-                )
-                .also {
-                    onEngineCreated.invoke(it)
-                    if (forceSingleEngine) {
-                        mutex.withLock { liveWallpaperEngine[connectionKey] = it }
-                    }
-                }
+                wallpaperService = wallpaperService,
+                destinationFlag = destinationFlag,
+                description = wallpaperModel.toDescription(),
+                displaySize = displaySize,
+                windowToken = windowToken,
+                displayId = displayId, // TODO(b/423956081): give a proper ID here
+                whichPreview = whichPreview,
+                onWallpaperColorsChanged = onWallpaperColorsChanged,
+            )
+        onEngineCreated.invoke(engine)
 
         val connection =
             LiveWallpaperConnections(
@@ -109,15 +152,16 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
                 windowToken = WeakReference(windowToken),
             )
 
-        // Listen to link death and disconnect connection
+        // Set up death listeners for service and engine
+        val disconnectAction = { connection.disconnect(context) }
         (serviceConnection as? WallpaperServiceConnection)?.deadConnectionListener =
             object : WallpaperServiceConnection.DeadConnectionListener {
                 override fun onConnectionDead(serviceConnection: ServiceConnection) {
-                    connection.disconnect(context)
+                    disconnectAction.invoke()
                 }
             }
-        wallpaperService.asBinder()?.linkToDeath({ connection.disconnect(context) }, 0)
-        engine.asBinder()?.linkToDeath({ connection.disconnect(context) }, 0)
+        wallpaperService.asBinder()?.linkToDeath(disconnectAction, 0)
+        engine.asBinder()?.linkToDeath(disconnectAction, 0)
 
         return engine
     }
