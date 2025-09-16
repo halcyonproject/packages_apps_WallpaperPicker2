@@ -71,6 +71,7 @@ public class LiveWallpaperInfo extends WallpaperInfo {
             };
 
     public static final String TAG_NAME = "live-wallpaper";
+    public static final String KEY_EXTRA_WALLPAPERINFO = "android.live_wallpaper.info";
 
     private static final String TAG = "LiveWallpaperInfo";
     public static final String ATTR_ID = "id";
