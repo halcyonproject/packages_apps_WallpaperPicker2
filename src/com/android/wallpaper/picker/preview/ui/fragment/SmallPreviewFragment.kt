@@ -41,6 +41,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.transition.Transition
+import androidx.viewpager.widget.ViewPager
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
@@ -62,7 +63,6 @@ import com.android.wallpaper.picker.preview.ui.binder.SmallPreviewScreenBinder
 import com.android.wallpaper.picker.preview.ui.util.AnimationUtil
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
-import com.android.wallpaper.picker.preview.ui.view.DualPreviewViewPager
 import com.android.wallpaper.picker.preview.ui.view.PreviewActionFloatingSheet
 import com.android.wallpaper.picker.preview.ui.view.PreviewActionGroup
 import com.android.wallpaper.picker.preview.ui.view.PreviewTabs
@@ -498,8 +498,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
                     }
         } else {
             if (isFoldable) {
-                val dualPreviewView: DualPreviewViewPager =
-                    view.requireViewById(R.id.pager_previews)
+                val dualPreviewView: ViewPager = view.requireViewById(R.id.pager_previews)
 
                 DualPreviewSelectorBinder.bind(
                     tabs,

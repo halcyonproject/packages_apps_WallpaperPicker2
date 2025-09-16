@@ -43,10 +43,7 @@ class PreviewActionGroup(context: Context, attrs: AttributeSet?) : FrameLayout(c
     private val shareButton: ToggleButton
 
     init {
-        val layout =
-            if (BaseFlags.get().isNewPickerUi()) R.layout.preview_action_group2
-            else R.layout.preview_action_group
-        LayoutInflater.from(context).inflate(layout, this, true)
+        LayoutInflater.from(context).inflate(R.layout.preview_action_group, this, true)
         informationButton = requireViewById(R.id.information_button)
         downloadButton = requireViewById(R.id.download_button)
         downloadButtonToggle = requireViewById(R.id.download_button_toggle)

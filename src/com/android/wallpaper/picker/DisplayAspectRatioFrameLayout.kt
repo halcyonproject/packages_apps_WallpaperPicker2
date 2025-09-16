@@ -21,7 +21,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.FrameLayout
 import androidx.core.view.children
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.util.ScreenSizeCalculator
 import kotlin.math.max
 
@@ -69,12 +68,10 @@ class DisplayAspectRatioFrameLayout(context: Context, attrs: AttributeSet?) :
             maxWidth = max(maxWidth, child.measuredWidth)
         }
 
-        if (BaseFlags.get().isNewPickerUi()) {
-            // New height based on the new width
-            val newHeight = (maxWidth * screenAspectRatio).toInt()
+        // New height based on the new width
+        val newHeight = (maxWidth * screenAspectRatio).toInt()
 
-            // Makes width wrap content
-            setMeasuredDimension(resolveSize(maxWidth, widthMeasureSpec), newHeight)
-        }
+        // Makes width wrap content
+        setMeasuredDimension(resolveSize(maxWidth, widthMeasureSpec), newHeight)
     }
 }

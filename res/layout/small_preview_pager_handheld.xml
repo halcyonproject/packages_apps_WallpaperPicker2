@@ -48,7 +48,7 @@
             android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall" />
     </LinearLayout>
 
-    <include layout="@layout/small_preview_handheld_card_view2"
+    <include layout="@layout/small_preview_handheld_card_view"
         android:id="@+id/lock_preview" />
 
     <CheckBox
@@ -63,7 +63,7 @@
         android:scrollHorizontally="true"
         android:visibility="gone"/>
 
-    <include layout="@layout/small_preview_handheld_card_view2"
+    <include layout="@layout/small_preview_handheld_card_view"
         android:id="@+id/home_preview" />
 
     <CheckBox
