@@ -20,11 +20,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.wallpaper.picker.AppbarFragment
+import com.android.wallpaper.picker.wallpapers.ui.view.compose.LoadingSpinner
 import com.android.wallpaper.picker.wallpapers.ui.view.compose.WallpapersScreenContent
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,9 +46,22 @@ class CategoryWallpapersFragment : Hilt_CategoryWallpapersFragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                val state by
+                val categoryWallpapersContentViewModel by
                     viewModel.categoryWallpapersContentViewModel.collectAsStateWithLifecycle(null)
-                state?.let { WallpapersScreenContent(it) }
+
+                val areWallpapersLoading by
+                    viewModel.categoryWallpapersIsLoading.collectAsStateWithLifecycle(true)
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    categoryWallpapersContentViewModel?.let { content ->
+                        WallpapersScreenContent(content)
+                    }
+
+                    LoadingSpinner(
+                        isLoading = areWallpapersLoading,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }

@@ -166,4 +166,6 @@ class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpaper
     fun setWallpapers(wallpaperModels: List<WallpaperModel>) {
         _selectedCategoryWallpapers.value = wallpaperModels
     }
+
+    override fun clearSelectedCategory() {}
 }

@@ -22,6 +22,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +52,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -361,6 +365,27 @@ fun LayerListImage(
             contentDescription = contentDescription,
             modifier = modifier,
         )
+    }
+}
+
+/**
+ * A circular progress indicator. It appears immediately when `isLoading` is true and disappears
+ * immediately when `isLoading` is false.
+ *
+ * @param isLoading A boolean state indicating whether content is currently loading.
+ * @param modifier The modifier to be applied to the loading indicator.
+ */
+@Composable
+fun LoadingSpinner(isLoading: Boolean, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = isLoading,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.Center),
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(48.dp))
+        }
     }
 }
 

@@ -91,4 +91,9 @@ constructor(
     override fun refreshWallpapers() {
         _selectedCategoryModel.value?.let { getWallpapers(it) }
     }
+
+    override fun clearSelectedCategory() {
+        _selectedCategoryModel.value = null
+        _selectedCategoryWallpapers.value = emptyList()
+    }
 }
