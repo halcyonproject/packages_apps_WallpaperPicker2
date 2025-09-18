@@ -145,19 +145,8 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-
         val view =
-            if (isNewPickerUi) {
-                // Inflate categories fragment with new toolbar.
-                inflater.inflate(
-                    R.layout.categories_fragment2,
-                    container,
-                    /* attachToRoot= */ false,
-                )
-            } else {
-                inflater.inflate(R.layout.categories_fragment, container, /* attachToRoot= */ false)
-            }
+            inflater.inflate(R.layout.categories_fragment2, container, /* attachToRoot= */ false)
         setUpToolbar(view)
         setTitle(getText(R.string.wallpaper_title))
 
@@ -166,25 +155,23 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val categoriesHeaderImage: ImageView? = view.findViewById(R.id.categories_header_image)
         categoriesHeaderImage?.let { it.isVisible = false }
 
-        if (isNewPickerUi) {
-            ColorUpdateBinder.bind(
-                setColor = { _ ->
-                    // There is no way to programmatically set app:liftOnScrollColor in
-                    // AppBarLayout, therefore remove and re-add view to update colors based on new
-                    // context
-                    val contentParent = view.requireViewById<ViewGroup>(R.id.content_parent)
-                    val appBarLayout = contentParent.requireViewById<AppBarLayout>(R.id.app_bar)
-                    contentParent.removeView(appBarLayout)
-                    layoutInflater.inflate(R.layout.section_header_content2, contentParent, true)
-                    setUpToolbar(view)
-                    setTitle(getText(R.string.wallpaper_title))
-                    contentParent.requestApplyInsets()
-                },
-                color = colorUpdateViewModel.colorSurfaceContainer,
-                shouldAnimate = { false },
-                lifecycleOwner = viewLifecycleOwner,
-            )
-        }
+        ColorUpdateBinder.bind(
+            setColor = { _ ->
+                // There is no way to programmatically set app:liftOnScrollColor in
+                // AppBarLayout, therefore remove and re-add view to update colors based on new
+                // context
+                val contentParent = view.requireViewById<ViewGroup>(R.id.content_parent)
+                val appBarLayout = contentParent.requireViewById<AppBarLayout>(R.id.app_bar)
+                contentParent.removeView(appBarLayout)
+                layoutInflater.inflate(R.layout.section_header_content2, contentParent, true)
+                setUpToolbar(view)
+                setTitle(getText(R.string.wallpaper_title))
+                contentParent.requestApplyInsets()
+            },
+            color = colorUpdateViewModel.colorSurfaceContainer,
+            shouldAnimate = { false },
+            lifecycleOwner = viewLifecycleOwner,
+        )
 
         CategoriesBinder.bind(
             categoriesPage = view.requireViewById<RecyclerView>(R.id.content_parent),
