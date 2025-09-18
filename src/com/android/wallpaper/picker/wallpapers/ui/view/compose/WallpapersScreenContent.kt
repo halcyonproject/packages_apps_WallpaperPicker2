@@ -50,14 +50,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,8 +69,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -96,6 +101,9 @@ private const val THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
 @Composable
 fun WallpapersScreenContent(
     viewModel: CategoryWallpapersContentViewModel,
+    isRotationDialogShowing: Boolean,
+    isRotationLoading: Boolean,
+    networkPreference: Int,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -104,7 +112,12 @@ fun WallpapersScreenContent(
                 .fillMaxSize()
                 .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
     ) {
-        TopToolbar(viewModel.title, modifier = modifier)
+        TopToolbar(
+            viewModel.title,
+            viewModel.rotationEnabled,
+            viewModel.onShowRotationDialog,
+            modifier = modifier,
+        )
         LazyColumn(modifier = modifier.fillMaxSize()) {
             items(viewModel.wallpaperItems) { item ->
                 when (item) {
@@ -131,6 +144,71 @@ fun WallpapersScreenContent(
             }
         }
     }
+
+    if (isRotationDialogShowing) {
+        PlatformTheme {
+            val colorScheme = MaterialTheme.colorScheme
+            AlertDialog(
+                shape = RoundedCornerShape(24.dp),
+                containerColor = colorScheme.onPrimaryContainer,
+                textContentColor = colorScheme.onSurface,
+                title = {
+                    Text(
+                        text = stringResource(R.string.start_rotation_dialog_body),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleMedium.copy(lineHeight = 20.sp),
+                    )
+                },
+                onDismissRequest = { viewModel.onCancelRotationDialog?.invoke() },
+                text = {
+                    if (isRotationLoading) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = modifier.fillMaxWidth(),
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.start_rotation_dialog_wifi_only_option_message
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Checkbox(
+                                checked = networkPreference != 0,
+                                onCheckedChange = viewModel.onNetworkPreferences,
+                                modifier = modifier.clearAndSetSemantics {},
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    if (!isRotationLoading) {
+                        TextButton(onClick = { viewModel.onRotationStart?.invoke() }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                },
+                dismissButton = {
+                    if (!isRotationLoading) {
+                        TextButton(onClick = { viewModel.onCancelRotationDialog?.invoke() }) {
+                            Text(stringResource(android.R.string.cancel))
+                        }
+                    }
+                },
+            )
+        }
+    }
 }
 
 @Composable
@@ -150,13 +228,18 @@ fun SectionLabel(text: String, modifier: Modifier) {
 }
 
 @Composable
-fun TopToolbar(title: String, modifier: Modifier) {
+fun TopToolbar(
+    title: String,
+    isRotationEnabled: Boolean,
+    startRotation: (() -> Unit)?,
+    modifier: Modifier,
+) {
     val activity = LocalActivity.current as ComponentActivity
 
     PlatformTheme {
         val colorScheme = MaterialTheme.colorScheme
         Row(
-            modifier = modifier.padding(vertical = 8.dp, horizontal = 24.dp),
+            modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
         ) {
@@ -190,6 +273,15 @@ fun TopToolbar(title: String, modifier: Modifier) {
                 fontSize = 20.sp,
                 color = colorScheme.onSurface,
             )
+            if (isRotationEnabled) {
+                IconButton(onClick = { startRotation?.invoke() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_slideshow_24dp),
+                        contentDescription = "Slideshow",
+                        tint = colorScheme.onSurface,
+                    )
+                }
+            }
         }
     }
 }

@@ -157,6 +157,9 @@ class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpaper
     override val categoryTitle: StateFlow<String>
         get() = MutableStateFlow("sample title")
 
+    override val isRotationEnabled: StateFlow<Boolean>
+        get() = MutableStateFlow(false)
+
     private val _selectedCategoryWallpapers = MutableStateFlow(fakeWallpapers)
     override val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>> =
         _selectedCategoryWallpapers.asStateFlow()
@@ -168,4 +171,6 @@ class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpaper
     }
 
     override fun clearSelectedCategory() {}
+
+    override suspend fun startRotation(networkPreference: Int) {}
 }

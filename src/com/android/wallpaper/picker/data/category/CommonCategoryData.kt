@@ -25,6 +25,7 @@ data class CommonCategoryData(
     val collectionId: String,
     val priority: Int,
     val thumbnailDrawable: Drawable? = null,
+    val isRotationEnabled: Boolean = false,
 
     /**
      * This lambda retrieves the associated collection of [WallpaperModel] for this [CategoryModel]

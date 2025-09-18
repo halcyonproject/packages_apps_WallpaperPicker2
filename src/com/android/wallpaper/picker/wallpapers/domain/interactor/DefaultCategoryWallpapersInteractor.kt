@@ -39,10 +39,20 @@ constructor(private val categoryWallpapersRepository: CategoryWallpapersReposito
                 it?.commonCategoryData?.title ?: ""
             }
 
+    override val isRotationEnabled: Flow<Boolean>
+        get() =
+            categoryWallpapersRepository.selectedCategoryModel.map {
+                (it?.commonCategoryData?.isRotationEnabled == true)
+            }
+
     override val isWallpapersFetching: StateFlow<Boolean>
         get() = categoryWallpapersRepository.isWallpapersFetching
 
     override fun clearSelectedCategory() {
         categoryWallpapersRepository.clearSelectedCategory()
+    }
+
+    override suspend fun startRotation(networkPreference: Int) {
+        categoryWallpapersRepository.startRotation(networkPreference)
     }
 }

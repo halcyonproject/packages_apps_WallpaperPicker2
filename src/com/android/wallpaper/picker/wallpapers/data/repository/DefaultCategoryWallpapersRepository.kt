@@ -17,18 +17,23 @@
 package com.android.wallpaper.picker.wallpapers.data.repository
 
 import android.content.Context
+import android.util.Log
+import com.android.wallpaper.model.WallpaperRotationInitializer
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 @Singleton
@@ -36,6 +41,7 @@ open class DefaultCategoryWallpapersRepository
 @Inject
 constructor(
     @ApplicationContext val context: Context,
+    private val rotationInitializerFactory: RotationInitializerFactory,
     @BackgroundDispatcher private val backgroundScope: CoroutineScope,
     @BackgroundDispatcher private val backgroundDispatcher: CoroutineDispatcher,
 ) : CategoryWallpapersRepository {
@@ -44,6 +50,12 @@ constructor(
     private val _selectedCategoryModel = MutableStateFlow<CategoryModel?>(null)
     override val selectedCategoryModel: StateFlow<CategoryModel?> =
         _selectedCategoryModel.asStateFlow()
+
+    /**
+     * A [WallpaperRotationInitializer] which manages he initiation of wallpaper rotation for a
+     * specific category
+     */
+    private var rotationInitializer: WallpaperRotationInitializer? = null
 
     /**
      * A mutable map that associates a unique [String] collection id with a [WallpaperModel] for the
@@ -72,6 +84,14 @@ constructor(
 
         // trigger fetching of wallpapers or retrieve from cache
         getWallpapers(category)
+
+        if (category.commonCategoryData.isRotationEnabled) {
+            rotationInitializer =
+                rotationInitializerFactory.create(
+                    category.commonCategoryData.collectionId,
+                    category.commonCategoryData.title,
+                )
+        }
     }
 
     private fun getWallpapers(category: CategoryModel) {
@@ -95,5 +115,43 @@ constructor(
     override fun clearSelectedCategory() {
         _selectedCategoryModel.value = null
         _selectedCategoryWallpapers.value = emptyList()
+        rotationInitializer = null
+    }
+
+    override suspend fun startRotation(networkPreference: Int) =
+        suspendCancellableCoroutine { cont ->
+            val commonCategoryData = _selectedCategoryModel.value?.commonCategoryData
+
+            if (commonCategoryData == null) {
+                Log.e(TAG, "Wallpaper rotation failed to start. Category data is missing.")
+                cont.resumeWithException(
+                    IllegalStateException("Common category data is not initialized.")
+                )
+                return@suspendCancellableCoroutine
+            }
+
+            rotationInitializer?.setFirstWallpaperInRotation(
+                context,
+                networkPreference,
+                object : WallpaperRotationInitializer.Listener {
+                    override fun onFirstWallpaperInRotationSet() {
+                        if (rotationInitializer!!.startRotation(context)) {
+                            cont.resume(Unit)
+                        } else {
+                            Log.e(TAG, "Wallpaper rotation failed to start.")
+                            cont.resumeWithException(RuntimeException())
+                        }
+                    }
+
+                    override fun onError() {
+                        Log.e(TAG, "Wallpaper initialization failed.")
+                        cont.resumeWithException(RuntimeException())
+                    }
+                },
+            )
+        }
+
+    companion object {
+        const val TAG = "DefaultCategoryWallpapersRepository"
     }
 }

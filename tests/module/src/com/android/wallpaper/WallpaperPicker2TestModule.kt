@@ -50,6 +50,8 @@ import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvi
 import com.android.wallpaper.picker.preview.ui.binder.DefaultApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.util.DefaultImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
+import com.android.wallpaper.picker.wallpapers.data.repository.DefaultRotationInitializerFactory
+import com.android.wallpaper.picker.wallpapers.data.repository.RotationInitializerFactory
 import com.android.wallpaper.testing.FakeCategoryInteractor
 import com.android.wallpaper.testing.FakeCuratedPhotosInteractorImpl
 import com.android.wallpaper.testing.FakeDefaultPhotosErrorConvertor
@@ -166,6 +168,12 @@ abstract class WallpaperPicker2TestModule {
     abstract fun bindWallpaperModelFactory(
         impl: FakeDefaultWallpaperModelFactory
     ): WallpaperModelFactory
+
+    @Binds
+    @Singleton
+    abstract fun bindRotationInitializerFactory(
+        impl: DefaultRotationInitializerFactory
+    ): RotationInitializerFactory
 
     @Binds
     @Singleton

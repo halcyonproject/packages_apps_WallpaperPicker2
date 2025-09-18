@@ -25,6 +25,9 @@ import android.text.TextUtils
 import android.util.ArraySet
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_CELLULAR_OK
+import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_WIFI_ONLY
 import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -34,7 +37,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 /**
  * [CategoryWallpapersViewModel] is responsible for preparing and managing UI-related data for the
@@ -51,6 +59,35 @@ constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
+    private val _showRotationDialog = MutableStateFlow(false)
+    /**
+     * [StateFlow] indicating whether the rotation setup dialog is currently visible.
+     *
+     * `true` when the user has clicked to start rotation and the confirmation dialog is displayed.
+     */
+    val showRotationDialog: StateFlow<Boolean> = _showRotationDialog
+
+    private val _isRotationLoading = MutableStateFlow(false)
+
+    /**
+     * [StateFlow] indicating whether the wallpaper rotation process is currently executing
+     *
+     * When `true`, the dialog content should typically show a [CircularProgressIndicator] and
+     * disable action buttons.
+     */
+    val isRotationLoading: StateFlow<Boolean> = _isRotationLoading
+
+    private val _networkPreference = MutableStateFlow(NETWORK_PREFERENCE_WIFI_ONLY)
+    /**
+     * [StateFlow] representing the user's current network preference for downloading wallpapers.
+     *
+     * This value is typically used to control a checkbox in the rotation dialog. The value follows
+     * an integer convention:
+     * - `NETWORK_PREFERENCE_WIFI_ONLY` (often 0): Synchronization only occurs over Wi-Fi.
+     * - Non-zero value (often 1): Synchronization is allowed over any network (Wi-Fi or cellular).
+     */
+    val networkPreference: StateFlow<Int> = _networkPreference
+
     /**
      * This [Flow] emits [CategoryWallpapersContentViewModel] by mapping the [List<WallpaperModel>]
      * of a category to [List<CategoryWallpapersItemViewModel>]
@@ -59,7 +96,8 @@ constructor(
         combine(
             categoryWallpapersInteractor.selectedCategoryWallpapers,
             categoryWallpapersInteractor.categoryTitle,
-        ) { wallpapers, title ->
+            categoryWallpapersInteractor.isRotationEnabled,
+        ) { wallpapers, title, isRotationEnabled ->
             if (DEBUG) {
                 Log.d(TAG, "WallpaperModels: ${wallpapers.size}")
             }
@@ -184,7 +222,11 @@ constructor(
             }
 
             return@combine CategoryWallpapersContentViewModel(
-                rotationEnabled = false,
+                rotationEnabled = isRotationEnabled,
+                onRotationStart = { startRotation() },
+                onShowRotationDialog = { onRotationStartClick() },
+                onCancelRotationDialog = { onCancelRotationDialog() },
+                onNetworkPreferences = { isWifiOnly -> updateNetworkPreferences(isWifiOnly) },
                 title = title,
                 wallpaperItems = templates + wallpaperItems,
             )
@@ -203,6 +245,39 @@ constructor(
     override fun onCleared() {
         super.onCleared()
         categoryWallpapersInteractor.clearSelectedCategory()
+    }
+
+    private fun startRotation() {
+        viewModelScope.launch {
+            _isRotationLoading.value = true
+            try {
+                categoryWallpapersInteractor.startRotation(_networkPreference.value)
+                _dismissScreenEvent.emit(Unit)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failure starting wallpaper rotation")
+            } finally {
+                _isRotationLoading.value = false
+                _showRotationDialog.value = false
+                _networkPreference.value = NETWORK_PREFERENCE_WIFI_ONLY
+            }
+        }
+    }
+
+    private fun onRotationStartClick() {
+        _showRotationDialog.value = true
+    }
+
+    private fun onCancelRotationDialog() {
+        _showRotationDialog.value = false
+        _networkPreference.value = NETWORK_PREFERENCE_WIFI_ONLY
+    }
+
+    private val _dismissScreenEvent = MutableSharedFlow<Unit>() // one-time signal
+    val dismissScreenEvent: SharedFlow<Unit> = _dismissScreenEvent
+
+    private fun updateNetworkPreferences(isWifi: Boolean) {
+        _networkPreference.value =
+            if (isWifi) NETWORK_PREFERENCE_WIFI_ONLY else NETWORK_PREFERENCE_CELLULAR_OK
     }
 
     // TODO(b/444284275): remove references to remote ids
