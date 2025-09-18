@@ -29,6 +29,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewStub
+import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toolbar
@@ -912,6 +913,21 @@ class CustomizationPickerFragment2 :
             layoutInflater.inflate(R.layout.preview_shade, homePreviewContainer, false)
         homePreviewContainer.addView(homePreviewShade)
 
+        // Sets up focus listeners for the lock preview and home preview to handle accessibility
+        // focus events.
+        if (BaseFlags.get().shouldShowDesktopUi(rootView.context)) {
+            setUpPreviewCardFocusListener(
+                lockPreview.requireViewById<View>(R.id.preview_card),
+                previewPager,
+                Screen.LOCK_SCREEN,
+            )
+            setUpPreviewCardFocusListener(
+                homePreview.requireViewById<View>(R.id.preview_card),
+                previewPager,
+                Screen.HOME_SCREEN,
+            )
+        }
+
         return PreviewPagerViews(
             previewPager = previewPager,
             lockPreviewLabel = previewPager.requireViewById(R.id.lock_preview_label),
@@ -1033,20 +1049,7 @@ class CustomizationPickerFragment2 :
                         .build()
                 )
             },
-            onTransitionToScreen = {
-                when (it) {
-                    LOCK_SCREEN ->
-                        previewPager.transitionToState(
-                            R.id.lock_preview_selected,
-                            ANIMATION_DURATION,
-                        )
-                    HOME_SCREEN ->
-                        previewPager.transitionToState(
-                            R.id.home_preview_selected,
-                            ANIMATION_DURATION,
-                        )
-                }
-            },
+            onTransitionToScreen = { screen -> previewPager.transitionToScreen(screen) },
             onPreviewReady = { previewScreen ->
                 customizationPickerViewModel.setPreviewReady(previewScreen, true)
             },
@@ -1087,6 +1090,46 @@ class CustomizationPickerFragment2 :
             optionEntriesContainer.addView(view)
         }
         return optionEntries
+    }
+
+    private fun ClickableMotionLayout.transitionToScreen(screen: Screen) {
+        val targetState =
+            when (screen) {
+                LOCK_SCREEN -> R.id.lock_preview_selected
+                HOME_SCREEN -> R.id.home_preview_selected
+            }
+        transitionToState(targetState, ANIMATION_DURATION)
+    }
+
+    /**
+     * Sets up a focus listener for the preview card to handle accessibility focus events. When the
+     * preview card receives focus, it transitions the preview pager to the corresponding screen.
+     */
+    private fun setUpPreviewCardFocusListener(
+        previewCard: View,
+        previewPager: ClickableMotionLayout,
+        screen: Screen,
+    ) {
+        previewCard.isFocusable = true
+        previewCard.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+
+        previewCard.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                previewPager.transitionToScreen(screen)
+            }
+        }
+
+        ViewCompat.setAccessibilityDelegate(
+            previewCard,
+            object : AccessibilityDelegateCompat() {
+                override fun onPopulateAccessibilityEvent(host: View, event: AccessibilityEvent) {
+                    super.onPopulateAccessibilityEvent(host, event)
+                    if (event.eventType == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED) {
+                        previewPager.transitionToScreen(screen)
+                    }
+                }
+            },
+        )
     }
 
     /**

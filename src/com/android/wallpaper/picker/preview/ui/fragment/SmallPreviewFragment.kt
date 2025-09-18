@@ -26,12 +26,15 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isGone
 import androidx.fragment.app.activityViewModels
@@ -197,6 +200,15 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
                 lifecycleOwner = viewLifecycleOwner,
             )
             setUpTransitionListener(it)
+
+            // Sets up focus listeners for the lock preview and home preview to handle accessibility
+            // focus events.
+            if (BaseFlags.get().shouldShowDesktopUi(it.context)) {
+                val lockPreview = it.requireViewById<View>(R.id.lock_preview)
+                val homePreview = it.requireViewById<View>(R.id.home_preview)
+                setUpPreviewCardFocusListener(lockPreview, Screen.LOCK_SCREEN)
+                setUpPreviewCardFocusListener(homePreview, Screen.HOME_SCREEN)
+            }
         }
         setUpToolbar(currentView, /* upArrow= */ true, /* transparentToolbar= */ true)
         bindScreenPreview(
@@ -394,6 +406,34 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
 
     override fun getToolbarTextColor(): Int {
         return ContextCompat.getColor(requireContext(), R.color.system_on_surface)
+    }
+
+    /**
+     * Sets up a focus listener for the preview card to handle accessibility focus events. When the
+     * card receives focus, it selects the corresponding preview screen.
+     */
+    private fun setUpPreviewCardFocusListener(view: View, screen: Screen) {
+        val previewCard = view.requireViewById<View>(R.id.preview)
+        previewCard.isFocusable = true
+        previewCard.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+
+        previewCard.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                wallpaperPreviewViewModel.setSmallPreviewSelectedTab(screen)
+            }
+        }
+
+        ViewCompat.setAccessibilityDelegate(
+            previewCard,
+            object : AccessibilityDelegateCompat() {
+                override fun onPopulateAccessibilityEvent(host: View, event: AccessibilityEvent) {
+                    super.onPopulateAccessibilityEvent(host, event)
+                    if (event.eventType == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED) {
+                        wallpaperPreviewViewModel.setSmallPreviewSelectedTab(screen)
+                    }
+                }
+            },
+        )
     }
 
     private fun setUpTransitionListener(previewPager: MotionLayout) {
