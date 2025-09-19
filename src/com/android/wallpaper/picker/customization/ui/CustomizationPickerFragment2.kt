@@ -1080,7 +1080,8 @@ class CustomizationPickerFragment2 :
             val isFirst = index == 0
             val isLast = index == optionEntries.size - 1
             view.setBackgroundResource(
-                if (isFirst) R.drawable.customization_option_entry_top_background
+                if (isFirst && isLast) R.drawable.customization_option_entry_singleton_background
+                else if (isFirst) R.drawable.customization_option_entry_top_background
                 else if (isLast) R.drawable.customization_option_entry_bottom_background
                 else R.drawable.customization_option_entry_background
             )
