@@ -32,7 +32,6 @@ import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.category.ui.binder.BannerProvider
 import com.android.wallpaper.picker.category.ui.view.adapter.CuratedPhotosAdapter
@@ -78,223 +77,213 @@ class CuratedPhotoSectionViewHolder(
         isSignInBannerVisible: Boolean,
         onSignInBannerDismissed: (dismissed: Boolean) -> Unit? = {},
     ) {
-        val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-        if (isNewPickerUi) {
 
-            // setting the color for section title
-            ColorUpdateBinder.bind(
-                setColor = { color -> sectionTitle.setTextColor(color) },
-                color = colorUpdateViewModel.colorOnSurface,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
+        // setting the color for section title
+        ColorUpdateBinder.bind(
+            setColor = { color -> sectionTitle.setTextColor(color) },
+            color = colorUpdateViewModel.colorOnSurface,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
 
-            // setting the color for more photo label
-            ColorUpdateBinder.bind(
-                setColor = { color -> morePhotosLabel.setTextColor(color) },
-                color = colorUpdateViewModel.colorOnSurface,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
+        // setting the color for more photo label
+        ColorUpdateBinder.bind(
+            setColor = { color -> morePhotosLabel.setTextColor(color) },
+            color = colorUpdateViewModel.colorOnSurface,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
 
-            // setting the icon color of the button
-            ColorUpdateBinder.bind(
-                setColor = { color ->
-                    TextViewCompat.setCompoundDrawableTintList(
-                        morePhotosButton,
-                        ColorStateList.valueOf(color),
+        // setting the icon color of the button
+        ColorUpdateBinder.bind(
+            setColor = { color ->
+                TextViewCompat.setCompoundDrawableTintList(
+                    morePhotosButton,
+                    ColorStateList.valueOf(color),
+                )
+            },
+            color = colorUpdateViewModel.colorOnPrimary,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
+
+        // setting the text color of the button
+        ColorUpdateBinder.bind(
+            setColor = { color -> morePhotosButton.setTextColor(color) },
+            color = colorUpdateViewModel.colorOnPrimary,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
+
+        // setting background of the button
+        ColorUpdateBinder.bind(
+            setColor = { color ->
+                DrawableCompat.setTint(DrawableCompat.wrap(morePhotosButton.background), color)
+            },
+            color = colorUpdateViewModel.colorPrimary,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
+
+        // in case of curated photos, the sectionTitle is actually mapped to morePhotosLabel
+        sectionTitle.visibility = View.GONE
+        if (item.sectionTitle != null) {
+            morePhotosLabel.text = item.sectionTitle
+        } else {
+            morePhotosLabel.visibility = View.GONE
+        }
+
+        // in case there are no suggested photos or suggested photos are less than 3
+        if (!item.isSuggestedPhotoCarouselVisible) {
+            val layoutParams = morePhotosButton.layoutParams as RelativeLayout.LayoutParams
+            layoutParams.removeRule(RelativeLayout.ALIGN_PARENT_END)
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL)
+            morePhotosButton.layoutParams = layoutParams
+            morePhotosButton.text = itemView.context.getString(R.string.choose_a_photo)
+            morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
+
+            // showing the sign in banner in case a user is not authenticated and the banner
+            // hasn't been already dismissed by the user
+            if (item.status == PhotosErrorData.UNAUTHENTICATED && !isSignInBannerVisible) {
+                val viewStub = categoryHeader.findViewById<ViewStub>(R.id.sign_in_banner_id)
+                if (viewStub != null) {
+                    val signInBannerView = bannerProvider?.getSignInBanner()
+                    val pendingIntentForPhotos = item.pendingIntent
+                    val dismissButton = bannerProvider?.getDismissButton(signInBannerView)
+                    val signInButton = bannerProvider?.getSignInButton(signInBannerView)
+
+                    val viewStubLayoutParams = viewStub.layoutParams
+                    val index = categoryHeader.indexOfChild(viewStub)
+                    categoryHeader.removeView(viewStub)
+                    signInBannerView?.layoutParams = viewStubLayoutParams
+                    categoryHeader.addView(signInBannerView, index)
+
+                    val bannerTitle = bannerProvider?.getBannerTitle(signInBannerView)
+                    val bannerDescription = bannerProvider?.getBannerDescription(signInBannerView)
+                    val photoIcon = bannerProvider?.getIcon(signInBannerView)
+                    dismissButton?.setBackgroundColor(Color.TRANSPARENT)
+
+                    // This is needed in order to allow activity starts using pending intent
+                    // Ref:
+                    // https://developer.android.com/guide/components/activities/
+                    // background-starts
+                    val options = ActivityOptions.makeBasic()
+                    options.setPendingIntentBackgroundActivityStartMode(
+                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
                     )
-                },
-                color = colorUpdateViewModel.colorOnPrimary,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
+                    val bundle = options.toBundle()
 
-            // setting the text color of the button
-            ColorUpdateBinder.bind(
-                setColor = { color -> morePhotosButton.setTextColor(color) },
-                color = colorUpdateViewModel.colorOnPrimary,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
-
-            // setting background of the button
-            ColorUpdateBinder.bind(
-                setColor = { color ->
-                    DrawableCompat.setTint(DrawableCompat.wrap(morePhotosButton.background), color)
-                },
-                color = colorUpdateViewModel.colorPrimary,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
-
-            // in case of curated photos, the sectionTitle is actually mapped to morePhotosLabel
-            sectionTitle.visibility = View.GONE
-            if (item.sectionTitle != null) {
-                morePhotosLabel.text = item.sectionTitle
-            } else {
-                morePhotosLabel.visibility = View.GONE
-            }
-
-            // in case there are no suggested photos or suggested photos are less than 3
-            if (!item.isSuggestedPhotoCarouselVisible) {
-                val layoutParams = morePhotosButton.layoutParams as RelativeLayout.LayoutParams
-                layoutParams.removeRule(RelativeLayout.ALIGN_PARENT_END)
-                layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL)
-                morePhotosButton.layoutParams = layoutParams
-                morePhotosButton.text = itemView.context.getString(R.string.choose_a_photo)
-                morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
-
-                // showing the sign in banner in case a user is not authenticated and the banner
-                // hasn't been already dismissed by the user
-                if (item.status == PhotosErrorData.UNAUTHENTICATED && !isSignInBannerVisible) {
-                    val viewStub = categoryHeader.findViewById<ViewStub>(R.id.sign_in_banner_id)
-                    if (viewStub != null) {
-                        val signInBannerView = bannerProvider?.getSignInBanner()
-                        val pendingIntentForPhotos = item.pendingIntent
-                        val dismissButton = bannerProvider?.getDismissButton(signInBannerView)
-                        val signInButton = bannerProvider?.getSignInButton(signInBannerView)
-
-                        val viewStubLayoutParams = viewStub.layoutParams
-                        val index = categoryHeader.indexOfChild(viewStub)
-                        categoryHeader.removeView(viewStub)
-                        signInBannerView?.layoutParams = viewStubLayoutParams
-                        categoryHeader.addView(signInBannerView, index)
-
-                        val bannerTitle = bannerProvider?.getBannerTitle(signInBannerView)
-                        val bannerDescription =
-                            bannerProvider?.getBannerDescription(signInBannerView)
-                        val photoIcon = bannerProvider?.getIcon(signInBannerView)
-                        dismissButton?.setBackgroundColor(Color.TRANSPARENT)
-
-                        // This is needed in order to allow activity starts using pending intent
-                        // Ref:
-                        // https://developer.android.com/guide/components/activities/
-                        // background-starts
-                        val options = ActivityOptions.makeBasic()
-                        options.setPendingIntentBackgroundActivityStartMode(
-                            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
-                        )
-                        val bundle = options.toBundle()
-
-                        dismissButton?.setOnClickListener { _ ->
-                            signInBannerView?.visibility = View.GONE
-                            onSignInBannerDismissed(true)
-                        }
-
-                        signInButton?.setOnClickListener { _ ->
-                            try {
-                                pendingIntentForPhotos?.send(bundle)
-                            } catch (e: PendingIntent.CanceledException) {
-                                // nothing will happen in this case, so we can simply log
-                                Log.e(TAG, "PendingIntent was canceled: $e")
-                            }
-                        }
-
-                        // setting background for the overall sign in banner
-                        ColorUpdateBinder.bind(
-                            setColor = { color ->
-                                signInBannerView
-                                    ?.background
-                                    ?.let { DrawableCompat.wrap(it) }
-                                    ?.let { DrawableCompat.setTint(it, color) }
-                            },
-                            color = colorUpdateViewModel.colorSurfaceContainerHigh,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting text color of the banner title
-                        ColorUpdateBinder.bind(
-                            setColor = { color -> bannerTitle?.setTextColor(color) },
-                            color = colorUpdateViewModel.colorOnSurfaceVariant,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting text color of the banner description
-                        ColorUpdateBinder.bind(
-                            setColor = { color -> bannerDescription?.setTextColor(color) },
-                            color = colorUpdateViewModel.colorOnSurfaceVariant,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting color of the icon itself
-                        ColorUpdateBinder.bind(
-                            setColor = { color -> photoIcon?.setColorFilter(color) },
-                            color = colorUpdateViewModel.colorOnPrimary,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting background of the photos icon
-                        ColorUpdateBinder.bind(
-                            setColor = { color ->
-                                photoIcon
-                                    ?.background
-                                    ?.let { DrawableCompat.wrap(it) }
-                                    ?.let { DrawableCompat.setTint(it, color) }
-                            },
-                            color = colorUpdateViewModel.colorPrimary,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting background for the sign in Button
-                        ColorUpdateBinder.bind(
-                            setColor = { color ->
-                                signInButton
-                                    ?.background
-                                    ?.let { DrawableCompat.wrap(it) }
-                                    ?.let { DrawableCompat.setTint(it, color) }
-                            },
-                            color = colorUpdateViewModel.colorPrimary,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting text color for the dismiss Button
-                        ColorUpdateBinder.bind(
-                            setColor = { color -> dismissButton?.setTextColor(color) },
-                            color = colorUpdateViewModel.colorPrimary,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
-
-                        // setting text color for the sign in Button
-                        ColorUpdateBinder.bind(
-                            setColor = { color -> signInButton?.setTextColor(color) },
-                            color = colorUpdateViewModel.colorOnPrimary,
-                            shouldAnimate = shouldAnimateColor,
-                            lifecycleOwner = lifecycleOwner,
-                        )
+                    dismissButton?.setOnClickListener { _ ->
+                        signInBannerView?.visibility = View.GONE
+                        onSignInBannerDismissed(true)
                     }
-                }
-                // we hide the title called suggested photos in this case
-                morePhotosLabel.visibility = View.GONE
-            } else {
-                morePhotosLabel.visibility = View.VISIBLE
-                sectionTiles.adapter =
-                    CuratedPhotosAdapter(
-                        item.tileViewModels,
-                        curatedPhotosTimeUtil,
-                        userEventLogger,
+
+                    signInButton?.setOnClickListener { _ ->
+                        try {
+                            pendingIntentForPhotos?.send(bundle)
+                        } catch (e: PendingIntent.CanceledException) {
+                            // nothing will happen in this case, so we can simply log
+                            Log.e(TAG, "PendingIntent was canceled: $e")
+                        }
+                    }
+
+                    // setting background for the overall sign in banner
+                    ColorUpdateBinder.bind(
+                        setColor = { color ->
+                            signInBannerView
+                                ?.background
+                                ?.let { DrawableCompat.wrap(it) }
+                                ?.let { DrawableCompat.setTint(it, color) }
+                        },
+                        color = colorUpdateViewModel.colorSurfaceContainerHigh,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
                     )
-                val currentParams = sectionTiles.layoutParams
-                currentParams.height =
-                    sectionTiles.context.resources
-                        .getDimension(R.dimen.curated_photo_height)
-                        .toInt()
-                sectionTiles.layoutParams = currentParams
-                val layoutManagerCuratedPhotos = CarouselLayoutManager()
-                sectionTiles.layoutManager = layoutManagerCuratedPhotos
-                val horizontalScrollEnforcer = CarouselHorizontalScrollEnforcer(itemView.context)
-                sectionTiles.clearOnScrollListeners()
-                sectionTiles.addOnScrollListener(horizontalScrollEnforcer)
-                sectionTiles.addOnItemTouchListener(horizontalScrollEnforcer)
-                morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
+
+                    // setting text color of the banner title
+                    ColorUpdateBinder.bind(
+                        setColor = { color -> bannerTitle?.setTextColor(color) },
+                        color = colorUpdateViewModel.colorOnSurfaceVariant,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+
+                    // setting text color of the banner description
+                    ColorUpdateBinder.bind(
+                        setColor = { color -> bannerDescription?.setTextColor(color) },
+                        color = colorUpdateViewModel.colorOnSurfaceVariant,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+
+                    // setting color of the icon itself
+                    ColorUpdateBinder.bind(
+                        setColor = { color -> photoIcon?.setColorFilter(color) },
+                        color = colorUpdateViewModel.colorOnPrimary,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+
+                    // setting background of the photos icon
+                    ColorUpdateBinder.bind(
+                        setColor = { color ->
+                            photoIcon
+                                ?.background
+                                ?.let { DrawableCompat.wrap(it) }
+                                ?.let { DrawableCompat.setTint(it, color) }
+                        },
+                        color = colorUpdateViewModel.colorPrimary,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+
+                    // setting background for the sign in Button
+                    ColorUpdateBinder.bind(
+                        setColor = { color ->
+                            signInButton
+                                ?.background
+                                ?.let { DrawableCompat.wrap(it) }
+                                ?.let { DrawableCompat.setTint(it, color) }
+                        },
+                        color = colorUpdateViewModel.colorPrimary,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+
+                    // setting text color for the dismiss Button
+                    ColorUpdateBinder.bind(
+                        setColor = { color -> dismissButton?.setTextColor(color) },
+                        color = colorUpdateViewModel.colorPrimary,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+
+                    // setting text color for the sign in Button
+                    ColorUpdateBinder.bind(
+                        setColor = { color -> signInButton?.setTextColor(color) },
+                        color = colorUpdateViewModel.colorOnPrimary,
+                        shouldAnimate = shouldAnimateColor,
+                        lifecycleOwner = lifecycleOwner,
+                    )
+                }
             }
+            // we hide the title called suggested photos in this case
+            morePhotosLabel.visibility = View.GONE
+        } else {
+            morePhotosLabel.visibility = View.VISIBLE
+            sectionTiles.adapter =
+                CuratedPhotosAdapter(item.tileViewModels, curatedPhotosTimeUtil, userEventLogger)
+            val currentParams = sectionTiles.layoutParams
+            currentParams.height =
+                sectionTiles.context.resources.getDimension(R.dimen.curated_photo_height).toInt()
+            sectionTiles.layoutParams = currentParams
+            val layoutManagerCuratedPhotos = CarouselLayoutManager()
+            sectionTiles.layoutManager = layoutManagerCuratedPhotos
+            val horizontalScrollEnforcer = CarouselHorizontalScrollEnforcer(itemView.context)
+            sectionTiles.clearOnScrollListeners()
+            sectionTiles.addOnScrollListener(horizontalScrollEnforcer)
+            sectionTiles.addOnItemTouchListener(horizontalScrollEnforcer)
+            morePhotosButton.setOnClickListener { _ -> item.onSectionClicked?.invoke() }
         }
     }
 
