@@ -84,7 +84,6 @@ class WallpaperPreviewActivity :
     private val wallpaperPreviewViewModel: WallpaperPreviewViewModel by viewModels()
     private val categoriesViewModel: CategoriesViewModel by viewModels()
 
-    private val isNewPickerUi = BaseFlags.get().isNewPickerUi()
     private val isRefactorWallpaperPreviewScreenEnabled =
         BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()
 
@@ -114,23 +113,17 @@ class WallpaperPreviewActivity :
         refreshCreativeCategories = intent.getBooleanExtra(SHOULD_CATEGORY_REFRESH, false)
 
         val wallpaper: WallpaperModel =
-            if (isNewPickerUi) {
-                val model =
-                    if (!isFirstRun) {
-                        wallpaperPreviewViewModel.wallpaper.value
-                    } else {
-                        persistentWallpaperModelRepository.wallpaperModel.value
-                            ?: intent
-                                .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
-                                ?.convertToWallpaperModel()
-                    }
-                persistentWallpaperModelRepository.cleanup()
-                model
-            } else {
-                intent
-                    .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
-                    ?.convertToWallpaperModel()
-            } ?: throw IllegalStateException("No wallpaper for previewing")
+            if (!isFirstRun) {
+                    wallpaperPreviewViewModel.wallpaper.value
+                } else {
+                    persistentWallpaperModelRepository.wallpaperModel.value
+                        ?: intent
+                            .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
+                            ?.convertToWallpaperModel()
+                }
+                .also { persistentWallpaperModelRepository.cleanup() }
+                ?: throw IllegalStateException("No wallpaper for previewing")
+
         if (isFirstRun) {
             wallpaperPreviewRepository.setWallpaperModel(wallpaper)
         }
@@ -226,12 +219,11 @@ class WallpaperPreviewActivity :
 
     override fun onEnterAnimationComplete() {
         super.onEnterAnimationComplete()
-        if (BaseFlags.get().isNewPickerUi()) {
-            val navHostFragment =
-                supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
-            (navHostFragment?.getChildFragmentManager()?.fragments?.get(0) as? SmallPreviewFragment)
-                ?.onEnterAnimationComplete()
-        }
+
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
+        (navHostFragment?.getChildFragmentManager()?.fragments?.get(0) as? SmallPreviewFragment)
+            ?.onEnterAnimationComplete()
     }
 
     override fun onUpArrowPressed() {
@@ -348,13 +340,6 @@ class WallpaperPreviewActivity :
             shouldNavigateToExtendedWallpaperEffects: Boolean,
             @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
         ): Intent {
-            // New Picker UI check for flows that require it.
-            if (wallpaperInfo == null && fromOriginalIntent == null) {
-                val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-                if (!isNewPickerUi) {
-                    throw UnsupportedOperationException("This flow requires the new picker UI.")
-                }
-            }
 
             val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
 

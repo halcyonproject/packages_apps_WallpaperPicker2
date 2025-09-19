@@ -154,9 +154,7 @@ abstract class BaseFlags {
     }
 
     open fun isFullscreenPreviewEnabled(context: Context): Boolean {
-        return fullscreenPreviewFlag() &&
-            isNewPickerUi() &&
-            DesktopState.fromContext(context).canEnterDesktopMode
+        return fullscreenPreviewFlag() && DesktopState.fromContext(context).canEnterDesktopMode
     }
 
     open fun isRecentWallpapersFromSystemEnabled(context: Context): Boolean {
@@ -174,9 +172,7 @@ abstract class BaseFlags {
 
     open fun shouldShowDesktopUi(context: Context): Boolean {
         // TODO: b/416024080 use a better solution than a config boolean to show desktop UI.
-        return desktopUiFlag() &&
-            isNewPickerUi() &&
-            context.resources.getBoolean(R.bool.isDesktopUi)
+        return desktopUiFlag() && context.resources.getBoolean(R.bool.isDesktopUi)
     }
 
     companion object {
