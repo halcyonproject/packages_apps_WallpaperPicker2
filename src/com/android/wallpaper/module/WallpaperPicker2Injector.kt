@@ -29,7 +29,6 @@ import com.android.wallpaper.model.InlinePreviewIntentFactory
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.monitor.PerformanceMonitor
 import com.android.wallpaper.network.Requester
-import com.android.wallpaper.picker.CustomizationPickerActivity
 import com.android.wallpaper.picker.MyPhotosStarter
 import com.android.wallpaper.picker.PreviewActivity
 import com.android.wallpaper.picker.ViewOnlyPreviewActivity
@@ -38,6 +37,7 @@ import com.android.wallpaper.picker.customization.data.content.WallpaperClient
 import com.android.wallpaper.picker.customization.data.repository.WallpaperColorsRepository
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperInteractor
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperSnapshotRestorer
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.individual.IndividualPickerFragment2
 import com.android.wallpaper.picker.undo.data.repository.UndoRepository
@@ -132,7 +132,7 @@ constructor(
 
     override fun getDeepLinkRedirectIntent(context: Context, uri: Uri): Intent {
         val intent = Intent()
-        intent.setClass(context, CustomizationPickerActivity::class.java)
+        intent.setClass(context, CustomizationPickerActivity2::class.java)
         intent.data = uri
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         return intent

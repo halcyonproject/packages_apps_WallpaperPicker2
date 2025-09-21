@@ -50,10 +50,6 @@ import com.android.wallpaper.picker.WallpaperDisabledFragment.WallpaperSupportLe
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implements all the logic for handling a WallpaperPicker container Activity.
- * @see CustomizationPickerActivity for usage details.
- */
 public class WallpaperPickerDelegate implements MyPhotosStarter {
 
     private static final String TAG = "WallpaperPickerDelegate";
