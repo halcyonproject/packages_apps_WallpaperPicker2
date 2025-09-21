@@ -28,4 +28,8 @@ data class CategoryWallpapersContentViewModel(
     val rotationEnabled: Boolean,
     val title: String,
     val wallpaperItems: List<CategoryWallpapersItemViewModel>,
+    val onRotationStart: (() -> Unit)? = null,
+    val onShowRotationDialog: (() -> Unit)? = null,
+    val onCancelRotationDialog: (() -> Unit)? = null,
+    val onNetworkPreferences: ((Boolean) -> Unit)? = null,
 )

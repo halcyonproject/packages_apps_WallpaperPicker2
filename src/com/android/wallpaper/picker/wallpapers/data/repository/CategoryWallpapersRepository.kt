@@ -61,4 +61,7 @@ interface CategoryWallpapersRepository {
 
     /** Clears the selected category and wallpapers for the category */
     fun clearSelectedCategory()
+
+    /** This starts the wallpaper rotation process for the current category */
+    suspend fun startRotation(networkPreference: Int)
 }

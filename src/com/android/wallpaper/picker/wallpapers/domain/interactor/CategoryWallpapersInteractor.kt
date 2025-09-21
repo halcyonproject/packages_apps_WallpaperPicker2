@@ -40,6 +40,16 @@ interface CategoryWallpapersInteractor {
      */
     val isWallpapersFetching: StateFlow<Boolean>
 
+    /**
+     * A [Flow] that indicates if the currently selected category supports wallpaper rotation
+     *
+     * Emits 'true' for a category that supports wallpaper rotation and 'false' otherwise
+     */
+    val isRotationEnabled: Flow<Boolean>
+
     /** Clears the selected category and wallpapers for the category */
     fun clearSelectedCategory()
+
+    /** This starts the wallpaper rotation process for the current category */
+    suspend fun startRotation(networkPreference: Int)
 }
