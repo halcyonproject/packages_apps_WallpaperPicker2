@@ -31,6 +31,7 @@ import androidx.fragment.app.FragmentManager
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.module.DailyLoggingAlarmScheduler
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
@@ -87,6 +88,8 @@ class CustomizationPickerActivity2 :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        DailyLoggingAlarmScheduler.setAlarm(applicationContext)
 
         if (intent != null) {
             logger.logAppLaunched(intent)
