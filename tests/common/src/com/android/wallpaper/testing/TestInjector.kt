@@ -18,7 +18,6 @@ package com.android.wallpaper.testing
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.wallpaper.config.BaseFlags
@@ -28,7 +27,6 @@ import com.android.wallpaper.model.InlinePreviewIntentFactory
 import com.android.wallpaper.module.AlarmManagerWrapper
 import com.android.wallpaper.module.BitmapCropper
 import com.android.wallpaper.module.CurrentWallpaperInfoFactory
-import com.android.wallpaper.module.CustomizationSections
 import com.android.wallpaper.module.DefaultLiveWallpaperInfoFactory
 import com.android.wallpaper.module.DrawableLayerResolver
 import com.android.wallpaper.module.ExploreIntentChecker
@@ -85,7 +83,6 @@ constructor(
     private var alarmManagerWrapper: AlarmManagerWrapper? = null
     private var bitmapCropper: BitmapCropper? = null
     private var categoryProvider: CategoryProvider? = null
-    private var customizationSections: CustomizationSections? = null
     private var drawableLayerResolver: DrawableLayerResolver? = null
     private var exploreIntentChecker: ExploreIntentChecker? = null
     private var performanceMonitor: PerformanceMonitor? = null
@@ -124,11 +121,6 @@ constructor(
 
     override fun getCurrentWallpaperInfoFactory(context: Context): CurrentWallpaperInfoFactory {
         return currentWallpaperInfoFactory
-    }
-
-    override fun getCustomizationSections(activity: ComponentActivity): CustomizationSections {
-        return customizationSections
-            ?: TestCustomizationSections().also { customizationSections = it }
     }
 
     override fun getDeepLinkRedirectIntent(context: Context, uri: Uri): Intent {

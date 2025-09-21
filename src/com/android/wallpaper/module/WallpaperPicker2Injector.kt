@@ -19,7 +19,6 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.android.wallpaper.config.BaseFlags
@@ -72,7 +71,6 @@ constructor(
     private var bitmapCropper: BitmapCropper? = null
     private var categoryProvider: CategoryProvider? = null
     private var currentWallpaperFactory: CurrentWallpaperInfoFactory? = null
-    private var customizationSections: CustomizationSections? = null
     private var drawableLayerResolver: DrawableLayerResolver? = null
     private var exploreIntentChecker: ExploreIntentChecker? = null
     private var liveWallpaperInfoFactory: LiveWallpaperInfoFactory? = null
@@ -123,11 +121,6 @@ constructor(
                     getLiveWallpaperInfoFactory(context.applicationContext),
                 )
                 .also { currentWallpaperFactory = it }
-    }
-
-    override fun getCustomizationSections(activity: ComponentActivity): CustomizationSections {
-        return customizationSections
-            ?: WallpaperPickerSections().also { customizationSections = it }
     }
 
     override fun getDeepLinkRedirectIntent(context: Context, uri: Uri): Intent {
