@@ -32,9 +32,7 @@ import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import com.android.wallpaper.R;
 import com.android.wallpaper.asset.BitmapUtils;
-import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.model.LiveWallpaperMetadata;
 import com.android.wallpaper.model.WallpaperMetadata;
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient;
@@ -232,12 +230,6 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
         private void setFallbackHomeScreenWallpaperMetadata() {
             android.app.WallpaperInfo wallpaperComponent = mWallpaperManager.getWallpaperInfo();
             if (wallpaperComponent == null) { // Image wallpaper
-                if (!BaseFlags.get().isNewPickerUi()) {
-                    mWallpaperPreferences.setHomeWallpaperAttributions(
-                            Arrays.asList(mAppContext.getResources()
-                                    .getString(R.string.fallback_wallpaper_title)));
-                }
-
                 mWallpaperPreferences.setHomeWallpaperManagerId(
                         mWallpaperManager.getWallpaperId(FLAG_SYSTEM));
             } else { // Live wallpaper
@@ -260,11 +252,6 @@ public class DefaultWallpaperRefresher implements WallpaperRefresher {
          * lock screen wallpaper.
          */
         private void setFallbackLockScreenWallpaperMetadata() {
-            if (!BaseFlags.get().isNewPickerUi()) {
-                mWallpaperPreferences.setLockWallpaperAttributions(
-                        Arrays.asList(mAppContext.getResources()
-                                .getString(R.string.fallback_wallpaper_title)));
-            }
             mWallpaperPreferences.setLockWallpaperManagerId(mWallpaperManager.getWallpaperId(
                     FLAG_LOCK));
         }
