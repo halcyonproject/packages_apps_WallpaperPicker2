@@ -29,11 +29,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Transition
 import androidx.viewpager2.widget.ViewPager2
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.customization.ui.view.transformer.PreviewPagerPageTransformer
 import com.android.wallpaper.picker.preview.ui.view.adapters.SinglePreviewPagerAdapter
-import com.android.wallpaper.picker.preview.ui.view.pagetransformers.PreviewCardPageTransformer
 import com.android.wallpaper.picker.preview.ui.viewmodel.FullPreviewConfigViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
@@ -108,9 +106,7 @@ object PreviewPagerBinder {
 
         // Only when pager is laid out, we can get the width and set the preview's offset correctly
         previewsViewPager.doOnLayout {
-            val pageTransformer =
-                if (BaseFlags.get().isNewPickerUi()) PreviewPagerPageTransformer(previewDisplaySize)
-                else PreviewCardPageTransformer(previewDisplaySize)
+            val pageTransformer = PreviewPagerPageTransformer(previewDisplaySize)
             (it as ViewPager2).setPageTransformer(pageTransformer)
         }
 
