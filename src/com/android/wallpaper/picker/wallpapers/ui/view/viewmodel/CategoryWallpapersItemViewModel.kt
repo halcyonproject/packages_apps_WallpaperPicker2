@@ -56,9 +56,12 @@ sealed class CategoryWallpapersItemViewModel {
      *
      * @property thumbnailAssets A list of [ThumbnailsViewModelCategory] representing the thumbnails
      *   to display.
+     * @property isThumbnailResizable A boolean which indicates whether the thumbnails' can be
+     *   adjusted in their size
      */
     data class PlainThumbnailsViewModelCategory(
-        val thumbnailAssets: List<ThumbnailsViewModelCategory>
+        val thumbnailAssets: List<ThumbnailsViewModelCategory>,
+        val isThumbnailResizable: Boolean = true,
     ) : CategoryWallpapersItemViewModel()
 
     /**

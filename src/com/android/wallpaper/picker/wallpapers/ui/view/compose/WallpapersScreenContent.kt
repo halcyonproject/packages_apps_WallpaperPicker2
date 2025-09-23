@@ -16,6 +16,8 @@
 
 package com.android.wallpaper.picker.wallpapers.ui.view.compose
 
+import android.graphics.Point
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
@@ -90,7 +92,18 @@ import com.android.wallpaper.util.ResourceUtils
 import com.android.wallpaper.util.SizeCalculator
 
 /** Scale factor used to calculate the height of template tiles */
-private const val THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
+private const val TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
+
+/** Scale factor used to calculate the width of template tiles */
+private const val TILE_WIDTH_SCALE_FACTOR: Float = 0.95f
+
+private const val MIN_COLUMN_COUNT: Int = 2
+
+private const val MAX_COLUMN_COUNT: Int = 3
+
+private const val MIN_THUMBNAILS_RESIZE_GRID: Int = 8
+
+private const val TAG = "WallpapersScreenContent"
 
 /**
  * Displays the main screen content for category wallpapers using a [LazyColumn].
@@ -138,7 +151,10 @@ fun WallpapersScreenContent(
                     }
 
                     is CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory -> {
-                        ThumbnailGridSection(thumbnails = item.thumbnailAssets, columns = 3)
+                        ThumbnailGridSection(
+                            thumbnails = item.thumbnailAssets,
+                            isThumbnailResizeable = item.isThumbnailResizable,
+                        )
                     }
                 }
             }
@@ -306,9 +322,9 @@ fun HorizontalGridSection(
         LocalActivity.current?.let { SizeCalculator.getFeaturedIndividualTileSize(it).y.toFloat() }
             ?: with(density) { 260.dp.toPx() }
 
-    val heightDp =
-        with(density) { (THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
-    val tileSize = getTileSizeAsDp()
+    val heightDp = with(density) { (TILE_HEIGHT_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
+    val widthDp = with(density) { (TILE_WIDTH_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
+
     LazyHorizontalGrid(
         rows = GridCells.Fixed(maxRows),
         modifier =
@@ -337,7 +353,7 @@ fun HorizontalGridSection(
         items(thumbnails) { thumbnail ->
             ThumbnailCard(
                 thumbnail,
-                modifier.size(width = tileSize.width, height = heightDp),
+                modifier.size(width = widthDp, height = heightDp),
                 showLabel = true,
             )
         }
@@ -353,11 +369,32 @@ fun HorizontalGridSection(
 @Composable
 fun ThumbnailGridSection(
     thumbnails: List<CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory>,
-    columns: Int,
+    isThumbnailResizeable: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val rows = (thumbnails.size + columns - 1) / columns
-    val tileSize = getTileSizeAsDp()
+    val activity = LocalActivity.current
+    val adjustedColumns =
+        if (isThumbnailResizeable && thumbnails.size <= MIN_THUMBNAILS_RESIZE_GRID) {
+            MIN_COLUMN_COUNT
+        } else {
+            MAX_COLUMN_COUNT
+        }
+    val rows = (thumbnails.size + adjustedColumns - 1) / adjustedColumns
+
+    val tileSize: DpSize =
+        if (isThumbnailResizeable && thumbnails.size <= MIN_THUMBNAILS_RESIZE_GRID) {
+                activity?.let { SizeCalculator.getFeaturedIndividualTileSize(it) }?.toDpSize()
+            } else {
+                activity?.let { SizeCalculator.getIndividualTileSize(it) }?.toDpSize()
+            }
+            .also { result ->
+                if (result == null) {
+                    Log.e(
+                        TAG,
+                        "Failed to calculate tileSize because the Activity context was null.",
+                    )
+                }
+            } ?: DpSize(0.dp, 0.dp)
 
     Column(
         modifier = modifier.fillMaxWidth().padding(8.dp),
@@ -368,8 +405,8 @@ fun ThumbnailGridSection(
                 modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                for (colIndex in 0 until columns) {
-                    val itemIndex = rowIndex * columns + colIndex
+                for (colIndex in 0 until adjustedColumns) {
+                    val itemIndex = rowIndex * adjustedColumns + colIndex
                     if (itemIndex < thumbnails.size) {
                         ThumbnailCard(
                             thumbnails[itemIndex],
@@ -389,14 +426,11 @@ fun ThumbnailGridSection(
 }
 
 @Composable
-fun getTileSizeAsDp(): DpSize {
-    val activity = LocalActivity.current
+fun Point.toDpSize(): DpSize {
     val density = LocalDensity.current
 
-    val tileSize = activity?.let { SizeCalculator.getIndividualTileSize(it) }
-
-    val widthInDp = with(density) { (tileSize?.x ?: 0).toDp() }
-    val heightInDp = with(density) { (tileSize?.y ?: 0).toDp() }
+    val widthInDp = with(density) { this@toDpSize.x.toDp() }
+    val heightInDp = with(density) { this@toDpSize.y.toDp() }
 
     return DpSize(width = widthInDp, height = heightInDp)
 }

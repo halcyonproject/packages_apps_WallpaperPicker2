@@ -213,7 +213,16 @@ constructor(
                                 },
                             )
                         }
-                    add(CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(items))
+                    val isResizeable: Boolean =
+                        ((wallpapers.getOrNull(0) as? WallpaperModel.LiveWallpaperModel)
+                            ?.creativeWallpaperData == null) && groupedWallpapers.size == 1
+
+                    add(
+                        CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(
+                            items,
+                            isResizeable,
+                        )
+                    )
                 }
             }
 

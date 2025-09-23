@@ -349,4 +349,48 @@ class CategoryWallpapersViewModelTest {
         assertThat(screenViewModel?.wallpaperItems?.size).isEqualTo(1)
         assertThat(screenViewModel?.title).isEqualTo("sample title")
     }
+
+    @Test
+    fun sections_verifyThatPlainThumbnailsAreResizeable() = runTest {
+        fakeCategoryWallpapersInteractor.setWallpapers(
+            listOf(
+                WallpaperModelUtils.getStaticWallpaperModel(
+                    wallpaperId = "testId3",
+                    collectionId = "testCollection1",
+                    title = "static wp 1",
+                ),
+                WallpaperModelUtils.getStaticWallpaperModel(
+                    wallpaperId = "testId4",
+                    collectionId = "testCollection2",
+                    title = "static wp 2",
+                ),
+                WallpaperModelUtils.getStaticWallpaperModel(
+                    wallpaperId = "testId5",
+                    collectionId = "testCollection3",
+                    title = "static wp 3",
+                ),
+            )
+        )
+
+        val sections =
+            collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
+        assertThat(sections?.wallpaperItems?.size).isEqualTo(1)
+
+        // verify 3 ungrouped plain thumbnails
+        assertThat(
+                (sections?.wallpaperItems?.get(0)
+                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
+                    ?.thumbnailAssets
+                    ?.size
+            )
+            .isEqualTo(3)
+
+        // verify that thumbnails are resizeable
+        assertThat(
+                (sections?.wallpaperItems?.get(0)
+                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
+                    ?.isThumbnailResizable
+            )
+            .isTrue()
+    }
 }
