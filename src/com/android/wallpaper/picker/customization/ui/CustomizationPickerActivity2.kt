@@ -33,9 +33,6 @@ import com.android.wallpaper.R
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
-import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
-import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_WALLPAPER_REQUEST_CODE
-import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
@@ -245,5 +242,8 @@ class CustomizationPickerActivity2 :
 
     companion object {
         const val CUSTOMIZATION_PICKER_FRAGMENT_TAG = "customization_picker_fragment"
+        const val PREVIEW_LIVE_WALLPAPER_REQUEST_CODE = 4
+        const val VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE = 2
+        const val PREVIEW_WALLPAPER_REQUEST_CODE = 1
     }
 }
