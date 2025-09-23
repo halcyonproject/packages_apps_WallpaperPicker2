@@ -50,13 +50,13 @@ import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.MyPhotosStarter
-import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.binder.BannerProvider
 import com.android.wallpaper.picker.category.ui.binder.CategoriesBinder
 import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerFactory
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -246,7 +246,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
             isCreativeCategories = isCreativeCategories,
             shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
             isViewAsHome = isDestinationHome,
-            requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+            requestCode = CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
             isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
             setWallpaperEntryPoint = setWallpaperEntryPoint,
         )

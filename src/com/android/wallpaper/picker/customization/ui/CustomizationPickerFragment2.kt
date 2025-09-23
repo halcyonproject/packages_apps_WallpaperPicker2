@@ -65,7 +65,6 @@ import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.MyPhotosStarter
-import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.view.CategoriesFragment
 import com.android.wallpaper.picker.category.ui.view.MyPhotosStarterImpl
 import com.android.wallpaper.picker.category.ui.view.PhotoPickerFragment
@@ -191,7 +190,9 @@ class CustomizationPickerFragment2 :
                                 isCreativeCategories = false,
                                 shouldNavigateToExtendedWallpaperEffects = true,
                                 isViewAsHome = true,
-                                requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                                requestCode =
+                                    CustomizationPickerActivity2
+                                        .VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                                 isMultiPanesEnabled =
                                     multiPanesChecker.isMultiPanesEnabled(requireContext()),
                                 setWallpaperEntryPoint =
@@ -747,7 +748,8 @@ class CustomizationPickerFragment2 :
                     isCreativeCategories = false,
                     shouldNavigateToExtendedWallpaperEffects = false,
                     isViewAsHome = true,
-                    requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                    requestCode =
+                        CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                     isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
                     setWallpaperEntryPoint = setEntryPoint,
                 )
