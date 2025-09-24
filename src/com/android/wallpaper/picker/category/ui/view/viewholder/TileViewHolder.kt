@@ -35,20 +35,13 @@ import com.android.wallpaper.util.ResourceUtilsKt
 import com.android.wallpaper.util.SizeCalculator
 import com.bumptech.glide.Glide
 
-/** Caches and binds [TileViewHolder] to a [WallpaperTileView] */
+/** Binds [TileViewModel] to the category tile view. */
 class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    private var title: TextView
-    private var categorySubtitle: TextView
-    private var wallpaperCategoryImage: ImageView
-    private var categoryCardView: CardView
-
-    init {
-        title = itemView.requireViewById(R.id.tile_title)
-        categorySubtitle = itemView.requireViewById(R.id.category_title)
-        wallpaperCategoryImage = itemView.requireViewById(R.id.image)
-        categoryCardView = itemView.requireViewById(R.id.category)
-    }
+    private val title: TextView = itemView.requireViewById(R.id.tile_title)
+    private val categorySubtitle: TextView = itemView.requireViewById(R.id.category_title)
+    private val wallpaperCategoryImage: ImageView = itemView.requireViewById(R.id.image)
+    private val categoryCardView: CardView = itemView.requireViewById(R.id.category)
 
     fun bind(
         item: TileViewModel,
@@ -66,24 +59,19 @@ class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         title.visibility = View.GONE
 
-        val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-        if (isNewPickerUi) {
-            categorySubtitle.setTextAppearance(
-                R.style.TextAppearance_DeviceDefault_Small_LabelMedium
-            )
-            ColorUpdateBinder.bind(
-                setColor = { color ->
-                    title.setTextColor(color)
-                    categorySubtitle.setTextColor(color)
-                },
-                color = colorUpdateViewModel.colorOnSurface,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
-        }
+        categorySubtitle.setTextAppearance(R.style.TextAppearance_DeviceDefault_Small_LabelMedium)
+        ColorUpdateBinder.bind(
+            setColor = { color ->
+                title.setTextColor(color)
+                categorySubtitle.setTextColor(color)
+            },
+            color = colorUpdateViewModel.colorOnSurface,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
 
-        var tileSize: Point
-        var tileRadius: Int
+        val tileSize: Point
+        val tileRadius: Int
         // calculate the height
         if (columnCount == 1 && tileCount == 1) {
             // sections that take 1 column and have 1 tile
