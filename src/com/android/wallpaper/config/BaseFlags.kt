@@ -20,7 +20,6 @@ import android.app.WallpaperManager
 import android.content.Context
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
-import com.android.systemui.shared.Flags.newCustomizationPickerUi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
@@ -70,8 +69,6 @@ abstract class BaseFlags {
     open fun isExtendedWallpaperEnabled() = extendedWallpaperEffects()
 
     open fun isExtendibleThemeManager() = extendibleThemeManager()
-
-    open fun isNewPickerUi() = newCustomizationPickerUi()
 
     open fun isComposeRefactorEnabled() = composeRefactorFlag()
 

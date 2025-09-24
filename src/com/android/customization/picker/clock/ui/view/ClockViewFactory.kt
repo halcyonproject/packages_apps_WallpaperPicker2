@@ -15,7 +15,6 @@
  */
 package com.android.customization.picker.clock.ui.view
 
-import android.view.View
 import androidx.annotation.ColorInt
 import androidx.lifecycle.LifecycleOwner
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
@@ -24,18 +23,6 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 interface ClockViewFactory {
 
     fun getController(clockId: String): ClockController?
-
-    /**
-     * Reset the large view to its initial state when getting the view. This is because some view
-     * configs, e.g. animation state, might change during the reuse of the clock view in the app.
-     */
-    fun getLargeView(clockId: String): View
-
-    /**
-     * Reset the small view to its initial state when getting the view. This is because some view
-     * configs, e.g. translation X, might change during the reuse of the clock view in the app.
-     */
-    fun getSmallView(clockId: String): View
 
     fun updateColorForAllClocks(@ColorInt seedColor: Int?)
 
