@@ -18,7 +18,6 @@ package com.android.wallpaper.module
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.android.wallpaper.config.BaseFlags
@@ -59,8 +58,6 @@ interface Injector {
 
     fun getCurrentWallpaperInfoFactory(context: Context): CurrentWallpaperInfoFactory
 
-    fun getCustomizationSections(activity: ComponentActivity): CustomizationSections
-
     fun getDeepLinkRedirectIntent(context: Context, uri: Uri): Intent
 
     fun getDisplayUtils(context: Context): DisplayUtils
@@ -98,10 +95,6 @@ interface Injector {
     fun getWallpaperRefresher(context: Context): WallpaperRefresher
 
     fun getWallpaperStatusChecker(context: Context): WallpaperStatusChecker
-
-    fun getFragmentFactory(): FragmentFactory? {
-        return null
-    }
 
     fun getFlags(): BaseFlags
 
