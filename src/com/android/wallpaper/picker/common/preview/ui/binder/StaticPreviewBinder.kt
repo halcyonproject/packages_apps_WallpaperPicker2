@@ -34,7 +34,6 @@ import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.util.FullResImageViewUtil
 import com.android.wallpaper.util.RtlUtils
 import com.android.wallpaper.util.WallpaperCropUtils
-import com.android.wallpaper.util.WallpaperSurfaceCallback.LOW_RES_BITMAP_BLUR_RADIUS
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import kotlin.math.max
@@ -195,4 +194,5 @@ object StaticPreviewBinder {
     }
 
     private const val TAG = "StaticPreviewBinder"
+    private const val LOW_RES_BITMAP_BLUR_RADIUS: Float = 150f
 }
