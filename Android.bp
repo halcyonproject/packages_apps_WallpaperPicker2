@@ -80,6 +80,7 @@ android_library {
         "grpc-java-stub",
         "grpc-java-binder",
         "PlatformComposeSceneTransitionLayout",
+        "dynamiccolors",
     ],
 
     resource_dirs: [

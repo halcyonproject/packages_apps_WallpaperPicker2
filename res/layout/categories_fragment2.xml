@@ -55,7 +55,7 @@
         android:paddingTop="@dimen/category_grid_padding_top"
         android:scrollbarSize="@dimen/grid_padding"
         android:scrollbarStyle="outsideOverlay"
-        android:scrollbarThumbVertical="?android:attr/textColorSecondary"
+        android:scrollbarThumbVertical="@color/materialColorOnSurfaceVariant"
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

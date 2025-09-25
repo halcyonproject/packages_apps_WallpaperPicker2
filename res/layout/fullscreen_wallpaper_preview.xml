@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:background="?android:colorBackground"
+        android:background="@color/materialColorSurfaceContainer"
         android:visibility="invisible"/>
 
     <com.android.wallpaper.picker.preview.ui.view.SystemScaledSubsamplingScaleImageView
