@@ -27,7 +27,7 @@
     <string name="select_a_photo" msgid="7273925950262860696">"Selecteer een foto"</string>
     <string name="set_wallpaper_error_message" msgid="6819986999041085130">"Kan achtergrond niet instellen."</string>
     <string name="load_wallpaper_error_message" msgid="7913278480467707374">"Kan achtergrond niet laden. De afbeelding is beschadigd of is niet beschikbaar."</string>
-    <string name="static_wallpaper_presentation_mode_message" msgid="417940227049360906">"Momenteel ingesteld"</string>
+    <string name="static_wallpaper_presentation_mode_message" msgid="417940227049360906">"Nu ingesteld"</string>
     <string name="rotating_wallpaper_presentation_mode_message" msgid="3361676041605733288">"Dagelijkse achtergrond"</string>
     <string name="wallpaper_destination_both" msgid="1124197176741944063">"Start- en vergrendelscherm"</string>
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Een achtergrond kiezen"</string>
