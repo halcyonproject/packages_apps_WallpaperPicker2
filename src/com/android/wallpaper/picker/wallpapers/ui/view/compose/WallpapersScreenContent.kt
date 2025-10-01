@@ -17,7 +17,6 @@
 package com.android.wallpaper.picker.wallpapers.ui.view.compose
 
 import android.graphics.Point
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
@@ -82,7 +81,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.compose.modifiers.width
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.wallpaper.R
@@ -119,6 +117,14 @@ fun WallpapersScreenContent(
     networkPreference: Int,
     modifier: Modifier = Modifier,
 ) {
+
+    val activity = LocalActivity.current
+    val featuredTileSize: DpSize =
+        activity?.let { SizeCalculator.getFeaturedIndividualTileSize(it) }?.toDpSize()
+            ?: DpSize(0.dp, 0.dp)
+    val regularTileSize: DpSize =
+        activity?.let { SizeCalculator.getIndividualTileSize(it) }?.toDpSize() ?: DpSize(0.dp, 0.dp)
+
     Column(
         modifier =
             modifier
@@ -150,11 +156,23 @@ fun WallpapersScreenContent(
                         ThumbnailCard(item)
                     }
 
-                    is CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory -> {
-                        ThumbnailGridSection(
-                            thumbnails = item.thumbnailAssets,
-                            isThumbnailResizeable = item.isThumbnailResizable,
-                        )
+                    is CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory -> {
+                        val tileSizeToUse =
+                            if (item.areTilesLarge) featuredTileSize else regularTileSize
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                        ) {
+                            item.rowThumbnails.forEach { thumb ->
+                                ThumbnailCard(thumb, modifier = Modifier.size(tileSizeToUse))
+                            }
+
+                            // Add spacers to align the last row
+                            repeat(item.totalColumns - item.rowThumbnails.size) {
+                                Spacer(modifier = Modifier.size(tileSizeToUse))
+                            }
+                        }
                     }
                 }
             }
@@ -356,71 +374,6 @@ fun HorizontalGridSection(
                 modifier.size(width = widthDp, height = heightDp),
                 showLabel = true,
             )
-        }
-    }
-}
-
-/**
- * Displays a grid of thumbnails arranged in a fixed number of columns.
- *
- * @param thumbnails List of thumbnail view models to display.
- * @param columns Number of columns in the grid.
- */
-@Composable
-fun ThumbnailGridSection(
-    thumbnails: List<CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory>,
-    isThumbnailResizeable: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    val activity = LocalActivity.current
-    val adjustedColumns =
-        if (isThumbnailResizeable && thumbnails.size <= MIN_THUMBNAILS_RESIZE_GRID) {
-            MIN_COLUMN_COUNT
-        } else {
-            MAX_COLUMN_COUNT
-        }
-    val rows = (thumbnails.size + adjustedColumns - 1) / adjustedColumns
-
-    val tileSize: DpSize =
-        if (isThumbnailResizeable && thumbnails.size <= MIN_THUMBNAILS_RESIZE_GRID) {
-                activity?.let { SizeCalculator.getFeaturedIndividualTileSize(it) }?.toDpSize()
-            } else {
-                activity?.let { SizeCalculator.getIndividualTileSize(it) }?.toDpSize()
-            }
-            .also { result ->
-                if (result == null) {
-                    Log.e(
-                        TAG,
-                        "Failed to calculate tileSize because the Activity context was null.",
-                    )
-                }
-            } ?: DpSize(0.dp, 0.dp)
-
-    Column(
-        modifier = modifier.fillMaxWidth().padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        for (rowIndex in 0 until rows) {
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                for (colIndex in 0 until adjustedColumns) {
-                    val itemIndex = rowIndex * adjustedColumns + colIndex
-                    if (itemIndex < thumbnails.size) {
-                        ThumbnailCard(
-                            thumbnails[itemIndex],
-                            modifier.size(width = tileSize.width, height = tileSize.height),
-                        )
-                    } else {
-                        // Add an empty space to keep the columns aligned
-                        Spacer(
-                            modifier =
-                                modifier.size(width = tileSize.width, height = tileSize.height)
-                        )
-                    }
-                }
-            }
         }
     }
 }
