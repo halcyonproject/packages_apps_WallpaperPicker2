@@ -31,7 +31,6 @@ import com.android.wallpaper.model.ThirdPartyAppCategory
 import com.android.wallpaper.model.ThirdPartyLiveWallpaperCategory
 import com.android.wallpaper.model.WallpaperCategory
 import com.android.wallpaper.model.WallpaperInfo
-import com.android.wallpaper.module.DefaultCategoryProvider
 import com.android.wallpaper.module.PartnerProvider
 import com.android.wallpaper.util.WallpaperParser
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -80,7 +79,7 @@ constructor(
      * incorporates both GEL and bundled wallpapers.
      */
     override suspend fun getOnDeviceCategory(): Category? {
-        val onDeviceWallpapers = mutableListOf<WallpaperInfo?>()
+        val onDeviceWallpapers = mutableListOf<WallpaperInfo>()
 
         if (!partnerProvider.shouldHideDefaultWallpaper()) {
             val defaultWallpaperInfo = DefaultWallpaperInfo()
@@ -160,7 +159,7 @@ constructor(
         val excluded = mutableSetOf<String>()
         systemCategories?.forEach { category ->
             if (category is WallpaperCategory) {
-                category.wallpapers.forEach { wallpaperInfo ->
+                category.wallpapers?.forEach { wallpaperInfo ->
                     if (wallpaperInfo is LiveWallpaperInfo) {
                         excluded.add(wallpaperInfo.wallpaperComponent.packageName)
                     }
@@ -203,7 +202,7 @@ constructor(
         return context.resources.configuration.locales.get(0)
     }
 
-    private fun getPrivateDeviceWallpapers(): Collection<WallpaperInfo?>? {
+    private fun getPrivateDeviceWallpapers(): Collection<WallpaperInfo>? {
         return null
     }
 

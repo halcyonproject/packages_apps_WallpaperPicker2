@@ -141,8 +141,8 @@ public class CreativeCategory extends WallpaperCategory {
         List<WallpaperInfo> wallpapers = readCreativeWallpapers(
                 context, getCollectionId(), mWallpaperInfo);
         synchronized (this) {
-            getMutableWallpapers().clear();
-            getMutableWallpapers().addAll(wallpapers);
+            getWallpapers().clear();
+            getWallpapers().addAll(wallpapers);
         }
         if (receiver != null) {
             receiver.onWallpapersReceived(wallpapers);
