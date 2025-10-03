@@ -15,8 +15,6 @@
  */
 package com.android.wallpaper.model;
 
-import android.content.Context;
-
 import androidx.annotation.Nullable;
 
 /**
@@ -37,18 +35,6 @@ public interface CategoryProvider {
     int getSize();
 
     /**
-     * Returns the Category at the given index position.
-     * <p>
-     * Note that this method is expected to be called after the categories have been fetched.
-     * @param index index of the Category to return.
-     *
-     * @throws IllegalStateException if this method is called before fetching happened.
-     * @throws IndexOutOfBoundsException if the given index is either negative or larger than
-     * {@link #getSize()}
-     */
-    Category getCategory(int index);
-
-    /**
      * Returns the Category having the given collection ID. If not found, returns null.
      * <p>
      * This method should only be called for collection IDs for which the corresponding Category was
@@ -56,18 +42,6 @@ public interface CategoryProvider {
      */
     @Nullable
     Category getCategory(String collectionId);
-
-    /**
-     * Checks if the categories are fetched.
-     */
-    boolean isCategoriesFetched();
-
-    /**
-     * Resets the fetched categories if needed.
-     *
-     * @return {@code true} if the fetched categories are reset; {@code false} otherwise.
-     */
-    boolean resetIfNeeded();
 
     /**
      * Checks if creative category collection is available or not.
@@ -78,11 +52,4 @@ public interface CategoryProvider {
      * Checks if featured collection available.
      */
     boolean isFeaturedCollectionAvailable();
-
-    /**
-     * Checks if should force reload.
-     */
-    default boolean shouldForceReload(Context context) {
-        return false;
-    }
 }

@@ -520,5 +520,7 @@ constructor(
         private const val TAG = "CategoriesViewModel"
         private const val REFETCH_PACK_THEME_CATEGORY_ACTION =
             "com.google.android.apps.wallpaper.action.REFETCH_PACK_THEME_CATEGORY_ACTION"
+        const val PREVIEW_LIVE_WALLPAPER_REQUEST_CODE: Int = 4
+        const val PREVIEW_WALLPAPER_REQUEST_CODE: Int = 1
     }
 }

@@ -15,8 +15,8 @@
  */
 package com.android.wallpaper.picker;
 
-import static com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE;
-import static com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_WALLPAPER_REQUEST_CODE;
+import static com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE;
+import static com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel.PREVIEW_WALLPAPER_REQUEST_CODE;
 
 import android.app.Activity;
 import android.app.AlertDialog;
