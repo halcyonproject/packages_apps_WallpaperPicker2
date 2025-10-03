@@ -100,14 +100,7 @@ class CategoryWallpapersViewModelTest {
     fun sections_verifyNumberOfSectionsOfPlainWallpapersWithoutLabels() = runTest {
         val sections =
             collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
-        assertThat(sections?.wallpaperItems?.size).isEqualTo(1)
-        assertThat(
-                (sections?.wallpaperItems?.get(0)
-                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
-                    ?.thumbnailAssets
-                    ?.size
-            )
-            .isEqualTo(24)
+        assertThat(sections?.wallpaperItems?.size).isEqualTo(8)
     }
 
     @Test
@@ -277,7 +270,7 @@ class CategoryWallpapersViewModelTest {
 
         val sections =
             collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
-        assertThat(sections?.wallpaperItems?.size).isEqualTo(3)
+        assertThat(sections?.wallpaperItems?.size).isEqualTo(5)
 
         // verify there is a primary header
         assertThat(
@@ -296,14 +289,9 @@ class CategoryWallpapersViewModelTest {
             )
             .isEqualTo(2)
 
-        // verify 5 ungrouped plain thumbnails
-        assertThat(
-                (sections?.wallpaperItems?.get(2)
-                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
-                    ?.thumbnailAssets
-                    ?.size
-            )
-            .isEqualTo(5)
+        // verify 3 ungrouped plain thumbnails
+        assertThat(sections?.wallpaperItems?.subList(2, sections?.wallpaperItems?.size ?: 0)?.size)
+            .isEqualTo(3)
     }
 
     @Test
@@ -330,8 +318,9 @@ class CategoryWallpapersViewModelTest {
         assertThat(categories).hasSize(1)
 
         val category =
-            categories?.get(0) as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory
-        val thumbnail = category?.thumbnailAssets?.get(1)
+            categories?.get(0)
+                as? CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory
+        val thumbnail = category?.rowThumbnails?.get(1)
         val onClick = thumbnail?.onSectionClicked
 
         assertThat(onClick).isNotNull()
@@ -346,7 +335,7 @@ class CategoryWallpapersViewModelTest {
     fun sections_verifyTitle() = runTest {
         val screenViewModel =
             collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
-        assertThat(screenViewModel?.wallpaperItems?.size).isEqualTo(1)
+        assertThat(screenViewModel?.wallpaperItems?.size).isEqualTo(8)
         assertThat(screenViewModel?.title).isEqualTo("sample title")
     }
 
@@ -374,22 +363,22 @@ class CategoryWallpapersViewModelTest {
 
         val sections =
             collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
-        assertThat(sections?.wallpaperItems?.size).isEqualTo(1)
+        assertThat(sections?.wallpaperItems?.size).isEqualTo(2)
 
-        // verify 3 ungrouped plain thumbnails
+        // verify 2 ungrouped plain thumbnails in the first row
         assertThat(
                 (sections?.wallpaperItems?.get(0)
-                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
-                    ?.thumbnailAssets
+                        as? CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory)
+                    ?.rowThumbnails
                     ?.size
             )
-            .isEqualTo(3)
+            .isEqualTo(2)
 
         // verify that thumbnails are resizeable
         assertThat(
                 (sections?.wallpaperItems?.get(0)
-                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
-                    ?.isThumbnailResizable
+                        as? CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory)
+                    ?.areTilesLarge
             )
             .isTrue()
     }

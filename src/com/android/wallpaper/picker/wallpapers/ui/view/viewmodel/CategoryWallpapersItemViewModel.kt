@@ -52,19 +52,6 @@ sealed class CategoryWallpapersItemViewModel {
     ) : CategoryWallpapersItemViewModel()
 
     /**
-     * Represents a section that holds plain wallpaper thumbnails
-     *
-     * @property thumbnailAssets A list of [ThumbnailsViewModelCategory] representing the thumbnails
-     *   to display.
-     * @property isThumbnailResizable A boolean which indicates whether the thumbnails' can be
-     *   adjusted in their size
-     */
-    data class PlainThumbnailsViewModelCategory(
-        val thumbnailAssets: List<ThumbnailsViewModelCategory>,
-        val isThumbnailResizable: Boolean = true,
-    ) : CategoryWallpapersItemViewModel()
-
-    /**
      * Represents a section that holds a single thumbnail preview of a wallpaper or template.
      *
      * @property thumbnailAsset The [Asset] associated with the thumbnail.
@@ -79,5 +66,22 @@ sealed class CategoryWallpapersItemViewModel {
         val isApplied: Boolean = false,
         val isDownloadable: Boolean = false,
         val onSectionClicked: (() -> Intent)? = null,
+    ) : CategoryWallpapersItemViewModel()
+
+    /**
+     * Represents a single, un-styled, horizontally arranged row of wallpaper thumbnails.
+     *
+     * @property rowThumbnails A list of [ThumbnailsViewModelCategory] objects that belong to this
+     *   specific row. This list may be shorter than [totalColumns] if it is the last row.
+     * @property totalColumns The total number of columns (tiles) defined for the grid section this
+     *   row belongs to. This can be used to correctly space tiles and calculate the required row
+     *   height.
+     * @property areTilesLarge A boolean indicating whether the thumbnails in this row should be
+     *   rendered using the larger, "featured" tile size or the regular size.
+     */
+    data class PlainThumbnailsRowViewModelCategory(
+        val rowThumbnails: List<ThumbnailsViewModelCategory>,
+        val totalColumns: Int,
+        val areTilesLarge: Boolean,
     ) : CategoryWallpapersItemViewModel()
 }
