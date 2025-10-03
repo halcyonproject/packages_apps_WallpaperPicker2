@@ -117,14 +117,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
     }
 
     @Override
-    public Category getCategory(int index) {
-        if (!mFetchedCategories) {
-            throw new IllegalStateException("Categories are not available");
-        }
-        return mCategories.get(index);
-    }
-
-    @Override
     public Category getCategory(String collectionId) {
         Category category;
         for (int i = 0; i < mCategories.size(); i++) {
@@ -134,22 +126,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean isCategoriesFetched() {
-        return mFetchedCategories;
-    }
-
-    @Override
-    public boolean resetIfNeeded() {
-        if (mNetworkStatus != mNetworkStatusNotifier.getNetworkStatus()
-                || mLocale != getLocale()) {
-            mCategories.clear();
-            mFetchedCategories = false;
-            return true;
-        }
-        return false;
     }
 
     /**
