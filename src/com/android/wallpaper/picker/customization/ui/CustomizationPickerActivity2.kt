@@ -30,6 +30,7 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentManager
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
@@ -185,7 +186,8 @@ class CustomizationPickerActivity2 :
     }
 
     override fun isUpArrowSupported(): Boolean {
-        return !ActivityUtils.isSUWMode(baseContext)
+        return BaseFlags.get().shouldShowDesktopUi(baseContext) ||
+            !ActivityUtils.isSUWMode(baseContext)
     }
 
     @TargetApi(36)
