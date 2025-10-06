@@ -28,6 +28,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import androidx.transition.TransitionListenerAdapter
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -206,14 +207,17 @@ object SmallPreviewBinder {
                             Triple(onClick, previewScreen, tab)
                         }
                         .collect { (onClick, previewScreen, tab) ->
-                            if (previewScreen != PreviewScreen.SMALL_PREVIEW) {
+                            if (
+                                BaseFlags.get().isNewPickerUi() &&
+                                    previewScreen != PreviewScreen.SMALL_PREVIEW
+                            ) {
                                 view.setOnClickListener(null)
                             } else {
                                 onClick?.let {
                                     view.setOnClickListener {
                                         // If tab != screen, it's pager switching tab and no need to
                                         // set z order
-                                        if (tab == screen) {
+                                        if (BaseFlags.get().isNewPickerUi() && tab == screen) {
                                             // Set top z order for shared element transition
                                             wallpaperSurface.setZOrderOnTop(true)
                                             workspaceSurface.setZOrderOnTop(true)

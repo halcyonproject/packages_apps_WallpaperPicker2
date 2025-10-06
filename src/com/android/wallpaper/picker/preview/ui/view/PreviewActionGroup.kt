@@ -26,6 +26,7 @@ import android.widget.ToggleButton
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action
 
 /** Custom layout for a group of wallpaper preview actions. */
@@ -57,7 +58,7 @@ class PreviewActionGroup(context: Context, attrs: AttributeSet?) : FrameLayout(c
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        if ((parent as ViewGroup).width > width) {
+        if (BaseFlags.get().isNewPickerUi() && (parent as ViewGroup).width > width) {
             (layoutParams as LayoutParams).gravity = Gravity.CENTER_HORIZONTAL
         }
     }
