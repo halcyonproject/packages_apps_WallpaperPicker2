@@ -38,7 +38,6 @@ import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
-import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionViewUtil
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -68,7 +67,6 @@ class CustomizationPickerActivity2 :
 
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
     @Inject lateinit var customizationOptionViewUtil: CustomizationOptionViewUtil
-    @Inject lateinit var customizationOptionsBinder: CustomizationOptionsBinder
     @Inject lateinit var workspaceCallbackBinder: WorkspaceCallbackBinder
     @Inject lateinit var toolbarBinder: ToolbarBinder
     @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
