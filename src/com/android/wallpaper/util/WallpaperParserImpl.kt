@@ -43,7 +43,7 @@ class WallpaperParserImpl
 @Inject
 constructor(
     @ApplicationContext private val context: Context,
-    private val partnerProvider: PartnerProvider
+    private val partnerProvider: PartnerProvider,
 ) : WallpaperParser {
 
     /** This method is responsible for parsing the XML file for system categories. */
@@ -61,7 +61,7 @@ constructor(
                     val categoryBuilder =
                         WallpaperCategory.Builder(
                             partnerProvider.resources,
-                            Xml.asAttributeSet(parser)
+                            Xml.asAttributeSet(parser),
                         )
                     categoryBuilder.setPriorityIfEmpty(PRIORITY_SYSTEM + priorityTracker++)
                     var publishedPlaceholder = false
@@ -76,13 +76,13 @@ constructor(
                                     SystemStaticWallpaperInfo.fromAttributeSet(
                                         partnerProvider.packageName,
                                         categoryBuilder.id,
-                                        Xml.asAttributeSet(parser)
+                                        Xml.asAttributeSet(parser),
                                     )
                                 } else if (LiveWallpaperInfo.TAG_NAME == parser.name) {
                                     LiveWallpaperInfo.fromAttributeSet(
                                         context,
                                         categoryBuilder.id,
-                                        Xml.asAttributeSet(parser)
+                                        Xml.asAttributeSet(parser),
                                     )
                                 } else {
                                     null
@@ -96,7 +96,7 @@ constructor(
                         }
                     }
                     val category = categoryBuilder.build()
-                    if (!category.getUnmodifiableWallpapers().isEmpty()) {
+                    if (category.unmodifiableWallpapers.isNotEmpty()) {
                         categories.add(category)
                     }
                 }

@@ -55,10 +55,10 @@ public class ThirdPartyLiveWallpaperCategory extends WallpaperCategory {
     public void fetchWallpapers(Context context, WallpaperReceiver receiver, boolean forceReload) {
         if (forceReload) {
             sExecutorService.execute(() -> {
-                List<WallpaperInfo> mCategoryWallpapers = getMutableWallpapers();
+                List<WallpaperInfo> mCategoryWallpapers = getWallpapers();
                 List<WallpaperInfo> liveWallpapers = LiveWallpaperInfo.getAll(context,
                         mExcludedPackages);
-                synchronized (mWallpapersLock) {
+                synchronized (wallpapersLock) {
                     mCategoryWallpapers.clear();
                     mCategoryWallpapers.addAll(liveWallpapers);
                 }
@@ -80,7 +80,7 @@ public class ThirdPartyLiveWallpaperCategory extends WallpaperCategory {
     @Override
     public boolean containsThirdParty(String packageName) {
         if (!supportsThirdParty()) return false;
-        synchronized (mWallpapersLock) {
+        synchronized (wallpapersLock) {
             for (WallpaperInfo wallpaper : getUnmodifiableWallpapers()) {
                 android.app.WallpaperInfo wallpaperComponent = wallpaper.getWallpaperComponent();
                 if (wallpaperComponent != null
