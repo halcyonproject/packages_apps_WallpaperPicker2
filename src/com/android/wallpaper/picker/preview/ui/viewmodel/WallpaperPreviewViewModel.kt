@@ -26,7 +26,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.customization.picker.clock.shared.ClockSize
 import com.android.systemui.shared.Flags
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.module.logging.UserEventLogger
@@ -274,12 +273,9 @@ constructor(
                         currentPreviewScreen,
                     ) { isCroppable, hasTooltipBeenShown, previewScreen ->
                         // Only show tooltip if it has not been shown before.
-                        val shouldShow = isCroppable && !hasTooltipBeenShown
-                        if (BaseFlags.get().isNewPickerUi()) {
-                            shouldShow && previewScreen == PreviewScreen.SMALL_PREVIEW
-                        } else {
-                            shouldShow
-                        }
+                        isCroppable &&
+                            !hasTooltipBeenShown &&
+                            previewScreen == PreviewScreen.SMALL_PREVIEW
                     }
                     .distinctUntilChanged()
 
@@ -480,10 +476,7 @@ constructor(
     fun onSetWallpaperDialogScreenSelected(screen: Screen) {
         val previousSelection = _setWallpaperDialogSelectedScreens.value
         _setWallpaperDialogSelectedScreens.value =
-            if (
-                previousSelection.contains(screen) &&
-                    (previousSelection.size > 1 || BaseFlags.get().isNewPickerUi())
-            ) {
+            if (previousSelection.contains(screen)) {
                 previousSelection.minus(screen)
             } else {
                 previousSelection.plus(screen)
