@@ -44,7 +44,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -321,7 +320,7 @@ class CategoryWallpapersViewModelTest {
             categories?.get(0)
                 as? CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory
         val thumbnail = category?.rowThumbnails?.get(1)
-        val onClick = thumbnail?.onSectionClicked
+        val onClick = thumbnail?.getLaunchActivityIntent
 
         assertThat(onClick).isNotNull()
         onClick?.invoke()
