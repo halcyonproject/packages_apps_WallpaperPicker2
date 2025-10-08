@@ -31,6 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.compose.theme.PlatformTheme
 import com.android.wallpaper.R
 import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_WIFI_ONLY
 import com.android.wallpaper.picker.AppbarFragment
@@ -94,21 +95,22 @@ class CategoryWallpapersFragment : Hilt_CategoryWallpapersFragment() {
                     viewModel.networkPreference.collectAsStateWithLifecycle(
                         NETWORK_PREFERENCE_WIFI_ONLY
                     )
+                PlatformTheme {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        categoryWallpapersContentViewModel?.let { viewModel ->
+                            WallpapersScreenContent(
+                                viewModel = viewModel,
+                                isRotationDialogShowing = isRotationDialogShowing,
+                                networkPreference = networkPreference,
+                                isRotationLoading = startRotationInProgress,
+                            )
+                        }
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    categoryWallpapersContentViewModel?.let { viewModel ->
-                        WallpapersScreenContent(
-                            viewModel = viewModel,
-                            isRotationDialogShowing = isRotationDialogShowing,
-                            networkPreference = networkPreference,
-                            isRotationLoading = startRotationInProgress,
+                        LoadingSpinner(
+                            isLoading = areWallpapersLoading,
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
-
-                    LoadingSpinner(
-                        isLoading = areWallpapersLoading,
-                        modifier = Modifier.fillMaxSize(),
-                    )
                 }
             }
         }

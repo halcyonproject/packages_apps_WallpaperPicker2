@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -61,7 +62,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,7 +81,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.compose.theme.PlatformTheme
+import com.android.compose.PlatformOutlinedButton
+import com.android.compose.PlatformTextButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.wallpaper.R
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersContentViewModel
@@ -94,12 +95,6 @@ private const val TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
 
 /** Scale factor used to calculate the width of template tiles */
 private const val TILE_WIDTH_SCALE_FACTOR: Float = 0.95f
-
-private const val MIN_COLUMN_COUNT: Int = 2
-
-private const val MAX_COLUMN_COUNT: Int = 3
-
-private const val MIN_THUMBNAILS_RESIZE_GRID: Int = 8
 
 private const val TAG = "WallpapersScreenContent"
 
@@ -180,85 +175,80 @@ fun WallpapersScreenContent(
     }
 
     if (isRotationDialogShowing) {
-        PlatformTheme {
-            val colorScheme = MaterialTheme.colorScheme
-            AlertDialog(
-                shape = RoundedCornerShape(24.dp),
-                containerColor = colorScheme.onPrimaryContainer,
-                textContentColor = colorScheme.onSurface,
-                title = {
-                    Text(
-                        text = stringResource(R.string.start_rotation_dialog_body),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.titleMedium.copy(lineHeight = 20.sp),
-                    )
-                },
-                onDismissRequest = { viewModel.onCancelRotationDialog?.invoke() },
-                text = {
-                    if (isRotationLoading) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = modifier.fillMaxWidth(),
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    } else {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = modifier.fillMaxWidth(),
-                        ) {
-                            Text(
+        val colorScheme = MaterialTheme.colorScheme
+        AlertDialog(
+            shape = RoundedCornerShape(24.dp),
+            textContentColor = colorScheme.onSurface,
+            title = {
+                Text(
+                    text = stringResource(R.string.start_rotation_dialog_body),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            onDismissRequest = { viewModel.onCancelRotationDialog?.invoke() },
+            text = {
+                if (isRotationLoading) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = modifier.fillMaxWidth(),
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = modifier.fillMaxWidth().offset(x = -24.dp),
+                    ) {
+                        Checkbox(
+                            checked = networkPreference != 0,
+                            onCheckedChange = viewModel.onNetworkPreferences,
+                            modifier = modifier.clearAndSetSemantics {},
+                        )
+
+                        Text(
+                            text =
                                 stringResource(
                                     R.string.start_rotation_dialog_wifi_only_option_message
-                                )
-                            )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Checkbox(
-                                checked = networkPreference != 0,
-                                onCheckedChange = viewModel.onNetworkPreferences,
-                                modifier = modifier.clearAndSetSemantics {},
-                            )
-                        }
+                                ),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                     }
-                },
-                confirmButton = {
-                    if (!isRotationLoading) {
-                        TextButton(onClick = { viewModel.onRotationStart?.invoke() }) {
-                            Text(stringResource(android.R.string.ok))
-                        }
+                }
+            },
+            confirmButton = {
+                if (!isRotationLoading) {
+                    PlatformTextButton(onClick = { viewModel.onRotationStart?.invoke() }) {
+                        Text(stringResource(android.R.string.ok))
                     }
-                },
-                dismissButton = {
-                    if (!isRotationLoading) {
-                        TextButton(onClick = { viewModel.onCancelRotationDialog?.invoke() }) {
-                            Text(stringResource(android.R.string.cancel))
-                        }
+                }
+            },
+            dismissButton = {
+                if (!isRotationLoading) {
+                    PlatformOutlinedButton(
+                        onClick = { viewModel.onCancelRotationDialog?.invoke() }
+                    ) {
+                        Text(stringResource(android.R.string.cancel))
                     }
-                },
-            )
-        }
+                }
+            },
+        )
     }
 }
 
 @Composable
 fun SectionLabel(text: String, modifier: Modifier) {
-    PlatformTheme {
-        val colorScheme = MaterialTheme.colorScheme
-        Text(
-            text = text,
-            modifier = modifier,
-            fontSize = 16.sp,
-            lineHeight = 15.sp,
-            color = colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.W500,
-        )
-    }
+    val colorScheme = MaterialTheme.colorScheme
+    Text(
+        text = text,
+        modifier = modifier,
+        fontSize = 16.sp,
+        lineHeight = 15.sp,
+        color = colorScheme.onSurface,
+        textAlign = TextAlign.Center,
+        fontWeight = FontWeight.W500,
+    )
 }
 
 @Composable
@@ -269,52 +259,49 @@ fun TopToolbar(
     modifier: Modifier,
 ) {
     val activity = LocalActivity.current as ComponentActivity
-
-    PlatformTheme {
-        val colorScheme = MaterialTheme.colorScheme
-        Row(
-            modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
+    val colorScheme = MaterialTheme.colorScheme
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+    ) {
+        Box(
+            modifier =
+                Modifier.clickable { /* Handle back */ }
+                    .padding(vertical = 4.dp)
+                    .padding(end = 16.dp)
         ) {
-            Box(
-                modifier =
-                    Modifier.clickable { /* Handle back */ }
-                        .padding(vertical = 4.dp)
-                        .padding(end = 16.dp)
+            IconButton(
+                modifier = Modifier.size(40.dp),
+                onClick = { activity.onBackPressedDispatcher.onBackPressed() },
+                colors =
+                    IconButtonDefaults.iconButtonColors()
+                        .copy(containerColor = colorScheme.surfaceContainerHighest),
+                shape = CircleShape,
             ) {
-                IconButton(
-                    modifier = Modifier.size(40.dp),
-                    onClick = { activity.onBackPressedDispatcher.onBackPressed() },
-                    colors =
-                        IconButtonDefaults.iconButtonColors()
-                            .copy(containerColor = colorScheme.surfaceContainerHighest),
-                    shape = CircleShape,
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_nav_back_24dp),
-                        contentDescription = stringResource(R.string.bottom_action_bar_back),
-                        tint = colorScheme.onSurfaceVariant,
-                    )
-                }
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_nav_back_24dp),
+                    contentDescription = stringResource(R.string.bottom_action_bar_back),
+                    tint = colorScheme.onSurfaceVariant,
+                )
             }
+        }
 
-            Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Text(
-                modifier = Modifier.weight(1f),
-                text = title,
-                fontSize = 20.sp,
-                color = colorScheme.onSurface,
-            )
-            if (isRotationEnabled) {
-                IconButton(onClick = { startRotation?.invoke() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_slideshow_24dp),
-                        contentDescription = "Slideshow",
-                        tint = colorScheme.onSurface,
-                    )
-                }
+        Text(
+            modifier = Modifier.weight(1f),
+            text = title,
+            fontSize = 20.sp,
+            color = colorScheme.onSurface,
+        )
+        if (isRotationEnabled) {
+            IconButton(onClick = { startRotation?.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_slideshow_24dp),
+                    contentDescription = "Slideshow",
+                    tint = colorScheme.onSurface,
+                )
             }
         }
     }
