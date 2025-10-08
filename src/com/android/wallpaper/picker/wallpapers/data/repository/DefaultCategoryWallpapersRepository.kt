@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
@@ -84,8 +85,6 @@ constructor(
      */
     private val wallpapersCache: MutableMap<String, List<WallpaperModel>> = mutableMapOf()
 
-    private val _selectedCategoryWallpapers = MutableStateFlow<List<WallpaperModel>>(emptyList())
-
     // used to trigger a refresh of the category wallpapers when the category didn't change
     private val _refreshTrigger = MutableStateFlow(true)
 
@@ -94,13 +93,19 @@ constructor(
 
     override val selectedCategoryWallpapers: StateFlow<List<WallpaperModel>> =
         _selectedCategoryModel
-            .combine(_refreshTrigger) { category, _ -> category }
             .onEach { _isWallpapersFetching.value = true }
+            .combine(_refreshTrigger) { category, _ -> category }
             .flatMapLatest { category ->
                 if (category == null) {
                     return@flatMapLatest flow { emit(emptyList()) }
                 }
                 fetchWallpapersFlow(category.commonCategoryData.collectionId, category)
+            }
+            .distinctUntilChanged { oldList, newList ->
+                val oldIds = oldList.map { it.commonWallpaperData.id.uniqueId }
+                val newIds = newList.map { it.commonWallpaperData.id.uniqueId }
+
+                return@distinctUntilChanged oldIds == newIds
             }
             .onEach { _isWallpapersFetching.value = false }
             .stateIn(
@@ -166,7 +171,6 @@ constructor(
 
     override fun clearSelectedCategory() {
         _selectedCategoryModel.value = null
-        _selectedCategoryWallpapers.value = emptyList()
         rotationInitializer = null
     }
 
