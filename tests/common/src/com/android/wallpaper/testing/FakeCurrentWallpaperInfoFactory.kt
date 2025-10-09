@@ -19,7 +19,6 @@ import android.content.Context
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.model.WallpaperMetadata
 import com.android.wallpaper.module.CurrentWallpaperInfoFactory
-import com.android.wallpaper.module.CurrentWallpaperInfoFactory.WallpaperInfoCallback
 import com.android.wallpaper.module.WallpaperRefresher
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,7 +38,7 @@ class FakeCurrentWallpaperInfoFactory @Inject constructor(refresher: FakeWallpap
     override fun createCurrentWallpaperInfos(
         context: Context,
         forceRefresh: Boolean,
-        callback: WallpaperInfoCallback,
+        callback: CurrentWallpaperInfoFactory.WallpaperInfoCallback,
     ) {
         mRefresher.refresh {
             homeWallpaperMetadata: WallpaperMetadata,
