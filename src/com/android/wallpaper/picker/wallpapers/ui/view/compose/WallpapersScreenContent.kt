@@ -16,11 +16,14 @@
 
 package com.android.wallpaper.picker.wallpapers.ui.view.compose
 
+import android.app.Activity
 import android.graphics.Point
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.animation.AnimatedVisibility
@@ -64,6 +67,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -90,6 +94,7 @@ import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpap
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersItemViewModel
 import com.android.wallpaper.util.ResourceUtils
 import com.android.wallpaper.util.SizeCalculator
+import kotlinx.coroutines.launch
 
 /** Scale factor used to calculate the height of template tiles */
 private const val TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
@@ -148,28 +153,35 @@ fun WallpapersScreenContent(
                     }
 
                     is CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory -> {
-                        HorizontalGridSection(thumbnails = item.thumbnailAssets, maxRows = 2)
+                        HorizontalGridSection(
+                            thumbnails = item.thumbnailAssets,
+                            viewModel = viewModel,
+                            maxRows = 2,
+                        )
                     }
 
                     is CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory -> {
-                        ThumbnailCard(item)
+                        ThumbnailCard(item, viewModel = viewModel)
                     }
 
                     is CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory -> {
-                        val tileSizeToUse =
-                            if (item.areTilesLarge) featuredTileSize else regularTileSize
+                        val tileSize = if (item.areTilesLarge) featuredTileSize else regularTileSize
 
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                         ) {
                             item.rowThumbnails.forEach { thumb ->
-                                ThumbnailCard(thumb, modifier = Modifier.size(tileSizeToUse))
+                                ThumbnailCard(
+                                    thumb,
+                                    viewModel = viewModel,
+                                    modifier = Modifier.size(tileSize),
+                                )
                             }
 
                             // Add spacers to align the last row
                             repeat(item.totalColumns - item.rowThumbnails.size) {
-                                Spacer(modifier = Modifier.size(tileSizeToUse))
+                                Spacer(modifier = Modifier.size(tileSize))
                             }
                         }
                     }
@@ -323,6 +335,7 @@ fun TopToolbar(
 @Composable
 fun HorizontalGridSection(
     thumbnails: List<CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory>,
+    viewModel: CategoryWallpapersContentViewModel,
     maxRows: Int,
     modifier: Modifier = Modifier,
 ) {
@@ -361,8 +374,9 @@ fun HorizontalGridSection(
     ) {
         items(thumbnails) { thumbnail ->
             ThumbnailCard(
-                thumbnail,
-                modifier.size(width = widthDp, height = heightDp),
+                thumbnail = thumbnail,
+                viewModel = viewModel,
+                modifier = modifier.size(width = widthDp, height = heightDp),
                 showLabel = true,
             )
         }
@@ -388,16 +402,21 @@ fun Point.toDpSize(): DpSize {
 @Composable
 fun ThumbnailCard(
     thumbnail: CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory,
+    viewModel: CategoryWallpapersContentViewModel,
     modifier: Modifier = Modifier,
     showLabel: Boolean = false,
 ) {
     Card(
-        modifier = modifier.clickable { thumbnail.onSectionClicked?.invoke() },
+        modifier = modifier.clickable { thumbnail.getLaunchActivityIntent?.invoke() },
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
         elevation = CardDefaults.cardElevation(),
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            AssetImageView(thumbnail = thumbnail, modifier = Modifier.fillMaxSize())
+            AssetImageView(
+                thumbnail = thumbnail,
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxSize(),
+            )
             if (showLabel) {
                 Text(
                     text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
@@ -463,9 +482,22 @@ fun LoadingSpinner(isLoading: Boolean, modifier: Modifier = Modifier) {
 @Composable
 fun AssetImageView(
     thumbnail: CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory,
+    viewModel: CategoryWallpapersContentViewModel,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+            onResult = { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    coroutineScope.launch { viewModel.dismissScreen() }
+                }
+            },
+        )
 
     AndroidView(
         factory = { context ->
@@ -487,8 +519,8 @@ fun AssetImageView(
         },
         modifier =
             modifier.clickable {
-                val intent = thumbnail.onSectionClicked?.invoke()
-                context.startActivity(intent)
+                val intent = thumbnail.getLaunchActivityIntent?.invoke()
+                intent?.let { launcher.launch(it) }
             },
     )
 }

@@ -152,7 +152,7 @@ constructor(
                                 thumbnailAsset = it.commonWallpaperData.thumbAsset,
                                 title = it.commonWallpaperData.title,
                                 contentDescription = it.commonWallpaperData.title,
-                                onSectionClicked = {
+                                getLaunchActivityIntent = {
                                     persistentWallpaperModelRepository.setWallpaperModel(it)
                                     val previewIntent =
                                         WallpaperPreviewActivity.intentBuilder(context, true)
@@ -202,7 +202,7 @@ constructor(
                                 isDownloadable =
                                     (it as? WallpaperModel.StaticWallpaperModel)
                                         ?.downloadableWallpaperData != null,
-                                onSectionClicked = {
+                                getLaunchActivityIntent = {
                                     persistentWallpaperModelRepository.setWallpaperModel(it)
                                     val previewIntent =
                                         WallpaperPreviewActivity.intentBuilder(context, true)
@@ -252,6 +252,7 @@ constructor(
                 onNetworkPreferences = { isWifiOnly -> updateNetworkPreferences(isWifiOnly) },
                 title = title,
                 wallpaperItems = templates + wallpaperItems,
+                dismissScreen = { _dismissScreenEvent.emit(Unit) },
             )
         }
 

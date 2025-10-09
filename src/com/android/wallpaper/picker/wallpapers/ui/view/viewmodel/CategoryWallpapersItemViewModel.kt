@@ -57,7 +57,7 @@ sealed class CategoryWallpapersItemViewModel {
      * @property thumbnailAsset The [Asset] associated with the thumbnail.
      * @property title An optional title associated with the thumbnail.
      * @property contentDescription An optional content description for accessibility.
-     * @property onSectionClicked An optional callback invoked when the thumbnail is clicked.
+     * @property getLaunchActivityIntent An optional callback invoked when the thumbnail is clicked.
      */
     data class ThumbnailsViewModelCategory(
         val thumbnailAsset: Asset,
@@ -65,7 +65,7 @@ sealed class CategoryWallpapersItemViewModel {
         val contentDescription: String?,
         val isApplied: Boolean = false,
         val isDownloadable: Boolean = false,
-        val onSectionClicked: (() -> Intent)? = null,
+        val getLaunchActivityIntent: (() -> Intent)? = null,
     ) : CategoryWallpapersItemViewModel()
 
     /**
