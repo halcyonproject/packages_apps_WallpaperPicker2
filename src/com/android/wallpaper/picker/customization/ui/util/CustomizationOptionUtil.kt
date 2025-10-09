@@ -16,6 +16,8 @@
 
 package com.android.wallpaper.picker.customization.ui.util
 
+import com.android.wallpaper.model.Screen
+
 /** This util provides the different [CustomizationOption]'s and util functions. */
 interface CustomizationOptionUtil {
 
@@ -27,4 +29,6 @@ interface CustomizationOptionUtil {
      * intent contains the string of the destination.
      */
     fun getCustomizationOptionFromDestination(destination: String): CustomizationOption?
+
+    fun getScreenFromOption(option: CustomizationOption): Screen?
 }
