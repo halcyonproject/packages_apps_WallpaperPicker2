@@ -52,6 +52,12 @@ constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    /**
+     * Data class defining the target alpha that a preview should be set to. If shouldAnimate is
+     * true, the preview will animate to the target alpha value.
+     */
+    data class PreviewAlpha(val alpha: Float, val showLabel: Boolean, val shouldAnimate: Boolean)
+
     private val initialDestination: String? = savedStateHandle[KEY_DESTINATION]
     private val initialShortcutSlotId: String? = savedStateHandle[KEY_SHORTCUT_SLOT_ID]
     private val launchSource: String? = savedStateHandle[WALLPAPER_LAUNCH_SOURCE]
@@ -176,18 +182,36 @@ constructor(
             when (navigationScreen) {
                 PickerScreen.MAIN ->
                     if (previewScreen == targetScreen)
-                        PreviewAlpha(alpha = PREVIEW_SHOW_ALPHA, shouldAnimate = true)
-                    else PreviewAlpha(alpha = PREVIEW_FADE_ALPHA, shouldAnimate = true)
+                        PreviewAlpha(
+                            alpha = PREVIEW_SHOW_ALPHA,
+                            showLabel = true,
+                            shouldAnimate = true,
+                        )
+                    else
+                        PreviewAlpha(
+                            alpha = PREVIEW_FADE_ALPHA,
+                            showLabel = true,
+                            shouldAnimate = true,
+                        )
                 PickerScreen.CUSTOMIZATION_OPTION -> {
                     when (previewScreen) {
                         targetScreen ->
-                            PreviewAlpha(alpha = PREVIEW_SHOW_ALPHA, shouldAnimate = true)
-                        else -> PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = true)
+                            PreviewAlpha(
+                                alpha = PREVIEW_SHOW_ALPHA,
+                                showLabel = false,
+                                shouldAnimate = true,
+                            )
+                        else ->
+                            PreviewAlpha(
+                                alpha = PREVIEW_HIDE_ALPHA,
+                                showLabel = false,
+                                shouldAnimate = true,
+                            )
                     }
                 }
             }
         } else {
-            PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = false)
+            PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, showLabel = false, shouldAnimate = false)
         }
     }
 

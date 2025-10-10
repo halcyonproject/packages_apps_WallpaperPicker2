@@ -20,12 +20,19 @@ import android.view.View
 
 object ViewAlphaAnimator {
 
-    fun View.animateToAlpha(float: Float) {
+    /**
+     * Animates the view to a specified alpha with an optional end action.
+     *
+     * @param alpha the alpha to animate to.
+     * @param endAction the action to run at the end of the animation.
+     */
+    fun View.animateToAlpha(alpha: Float, endAction: () -> Unit = {}) {
         this.animate()
-            .alpha(float)
+            .alpha(alpha)
             .setDuration(
                 this.resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
             )
+            .withEndAction(endAction)
             .start()
     }
 }

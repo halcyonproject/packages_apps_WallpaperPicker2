@@ -824,7 +824,8 @@ class CustomizationPickerFragment2 :
 
     override fun onEnterAnimationCompleteAfterActivityCreated() {
         if (isInitialCreation) {
-            val previewPager: View = view?.findViewById(R.id.preview_pager) ?: return
+            val previewPager: ClickableMotionLayout =
+                view?.findViewById(R.id.preview_pager) ?: return
             // Show the preview pager only after enter animation completes. If the preview pager was
             // invisible, making it visible will trigger the surface view's surfaceCreated callback,
             // as well as the binding of the wallpaper preview and workspace preview.
@@ -1256,7 +1257,8 @@ class CustomizationPickerFragment2 :
 
                 override fun onTransitionEnd(transition: Transition) {
                     val rootView = view ?: return
-                    val previewPager: View = rootView.requireViewById(R.id.preview_pager)
+                    val previewPager: ClickableMotionLayout =
+                        rootView.requireViewById(R.id.preview_pager)
                     setPreviewPagerVisible(previewPager = previewPager, isVisible = true)
                     PreviewAlphaAnimationBinder.bind(
                         previewPager = previewPager,
