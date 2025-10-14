@@ -22,12 +22,16 @@ import androidx.core.view.doOnLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.TraceUtils.trace
+import com.android.wallpaper.picker.preview.shared.model.CropSizeModel
+import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.util.FullResImageViewUtil2
 import com.android.wallpaper.picker.preview.ui.viewmodel.StaticWallpaperPreviewViewModel
 import com.android.wallpaper.util.RtlUtils
 import com.android.wallpaper.util.WallpaperCropUtils
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import kotlin.math.max
+import kotlin.math.min
 import kotlinx.coroutines.launch
 
 object StaticWallpaperPreviewBinder2 {
@@ -40,7 +44,6 @@ object StaticWallpaperPreviewBinder2 {
         lifecycleOwner: LifecycleOwner,
     ) {
         // TODO(b/423956081): Implement panning to zoom of SubsamplingScaleImageView when fullscreen
-
         lifecycleOwner.lifecycleScope.launch {
             launch {
                 viewModel.subsamplingScaleImageViewModel.collect { imageModel ->
@@ -52,6 +55,36 @@ object StaticWallpaperPreviewBinder2 {
                             displaySize,
                             cropHint,
                             RtlUtils.isRtl(applicationContext),
+                        )
+
+                        // Initialize the preview crop, so that we can extract the color from the
+                        // wallpaper. The color is essential to render the workspace preview.
+                        viewModel.updateDefaultPreviewCropModel(
+                            displaySize,
+                            FullPreviewCropModel(
+                                cropHint =
+                                    WallpaperCropUtils.calculateVisibleRect(
+                                        imageModel.rawWallpaperSize,
+                                        displaySize,
+                                    ),
+                                cropSizeModel =
+                                    CropSizeModel(
+                                        wallpaperZoom =
+                                            WallpaperCropUtils.calculateMinZoom(
+                                                imageModel.rawWallpaperSize,
+                                                displaySize,
+                                            ),
+                                        hostViewSize = displaySize,
+                                        cropViewSize =
+                                            WallpaperCropUtils.calculateCropSurfaceSize(
+                                                scaleImageView.resources,
+                                                max(displaySize.x, displaySize.y),
+                                                min(displaySize.x, displaySize.y),
+                                                displaySize.x,
+                                                displaySize.y,
+                                            ),
+                                    ),
+                            ),
                         )
                     }
                 }
