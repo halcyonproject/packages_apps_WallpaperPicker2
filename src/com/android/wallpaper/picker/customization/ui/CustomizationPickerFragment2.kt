@@ -81,6 +81,7 @@ import com.android.wallpaper.picker.customization.ui.binder.DarkModeUpdateBinder
 import com.android.wallpaper.picker.customization.ui.binder.PackThemeSuggestedEntryBinder
 import com.android.wallpaper.picker.customization.ui.binder.PreviewPagerBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionViewUtil
 import com.android.wallpaper.picker.customization.ui.util.EmptyTransitionListener
@@ -91,6 +92,7 @@ import com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsData
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
+import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.KEY_DESTINATION
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
@@ -112,6 +114,7 @@ import kotlinx.coroutines.launch
 class CustomizationPickerFragment2 :
     Hilt_CustomizationPickerFragment2(), ActivityEnterAnimationCallback {
 
+    @Inject lateinit var customizationOptionUtil: CustomizationOptionUtil
     @Inject lateinit var customizationOptionViewUtil: CustomizationOptionViewUtil
     @Inject lateinit var customizationOptionsBinder: CustomizationOptionsBinder
     @Inject lateinit var packThemeSuggestedEntryBinder: PackThemeSuggestedEntryBinder
@@ -159,14 +162,6 @@ class CustomizationPickerFragment2 :
         if (savedInstanceState != null) {
             // Fragment is being restored, not initial creation
             isInitialCreation = false
-        } else {
-            // If the fragment is initially created, get isFromLauncher from intent and set preview
-            // screen to the view model accordingly; otherwise, respect the value in the view model.
-            val isFromLauncher =
-                activity?.intent?.let { ActivityUtils.isLaunchedFromLauncher(it) } ?: false
-            if (isFromLauncher) {
-                customizationPickerViewModel.selectPreviewScreen(HOME_SCREEN)
-            }
         }
 
         if (!BaseFlags.get().isPhotoPickerEnabled()) {
@@ -316,6 +311,20 @@ class CustomizationPickerFragment2 :
             }
             WindowInsetsCompat.CONSUMED
         }
+
+        // When nonnull, the first screen shown is the secondary screen of the selected option.
+        val initialDestination = activity?.intent?.extras?.getString(KEY_DESTINATION)
+        val initialSelectedOption: CustomizationOption? =
+            initialDestination?.let {
+                customizationOptionUtil.getCustomizationOptionFromDestination(it)
+            }
+        if (initialSelectedOption != null) {
+            bottomScrollView.alpha = 0.0f
+            pickerMotionContainer.getConstraintSet(R.id.secondary)?.apply {
+                setAlpha(R.id.customization_option_floating_sheet_container, 0.0f)
+            }
+        }
+
         // Inflate the views of customization options only when options data is ready.
         viewLifecycleOwner.lifecycleScope.launch {
             // Wait and collect only the first emission. Note that customizationOptionsData is
@@ -323,10 +332,6 @@ class CustomizationPickerFragment2 :
             val customizationOptionsData =
                 customizationPickerViewModel.customizationOptionsViewModel.customizationOptionsData
                     .first()
-            // When nonnull, the first screen shown is the secondary screen of the selected option.
-            val initialSelectedOption: CustomizationOption? =
-                customizationPickerViewModel.screen.first().second
-
             val lockScreenCustomizationOptionEntries: List<Pair<CustomizationOption, View>> =
                 initCustomizationOptionEntries(
                     customizationOptionsData = customizationOptionsData,
@@ -453,6 +458,15 @@ class CustomizationPickerFragment2 :
             previewPagerViews = previewPagerViews,
             isFirstBinding = savedInstanceState == null,
         )
+        if (initialSelectedOption != null) {
+            val initialState =
+                when (customizationOptionUtil.getScreenFromOption(initialSelectedOption)) {
+                    HOME_SCREEN -> R.id.home_preview_selected
+                    LOCK_SCREEN -> R.id.lock_preview_selected
+                    else -> null
+                }
+            initialState?.let { previewPager.transitionToState(it) }
+        }
 
         if (isInitialCreation || isReenterAfterExit) {
             // 1. If the fragment is created the first time, hide the preview pager. This is to
@@ -641,7 +655,6 @@ class CustomizationPickerFragment2 :
         // content, calculate motion layout dimensions and bind the content after.
         customizationOptionFloatingSheetViewMap[initSelectedOption]?.let { floatingSheetView ->
             setCustomizationOptionFloatingSheet(
-                isInitialSecondaryScreen = true,
                 floatingSheetViewContent = floatingSheetView,
                 floatingSheetContainer = customizationFloatingSheetContainer,
                 motionContainer = pickerMotionContainer,
@@ -705,7 +718,6 @@ class CustomizationPickerFragment2 :
                 if (pickerMotionContainer.currentState != R.id.secondary) {
                     customizationOptionFloatingSheetViewMap[option]?.let { floatingSheetView ->
                         setCustomizationOptionFloatingSheet(
-                            isInitialSecondaryScreen = false,
                             floatingSheetViewContent = floatingSheetView,
                             floatingSheetContainer = customizationFloatingSheetContainer,
                             motionContainer = pickerMotionContainer,
@@ -1144,7 +1156,6 @@ class CustomizationPickerFragment2 :
      *   secondary screen for the whole transition.
      */
     private fun setCustomizationOptionFloatingSheet(
-        isInitialSecondaryScreen: Boolean,
         floatingSheetViewContent: View,
         floatingSheetContainer: FrameLayout,
         motionContainer: MotionLayout,
@@ -1174,7 +1185,6 @@ class CustomizationPickerFragment2 :
                     R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT,
                 )
-                setAlpha(R.id.bottom_scroll_view, if (isInitialSecondaryScreen) 0.0f else 1.0f)
             }
             motionContainer.getConstraintSet(R.id.collapsed_header_primary)?.apply {
                 setTranslationY(
@@ -1192,14 +1202,9 @@ class CustomizationPickerFragment2 :
                     R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT,
                 )
-                setAlpha(R.id.bottom_scroll_view, if (isInitialSecondaryScreen) 0.0f else 1.0f)
             }
             motionContainer.getConstraintSet(R.id.secondary)?.apply {
                 setTranslationY(R.id.customization_option_floating_sheet_container, 0.0f)
-                setAlpha(
-                    R.id.customization_option_floating_sheet_container,
-                    if (isInitialSecondaryScreen) 0.0f else 1.0f,
-                )
                 constrainHeight(
                     R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT,

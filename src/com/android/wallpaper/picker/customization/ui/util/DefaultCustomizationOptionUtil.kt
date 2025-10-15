@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.customization.ui.util
 
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,6 +25,10 @@ import javax.inject.Singleton
 class DefaultCustomizationOptionUtil @Inject constructor() : CustomizationOptionUtil {
 
     override fun getCustomizationOptionFromDestination(destination: String): CustomizationOption? {
+        return null
+    }
+
+    override fun getScreenFromOption(option: CustomizationOption): Screen? {
         return null
     }
 }

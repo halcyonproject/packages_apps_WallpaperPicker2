@@ -26,6 +26,9 @@ import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.picker.common.preview.ui.viewmodel.BasePreviewViewModel
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
+import com.android.wallpaper.util.ActivityUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -43,6 +46,7 @@ class CustomizationPickerViewModel2
 @Inject
 constructor(
     @ApplicationContext private val context: Context,
+    customizationOptionUtil: CustomizationOptionUtil,
     customizationOptionsViewModelFactory: CustomizationOptionsViewModelFactory,
     basePreviewViewModelFactory: BasePreviewViewModel.Factory,
     savedStateHandle: SavedStateHandle,
@@ -50,6 +54,7 @@ constructor(
 
     private val initialDestination: String? = savedStateHandle[KEY_DESTINATION]
     private val initialShortcutSlotId: String? = savedStateHandle[KEY_SHORTCUT_SLOT_ID]
+    private val launchSource: String? = savedStateHandle[WALLPAPER_LAUNCH_SOURCE]
 
     val customizationOptionsViewModel =
         customizationOptionsViewModelFactory.create(
@@ -64,9 +69,17 @@ constructor(
         CUSTOMIZATION_OPTION,
     }
 
+    private val initialPreviewScreen =
+        initialDestination
+            ?.let { customizationOptionUtil.getCustomizationOptionFromDestination(it) }
+            ?.let { customizationOptionUtil.getScreenFromOption(it) }
+    private val isLaunchedFromLauncher = ActivityUtils.isLaunchedFromLauncher(launchSource)
     private val _selectedPreviewScreen =
         MutableStateFlow(
-            if (BaseFlags.get().shouldShowDesktopUi(context)) HOME_SCREEN else LOCK_SCREEN
+            initialPreviewScreen
+                ?: if (isLaunchedFromLauncher || BaseFlags.get().shouldShowDesktopUi(context))
+                    HOME_SCREEN
+                else LOCK_SCREEN
         )
     val selectedPreviewScreen = _selectedPreviewScreen.asStateFlow()
 

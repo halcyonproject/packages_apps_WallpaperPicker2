@@ -48,6 +48,7 @@ import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -157,6 +158,10 @@ class CustomizationPickerActivity2 :
                                 putString(
                                     KEY_SHORTCUT_SLOT_ID,
                                     intent.extras?.getString(KEY_SHORTCUT_SLOT_ID),
+                                )
+                                putString(
+                                    WALLPAPER_LAUNCH_SOURCE,
+                                    intent.extras?.getString(WALLPAPER_LAUNCH_SOURCE),
                                 )
                             }
                     }, // fragment

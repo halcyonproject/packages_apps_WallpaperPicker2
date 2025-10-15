@@ -214,7 +214,12 @@ object ActivityUtils {
      */
     @JvmStatic
     fun isLaunchedFromLauncher(intent: Intent): Boolean {
-        return LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER ==
-            intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE)
+        return isLaunchedFromLauncher(intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE))
+    }
+
+    /** Returns `true` if the launch source is the home screen (launcher); `false` otherwise. */
+    @JvmStatic
+    fun isLaunchedFromLauncher(launchSource: String?): Boolean {
+        return LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER == launchSource
     }
 }
