@@ -48,6 +48,7 @@ import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.TrampolinePickerActivity
@@ -94,6 +95,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
     @Inject lateinit var logger: UserEventLogger
     @Inject lateinit var imageEffectDialogUtil: ImageEffectDialogUtil
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
+    @Inject lateinit var packageStatusNotifier: PackageStatusNotifier
 
     private val flags = InjectorProvider.getInjector().getFlags()
 
@@ -510,6 +512,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
             lifecycleOwner = viewLifecycleOwner,
             logger = logger,
             imageEffectDialogUtil = imageEffectDialogUtil,
+            packageStatusNotifier = packageStatusNotifier,
             onNavigateToEditScreen = { navigateToEditScreen(it) },
             onStartShareActivity = { shareActivityResult.launch(it) },
         )

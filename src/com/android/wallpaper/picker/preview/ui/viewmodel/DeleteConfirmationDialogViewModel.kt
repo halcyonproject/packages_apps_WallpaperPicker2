@@ -25,4 +25,6 @@ class DeleteConfirmationDialogViewModel(
     val liveWallpaperDeleteIntent: Intent?,
     // Delete URI for creative wallpapers only. It is null for non creative wallpapers.
     val creativeWallpaperDeleteUri: Uri?,
+    // the package name for the wallpaper
+    val wallpaperComponent: String,
 )

@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
+import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.view.ImageEffectDialog
@@ -63,6 +64,7 @@ object PreviewActionsBinder {
         lifecycleOwner: LifecycleOwner,
         logger: UserEventLogger,
         imageEffectDialogUtil: ImageEffectDialogUtil,
+        packageStatusNotifier: PackageStatusNotifier,
         onNavigateToEditScreen: (intent: Intent) -> Unit,
         onStartShareActivity: (intent: Intent) -> Unit,
     ) {
@@ -184,10 +186,34 @@ object PreviewActionsBinder {
                                         null,
                                         null,
                                     )
+                                    activity.finish()
                                 } else if (viewModel.liveWallpaperDeleteIntent != null) {
+                                    var deletePackageListener: PackageStatusNotifier.Listener? =
+                                        null
+                                    deletePackageListener =
+                                        PackageStatusNotifier.Listener {
+                                            pkgName: String?,
+                                            status: Int ->
+                                            if (
+                                                status ==
+                                                    PackageStatusNotifier.PackageStatus.CHANGED &&
+                                                    pkgName == viewModel.wallpaperComponent
+                                            ) {
+                                                deletePackageListener?.let { listener ->
+                                                    packageStatusNotifier.removeListener(listener)
+                                                }
+                                                activity.finish()
+                                            }
+                                        }
+
+                                    deletePackageListener?.let { listener ->
+                                        packageStatusNotifier.addListener(
+                                            listener,
+                                            viewModel.liveWallpaperDeleteIntent.action,
+                                        )
+                                    }
                                     appContext.startService(viewModel.liveWallpaperDeleteIntent)
                                 }
-                                activity.finish()
                             }
                             val dialog =
                                 deleteDialog
