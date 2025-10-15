@@ -85,13 +85,6 @@ flag {
 }
 
 flag {
-    name: "photo_shuffle_flag"
-    namespace: "customization_picker"
-    description: "Flag for enabling the photo shuffle feature in the wallpaper picker app"
-    bug: "445051119"
-}
-
-flag {
     name: "refactor_wallpaper_info_flag"
     namespace: "customization_picker"
     description: "Flag for enabling the photo shuffle feature in the wallpaper picker app"
