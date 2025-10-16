@@ -68,7 +68,8 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
         displayId: Int,
         whichPreview: WhichPreview,
         onEngineCreated: (engine: IWallpaperEngine) -> Unit,
-        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+        onWallpaperColorsChanged:
+            (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): IWallpaperEngine {
         // When forcing single engine, we will use mutex lock to first check if the engine is
         // created and cached in liveWallpaperEngines; otherwise, create one and cache it in
@@ -123,7 +124,8 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
         displayId: Int,
         whichPreview: WhichPreview,
         onEngineCreated: (engine: IWallpaperEngine) -> Unit,
-        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+        onWallpaperColorsChanged:
+            (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): IWallpaperEngine {
         val (serviceConnection, wallpaperService) =
             LiveWallpaperServiceBinder.bindWallpaperService(

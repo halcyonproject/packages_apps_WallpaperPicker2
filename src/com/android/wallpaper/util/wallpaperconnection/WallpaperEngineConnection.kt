@@ -94,7 +94,11 @@ class WallpaperEngineConnection(
         // Do nothing intended.
     }
 
-    override fun onWallpaperColorsChanged(colors: WallpaperColors?, displayId: Int) {
+    override fun onWallpaperColorsChanged(
+        colors: WallpaperColors?,
+        displayId: Int,
+        persistedColors: WallpaperColors?,
+    ) {
         listener?.onWallpaperColorsChanged(colors, displayId)
     }
 
