@@ -212,15 +212,22 @@ constructor(
     // View model for delete confirmation dialog. Note that null means the dialog should show;
     // otherwise, the dialog should hide.
     val deleteConfirmationDialogViewModel: Flow<DeleteConfirmationDialogViewModel?> =
-        combine(isDeleteChecked, liveWallpaperDeleteIntent, creativeWallpaperDeleteUri) {
-            isChecked,
-            intent,
-            uri ->
+        combine(
+            isDeleteChecked,
+            liveWallpaperDeleteIntent,
+            creativeWallpaperDeleteUri,
+            previewActionsInteractor.wallpaperModel,
+        ) { isChecked, intent, uri, wallpaperModel ->
             if (isChecked && (intent != null || uri != null)) {
                 DeleteConfirmationDialogViewModel(
                     onDismiss = { _isDeleteChecked.value = false },
                     liveWallpaperDeleteIntent = intent,
                     creativeWallpaperDeleteUri = uri,
+                    wallpaperComponent =
+                        (wallpaperModel as? LiveWallpaperModel)
+                            ?.liveWallpaperData
+                            ?.systemWallpaperInfo
+                            ?.packageName ?: "",
                 )
             } else {
                 null
