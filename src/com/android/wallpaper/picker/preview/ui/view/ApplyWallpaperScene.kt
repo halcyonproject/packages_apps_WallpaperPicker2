@@ -48,8 +48,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,24 +59,44 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * [ApplyWallpaperScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout. It is
  * bound to the [WallpaperPreviewFragment] and is not expected to be used somewhere else.
  */
 @Composable
-fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview: View) {
+fun ContentScope.ApplyWallpaperScene(
+    viewModel: WallpaperPreviewViewModel,
+    sceneState: MutableSceneTransitionLayoutState,
+    lockScreenPreview: View,
+    homeScreenPreview: View,
+) {
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
     val windowSize: IntSize = LocalWindowInfo.current.containerSize
     val phoneAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
 
-    var isLockScreenChecked: Boolean by remember { mutableStateOf(true) }
-    var isHomeScreenChecked: Boolean by remember { mutableStateOf(true) }
+    val isLockScreenChecked: Boolean by
+        viewModel.isLockCheckBoxChecked.collectAsStateWithLifecycle(false)
+    val onLockScreenCheckChanged: (() -> Unit)? by
+        viewModel.onLockCheckBoxChecked.collectAsStateWithLifecycle(null)
+    val isHomeScreenChecked: Boolean by
+        viewModel.isHomeCheckBoxChecked.collectAsStateWithLifecycle(false)
+    val onHomeScreenCheckChanged: (() -> Unit)? by
+        viewModel.onHomeCheckBoxChecked.collectAsStateWithLifecycle(null)
+    val isApplyButtonEnabled: Boolean by
+        viewModel.isApplyButtonEnabled.collectAsStateWithLifecycle(false)
 
     Box(
         modifier =
@@ -114,7 +133,7 @@ fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview:
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         MovableElement(
-                            key = WallpaperPreviewFragment.SharedElements.LockScreen,
+                            key = SharedElements.LockScreen,
                             modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
                         ) {
                             content {
@@ -130,7 +149,7 @@ fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview:
                         CheckboxWithText(
                             modifier = Modifier.element(Elements.ApplyWallpaperLockScreenCheckbox),
                             isChecked = isLockScreenChecked,
-                            onCheckedChange = { isLockScreenChecked = !isLockScreenChecked },
+                            onCheckedChange = { onLockScreenCheckChanged?.invoke() },
                             text = stringResource(R.string.lock_screen_tab),
                         )
                     }
@@ -139,7 +158,7 @@ fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview:
 
                     Column(Modifier.weight(1f)) {
                         MovableElement(
-                            key = WallpaperPreviewFragment.SharedElements.HomeScreen,
+                            key = SharedElements.HomeScreen,
                             modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
                         ) {
                             content {
@@ -155,7 +174,7 @@ fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview:
                         CheckboxWithText(
                             modifier = Modifier.element(Elements.ApplyWallpaperHomeScreenCheckbox),
                             isChecked = isHomeScreenChecked,
-                            onCheckedChange = { isHomeScreenChecked = !isHomeScreenChecked },
+                            onCheckedChange = { onHomeScreenCheckChanged?.invoke() },
                             text = stringResource(R.string.home_screen_tab),
                         )
                     }
@@ -177,13 +196,19 @@ fun ContentScope.ApplyWallpaperScene(lockScreenPreview: View, homeScreenPreview:
                             contentColor = colorScheme.onPrimary,
                         ),
                     shape = RoundedCornerShape(percent = 50),
+                    enabled = isApplyButtonEnabled,
                 ) {
                     Text(stringResource(R.string.apply_btn))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    onClick = {},
+                    onClick = {
+                        sceneState.setTargetScene(
+                            targetScene = Scenes.SmallPreview,
+                            animationScope = coroutineScope,
+                        )
+                    },
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
@@ -246,6 +271,6 @@ fun CheckboxWithText(
                     ),
             )
         }
-        Text(text = text, fontSize = 16.sp, color = colorScheme.onPrimary)
+        Text(text = text, fontSize = 16.sp, color = colorScheme.onSurface)
     }
 }

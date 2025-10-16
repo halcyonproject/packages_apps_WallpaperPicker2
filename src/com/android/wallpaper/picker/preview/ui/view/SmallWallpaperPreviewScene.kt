@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
@@ -64,6 +66,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -72,6 +75,7 @@ import kotlinx.coroutines.CoroutineScope
  */
 @Composable
 fun ContentScope.SmallWallpaperPreviewScene(
+    viewModel: WallpaperPreviewViewModel,
     sceneState: MutableSceneTransitionLayoutState,
     pagerState: PagerState,
     lockScreenPreview: View,
@@ -85,6 +89,7 @@ fun ContentScope.SmallWallpaperPreviewScene(
         Spacer(modifier = Modifier.height(systemBarPadding.calculateTopPadding()))
 
         TopToolbar(
+            viewModel = viewModel,
             modifier = Modifier.element(Elements.SmallPreviewTopToolbar).fillMaxWidth(),
             sceneState = sceneState,
         )
@@ -228,9 +233,16 @@ private fun ContentScope.PreviewPager(
 }
 
 @Composable
-fun TopToolbar(modifier: Modifier, sceneState: MutableSceneTransitionLayoutState) {
+fun TopToolbar(
+    viewModel: WallpaperPreviewViewModel,
+    sceneState: MutableSceneTransitionLayoutState,
+    modifier: Modifier,
+) {
     val colorScheme = MaterialTheme.colorScheme
     val coroutineScope = rememberCoroutineScope()
+
+    val onNextButtonClicked: (() -> Unit)? by
+        viewModel.onNextButtonClicked.collectAsStateWithLifecycle(null)
 
     Row(
         modifier = modifier.padding(vertical = 8.dp, horizontal = 24.dp),
@@ -274,6 +286,7 @@ fun TopToolbar(modifier: Modifier, sceneState: MutableSceneTransitionLayoutState
             Button(
                 modifier = Modifier.height(40.dp),
                 onClick = {
+                    onNextButtonClicked?.invoke()
                     sceneState.setTargetScene(
                         Scenes.ApplyWallpaper,
                         animationScope = coroutineScope,
