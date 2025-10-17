@@ -202,6 +202,7 @@ object PreviewActionsBinder {
                                                 deletePackageListener?.let { listener ->
                                                     packageStatusNotifier.removeListener(listener)
                                                 }
+                                                actionGroup.setIsDeleting(false)
                                                 activity.finish()
                                             }
                                         }
@@ -212,6 +213,7 @@ object PreviewActionsBinder {
                                             viewModel.liveWallpaperDeleteIntent.action,
                                         )
                                     }
+                                    actionGroup.setIsDeleting(true)
                                     appContext.startService(viewModel.liveWallpaperDeleteIntent)
                                 }
                             }
