@@ -35,7 +35,6 @@ import com.android.wallpaper.picker.customization.shared.model.WallpaperDestinat
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_FADE_ALPHA
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_HIDE_ALPHA
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_SHOW_ALPHA
-import com.android.wallpaper.picker.customization.ui.viewmodel.PreviewAlpha
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
@@ -86,6 +85,12 @@ constructor(
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    /**
+     * Data class defining the target alpha that a preview should be set to. If shouldAnimate is
+     * true, the preview will animate to the target alpha value.
+     */
+    data class PreviewAlpha(val alpha: Float, val shouldAnimate: Boolean)
 
     // Don't update smaller display since we always use portrait, always use wallpaper display on
     // single display device.

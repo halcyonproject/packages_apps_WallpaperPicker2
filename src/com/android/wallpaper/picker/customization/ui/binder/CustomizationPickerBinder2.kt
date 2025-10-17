@@ -103,38 +103,8 @@ object CustomizationPickerBinder2 {
                         when (screen) {
                             MAIN -> {
                                 navigateToPrimary()
-                                // setting the visibility of the home and lock labels
-                                val lockPreviewLabel: View =
-                                    previewPager.requireViewById(R.id.lock_preview_label)
-                                lockPreviewLabel.visibility = View.VISIBLE
-                                val homePreviewLabel: View =
-                                    previewPager.requireViewById(R.id.home_preview_label)
-                                homePreviewLabel.visibility = View.VISIBLE
-                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
-                                    previewPager.addClickableViewId(R.id.home_preview_label)
-                                    previewPager.addClickableViewId(R.id.lock_preview_label)
-                                    lockPreviewLabel.setOnClickListener {
-                                        viewModel.selectPreviewScreen(LOCK_SCREEN)
-                                    }
-                                    homePreviewLabel.setOnClickListener {
-                                        viewModel.selectPreviewScreen(HOME_SCREEN)
-                                    }
-                                }
                             }
                             CUSTOMIZATION_OPTION -> {
-                                val lockPreviewLabel: View =
-                                    previewPager.requireViewById(R.id.lock_preview_label)
-                                // setting the visibility of the home and lock labels
-                                lockPreviewLabel.visibility = View.GONE
-                                val homePreviewLabel: View =
-                                    previewPager.requireViewById(R.id.home_preview_label)
-                                homePreviewLabel.visibility = View.GONE
-                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
-                                    previewPager.removeClickableViewId(R.id.home_preview_label)
-                                    previewPager.removeClickableViewId(R.id.lock_preview_label)
-                                    lockPreviewLabel.setOnClickListener(null)
-                                    homePreviewLabel.setOnClickListener(null)
-                                }
                                 option?.let(navigateToSecondary)
                             }
                         }
