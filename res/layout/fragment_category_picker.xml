@@ -65,7 +65,7 @@
                 android:id="@+id/category_fragment_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?android:colorBackground"
+                android:background="@color/materialColorSurfaceContainer"
                 app:layout_behavior="@string/bottom_sheet_behavior" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

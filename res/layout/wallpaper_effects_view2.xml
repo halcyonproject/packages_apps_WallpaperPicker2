@@ -29,14 +29,14 @@
         android:layout_height="wrap_content"
         android:textAlignment="viewStart"
         android:textAppearance="@style/TitleTextAppearance"
-        android:textColor="?android:textColorPrimary" />
+        android:textColor="@color/materialColorOnSurface" />
 
     <TextView
         android:id="@+id/wallpaper_effects_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/wallpaper_info_pane_subtitle1_top_margin"
-        android:textColor="?android:textColorSecondary"
+        android:textColor="@color/materialColorOnSurfaceVariant"
         android:textSize="14sp" />
 
     <RelativeLayout
@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textAlignment="viewStart"
-                android:textColor="?android:textColorSecondary" />
+                android:textColor="@color/materialColorOnSurfaceVariant" />
 
             <Switch
                 android:id="@+id/wallpaper_effect_switch"
@@ -111,7 +111,7 @@
             android:id="@+id/action_progress"
             android:layout_width="@dimen/wallpaper_effect_downloading_progress_size"
             android:layout_height="@dimen/wallpaper_effect_downloading_progress_size"
-            android:indeterminateTint="?android:attr/textColorPrimary"
+            android:indeterminateTint="@color/materialColorOnSurface"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="5dp"
             android:visibility="visible" />

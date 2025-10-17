@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textAlignment="viewStart"
-        android:textColor="?android:textColorSecondary" />
+        android:textColor="@color/materialColorOnSurfaceVariant" />
 
     <Switch
         android:id="@+id/wallpaper_action_switch"
