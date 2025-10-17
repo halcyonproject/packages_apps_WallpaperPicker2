@@ -16,7 +16,6 @@
 
 package com.android.wallpaper.util
 
-import android.app.Flags.FLAG_UPDATE_RECENTS_FROM_SYSTEM
 import android.app.WallpaperManager.FLAG_LOCK
 import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
@@ -114,34 +113,6 @@ class ExtendedWallpaperEffectsUtilsTest {
         fun wallpaperConnectionUtils(): WallpaperConnectionUtils
     }
 
-    @DisableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
-    @Test
-    fun startEffects_noRecentsFromSystem_addsPhotoUri() =
-        testScope.runTest {
-            val photoUri = Uri.parse("content://bogus")
-            val model =
-                WallpaperModelUtils.getStaticWallpaperModel(
-                    wallpaperId = "id",
-                    collectionId = "collection",
-                    imageWallpaperUri = photoUri,
-                )
-
-            ExtendedWallpaperEffectsUtils.startExtendedWallpaperEffects(
-                model,
-                launcher,
-                context,
-                wallpaperConnectionUtils,
-                BaseFlags.get(),
-            )
-
-            assertThat(launcher.lastIntent).isNotNull()
-            val intent = launcher.lastIntent!!
-            assertThat(intent).isNotNull()
-            assertThat(intent.hasExtra(PHOTO_URI)).isTrue()
-            assertThat(intent.getParcelableExtra(PHOTO_URI, Uri::class.java)).isEqualTo(photoUri)
-        }
-
-    @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
     @DisableFlags(FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS)
     @Test
     fun startEffects_recentsFromSystem_noPanAndZoom_notApplied_addsPhotoUri() =
@@ -171,7 +142,7 @@ class ExtendedWallpaperEffectsUtilsTest {
             assertThat(intent.hasExtra(SOURCE_BITMAP_SCREEN)).isFalse()
         }
 
-    @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM, FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS)
+    @EnableFlags(FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS)
     @Test
     fun startEffects_notApplied_addsPhotoUriAndCrops() =
         testScope.runTest {
@@ -205,7 +176,6 @@ class ExtendedWallpaperEffectsUtilsTest {
             assertThat(intent.hasExtra(SOURCE_BITMAP_SCREEN)).isFalse()
         }
 
-    @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
     @Test
     fun startEffects_recentsFromSystem_appliedToSystem_setsSource() =
         testScope.runTest {
@@ -232,7 +202,6 @@ class ExtendedWallpaperEffectsUtilsTest {
             assertThat(intent.getIntExtra(SOURCE_BITMAP_SCREEN, 0)).isEqualTo(FLAG_SYSTEM)
         }
 
-    @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
     @Test
     fun startEffects_recentsFromSystem_appliedToBoth_setsSource() =
         testScope.runTest {
@@ -259,7 +228,6 @@ class ExtendedWallpaperEffectsUtilsTest {
             assertThat(intent.getIntExtra(SOURCE_BITMAP_SCREEN, 0)).isEqualTo(FLAG_SYSTEM)
         }
 
-    @EnableFlags(FLAG_UPDATE_RECENTS_FROM_SYSTEM)
     @Test
     fun startEffects_recentsFromSystem_appliedToLock_setsSource() =
         testScope.runTest {

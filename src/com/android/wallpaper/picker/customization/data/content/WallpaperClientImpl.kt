@@ -167,25 +167,15 @@ constructor(
                 fullPreviewCropModels?.let { cropModels ->
                     cropModels.mapValues { it.value.adjustCropForParallax(wallpaperSize) }
                 } ?: emptyMap()
+            val hash = "${BitmapUtils.generateHashCode(bitmap)}"
             val managerId =
-                if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
-                    val hash = "${BitmapUtils.generateHashCode(bitmap)}"
-                    wallpaperManager.setStaticWallpaperWithDescription(
-                        asset.getStreamOrFromBitmap(bitmap),
-                        bitmap,
-                        wallpaperModel.toDescription(hash, cropHintsWithParallax),
-                        destination,
-                        asset,
-                    )
-                } else {
-                    wallpaperManager.setStaticWallpaperWithCrops(
-                        asset.getStreamOrFromBitmap(bitmap),
-                        bitmap,
-                        cropHintsWithParallax,
-                        destination,
-                        asset,
-                    )
-                }
+                wallpaperManager.setStaticWallpaperWithDescription(
+                    asset.getStreamOrFromBitmap(bitmap),
+                    bitmap,
+                    wallpaperModel.toDescription(hash, cropHintsWithParallax),
+                    destination,
+                    asset,
+                )
 
             wallpaperPreferences.setStaticWallpaperMetadata(
                 metadata = wallpaperModel.getMetadata(bitmap, managerId),
@@ -203,14 +193,6 @@ constructor(
 
             // Save the static wallpaper to recent wallpapers
             // TODO(b/309138446): check if we can update recent with all cropHints from WM later
-            if (!BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
-                wallpaperPreferences.addStaticWallpaperToRecentWallpapers(
-                    destination,
-                    wallpaperModel,
-                    bitmap,
-                    cropHintsWithParallax,
-                )
-            }
         }
     }
 
@@ -356,9 +338,7 @@ constructor(
                     UserEventLogger.toWallpaperDestinationForLogging(destination.toDestinationInt()),
             )
 
-            if (!BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
-                wallpaperPreferences.addLiveWallpaperToRecentWallpapers(destination, wallpaperModel)
-            }
+
         }
     }
 
@@ -366,10 +346,7 @@ constructor(
         wallpaperModel: LiveWallpaperModel,
         destination: WallpaperDestination,
     ): Boolean {
-        val description =
-            if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context))
-                wallpaperModel.toDescription()
-            else wallpaperModel.liveWallpaperData.description
+        val description = wallpaperModel.toDescription()
         try {
             val method =
                 wallpaperManager.javaClass.getMethod(

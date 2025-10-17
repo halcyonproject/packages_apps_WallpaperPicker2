@@ -170,7 +170,7 @@ object ExtendedWallpaperEffectsUtils {
                 WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
                 (wallpaper as LiveWallpaperModel).liveWallpaperData.description,
             )
-        } else if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
+        } else {
             Log.d(TAG, "destination: ${wallpaper.commonWallpaperData.destination}")
             when (wallpaper.commonWallpaperData.destination) {
                 Destination.NOT_APPLIED -> {
@@ -203,17 +203,6 @@ object ExtendedWallpaperEffectsUtils {
                     Log.d(TAG, "Using lock screen bitmap")
                     extendedWallpaperIntent.putExtra(SOURCE_BITMAP_SCREEN, FLAG_LOCK)
                 }
-            }
-        } else {
-            val photoUri = (wallpaper as StaticWallpaperModel).imageWallpaperData?.uri
-            Log.d("ExtendedWallpaperEffectsUtils", "PhotoURI is: $photoUri")
-            photoUri?.let {
-                context.grantUriPermission(
-                    extendedWallpaperPackageName,
-                    photoUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
-                extendedWallpaperIntent.putExtra("PHOTO_URI", it)
             }
         }
         try {
