@@ -62,12 +62,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
+import com.android.wallpaper.model.Screen
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * [SmallWallpaperPreviewScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout.
@@ -81,16 +84,50 @@ fun ContentScope.SmallWallpaperPreviewScene(
     lockScreenPreview: View,
     homeScreenPreview: View,
 ) {
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
+
+    val onLockSmallPreviewClicked: (() -> Unit)? by
+        viewModel
+            .onSmallPreviewClicked(
+                screen = Screen.LOCK_SCREEN,
+                deviceDisplayType = DeviceDisplayType.SINGLE,
+                navigate = {
+                    sceneState.setTargetScene(
+                        Scenes.FullLockPreview,
+                        animationScope = coroutineScope,
+                    )
+                },
+            )
+            .collectAsStateWithLifecycle(null)
+    val onHomeSmallPreviewClicked: (() -> Unit)? by
+        viewModel
+            .onSmallPreviewClicked(
+                screen = Screen.HOME_SCREEN,
+                deviceDisplayType = DeviceDisplayType.SINGLE,
+                navigate = {
+                    sceneState.setTargetScene(
+                        Scenes.FullHomePreview,
+                        animationScope = coroutineScope,
+                    )
+                },
+            )
+            .collectAsStateWithLifecycle(null)
+
+    // Sync view model's smallPreviewSelectedTab with the pager state
+    when (pagerState.currentPage) {
+        0 -> viewModel.setSmallPreviewSelectedTab(Screen.LOCK_SCREEN)
+        1 -> viewModel.setSmallPreviewSelectedTab(Screen.HOME_SCREEN)
+    }
 
     Column {
         // Status bar space to avoid the top toolbar overlapping with the status bar.
         Spacer(modifier = Modifier.height(systemBarPadding.calculateTopPadding()))
 
-        TopToolbar(
+        SmallPreviewTopToolbar(
             viewModel = viewModel,
-            modifier = Modifier.element(Elements.SmallPreviewTopToolbar).fillMaxWidth(),
+            modifier = Modifier.element(Elements.SmallPreviewTopToolbar),
             sceneState = sceneState,
         )
 
@@ -98,10 +135,25 @@ fun ContentScope.SmallWallpaperPreviewScene(
 
         PreviewPager(
             modifier = Modifier.fillMaxWidth().weight(1f),
-            sceneState = sceneState,
             pagerState = pagerState,
             lockScreenPreview = lockScreenPreview,
             homeScreenPreview = homeScreenPreview,
+            onPreviewClick = { screen ->
+                when (screen) {
+                    Screen.LOCK_SCREEN -> {
+                        if (pagerState.currentPage != 0) {
+                            coroutineScope.launch { pagerState.animateScrollToPage(0) }
+                        }
+                        onLockSmallPreviewClicked?.invoke()
+                    }
+                    Screen.HOME_SCREEN -> {
+                        if (pagerState.currentPage != 1) {
+                            coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                        }
+                        onHomeSmallPreviewClicked?.invoke()
+                    }
+                }
+            },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -116,7 +168,7 @@ fun ContentScope.SmallWallpaperPreviewScene(
         ) {
             Box(
                 modifier =
-                    Modifier.clickable { /* Handle back */ }
+                    Modifier.clickable { /* Open info bottom sheet */ }
                         .padding(vertical = 4.dp)
                         .padding(end = 16.dp)
             ) {
@@ -144,16 +196,15 @@ fun ContentScope.SmallWallpaperPreviewScene(
 
 @Composable
 private fun ContentScope.PreviewPager(
-    sceneState: MutableSceneTransitionLayoutState,
     pagerState: PagerState,
     lockScreenPreview: View,
     homeScreenPreview: View,
+    onPreviewClick: (screen: Screen) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val phoneAspectRatio: Float =
         LocalWindowInfo.current.containerSize.width.toFloat() /
             LocalWindowInfo.current.containerSize.height.toFloat()
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
 
     BoxWithConstraints(modifier) {
         val minHorizontalPadding: Dp = 48.dp
@@ -180,7 +231,6 @@ private fun ContentScope.PreviewPager(
                 ),
             pageSpacing = 12.dp,
         ) { page ->
-            val isCurrentPage = pagerState.currentPage == page
             when (page) {
                 0 ->
                     MovableElement(
@@ -191,15 +241,8 @@ private fun ContentScope.PreviewPager(
                             PreviewScreen(
                                 preview = lockScreenPreview,
                                 modifier =
-                                    Modifier.fillMaxSize().clickable(
-                                        enabled =
-                                            isCurrentPage &&
-                                                sceneState.currentScene == Scenes.SmallPreview
-                                    ) {
-                                        sceneState.setTargetScene(
-                                            Scenes.FullLockPreview,
-                                            animationScope = coroutineScope,
-                                        )
+                                    Modifier.fillMaxSize().clickable() {
+                                        onPreviewClick.invoke(Screen.LOCK_SCREEN)
                                     },
                             )
                         }
@@ -214,15 +257,8 @@ private fun ContentScope.PreviewPager(
                             PreviewScreen(
                                 preview = homeScreenPreview,
                                 modifier =
-                                    Modifier.fillMaxSize().clickable(
-                                        enabled =
-                                            isCurrentPage &&
-                                                sceneState.currentScene == Scenes.SmallPreview
-                                    ) {
-                                        sceneState.setTargetScene(
-                                            Scenes.FullHomePreview,
-                                            animationScope = coroutineScope,
-                                        )
+                                    Modifier.fillMaxSize().clickable() {
+                                        onPreviewClick.invoke(Screen.HOME_SCREEN)
                                     },
                             )
                         }
@@ -233,7 +269,7 @@ private fun ContentScope.PreviewPager(
 }
 
 @Composable
-fun TopToolbar(
+fun SmallPreviewTopToolbar(
     viewModel: WallpaperPreviewViewModel,
     sceneState: MutableSceneTransitionLayoutState,
     modifier: Modifier,
@@ -241,11 +277,13 @@ fun TopToolbar(
     val colorScheme = MaterialTheme.colorScheme
     val coroutineScope = rememberCoroutineScope()
 
+    val isNextButtonVisible: Boolean by
+        viewModel.isSetWallpaperButtonVisible.collectAsStateWithLifecycle(false)
     val onNextButtonClicked: (() -> Unit)? by
         viewModel.onNextButtonClicked.collectAsStateWithLifecycle(null)
 
     Row(
-        modifier = modifier.padding(vertical = 8.dp, horizontal = 24.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
@@ -279,27 +317,28 @@ fun TopToolbar(
             fontSize = 20.sp,
             color = colorScheme.onSurface,
         )
+        if (isNextButtonVisible) {
+            Spacer(modifier = Modifier.width(12.dp))
 
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Box(modifier = Modifier.padding(vertical = 4.dp)) {
-            Button(
-                modifier = Modifier.height(40.dp),
-                onClick = {
-                    onNextButtonClicked?.invoke()
-                    sceneState.setTargetScene(
-                        Scenes.ApplyWallpaper,
-                        animationScope = coroutineScope,
-                    )
-                },
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary,
-                    ),
-                shape = RoundedCornerShape(percent = 50),
-            ) {
-                Text(text = stringResource(R.string.next_page_content_description))
+            Box(modifier = Modifier.padding(vertical = 4.dp)) {
+                Button(
+                    modifier = Modifier.height(40.dp),
+                    onClick = {
+                        onNextButtonClicked?.invoke()
+                        sceneState.setTargetScene(
+                            Scenes.ApplyWallpaper,
+                            animationScope = coroutineScope,
+                        )
+                    },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary,
+                        ),
+                    shape = RoundedCornerShape(percent = 50),
+                ) {
+                    Text(text = stringResource(R.string.next_page_content_description))
+                }
             }
         }
     }

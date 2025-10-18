@@ -24,24 +24,16 @@ import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.IntSize
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import com.android.compose.animation.scene.Back
-import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.DefaultElementContentPicker
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.MovableElementKey
@@ -59,7 +51,7 @@ import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.common.preview.ui.binder.PreviewBinder
 import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScene
-import com.android.wallpaper.picker.preview.ui.view.PreviewScreen
+import com.android.wallpaper.picker.preview.ui.view.FullWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.DisplayUtils
@@ -90,6 +82,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     object Elements {
         val SmallPreviewTopToolbar = ElementKey(debugName = "SmallPreviewTopToolbar")
         val SmallPreviewBottomActionBar = ElementKey(debugName = "SmallPreviewBottomActionBar")
+        val FullPreviewTopToolbar = ElementKey(debugName = "FullPreviewTopToolbar")
         val ApplyWallpaperTitle = ElementKey(debugName = "ApplyWallpaperTitle")
         val ApplyWallpaperLockScreenCheckbox =
             ElementKey(debugName = "ApplyWallpaperLockScreenCheckbox")
@@ -252,7 +245,11 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             )
         // Pager state needs to be outside the scope of the SceneTransitionLayout so that after
         // transitioning back to the small preview scene, the selected page index can be retained.
-        val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
+        val pagerState =
+            rememberPagerState(
+                initialPage = wallpaperPreviewViewModel.getSmallPreviewTabIndex(),
+                pageCount = { wallpaperPreviewViewModel.smallPreviewTabs.size },
+            )
 
         SceneTransitionLayout(state = sceneState, modifier = modifier) {
             // The order of the scene here matters. During transitions the first defined scene will
@@ -297,28 +294,20 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                 )
             }
             scene(Scenes.FullLockPreview, userActions = mapOf(Back to Scenes.SmallPreview)) {
-                FullPreviewScene(Screen.LOCK_SCREEN, lockScreenPreview)
+                FullWallpaperPreviewScene(
+                    viewModel = wallpaperPreviewViewModel,
+                    sceneState = sceneState,
+                    screen = Screen.LOCK_SCREEN,
+                    preview = lockScreenPreview,
+                )
             }
             scene(Scenes.FullHomePreview, userActions = mapOf(Back to Scenes.SmallPreview)) {
-                FullPreviewScene(Screen.HOME_SCREEN, homeScreenPreview)
-            }
-        }
-    }
-
-    @Composable
-    fun ContentScope.FullPreviewScene(screen: Screen, preview: View) {
-        val windowSize: IntSize = LocalWindowInfo.current.containerSize
-        val phoneAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            MovableElement(
-                key =
-                    when (screen) {
-                        Screen.LOCK_SCREEN -> SharedElements.LockScreen
-                        Screen.HOME_SCREEN -> SharedElements.HomeScreen
-                    },
-                modifier = Modifier.fillMaxHeight().aspectRatio(phoneAspectRatio),
-            ) {
-                content { PreviewScreen(preview = preview, modifier = Modifier.fillMaxSize()) }
+                FullWallpaperPreviewScene(
+                    viewModel = wallpaperPreviewViewModel,
+                    sceneState = sceneState,
+                    screen = Screen.HOME_SCREEN,
+                    preview = homeScreenPreview,
+                )
             }
         }
     }
@@ -326,25 +315,29 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     private fun sceneTransitions(): SceneTransitions {
         return transitions {
             from(Scenes.SmallPreview, to = Scenes.ApplyWallpaper) {
-                spec = spring()
-                fractionRange(end = 0.7f) { fade(Elements.SmallPreviewTopToolbar) }
-                fractionRange(end = 0.7f) { fade(Elements.SmallPreviewBottomActionBar) }
-                fractionRange(start = 0.7f) { fade(Elements.ApplyWallpaperTitle) }
-                fractionRange(start = 0.7f) { fade(Elements.ApplyWallpaperLockScreenCheckbox) }
-                fractionRange(start = 0.7f) { fade(Elements.ApplyWallpaperHomeScreenCheckbox) }
-                fractionRange(start = 0.7f) { fade(Elements.ApplyWallpaperBottomButtons) }
+                spec = tween(durationMillis = 350)
+                timestampRange(endMillis = 150) { fade(Elements.SmallPreviewTopToolbar) }
+                timestampRange(endMillis = 150) { fade(Elements.SmallPreviewBottomActionBar) }
+                timestampRange(startMillis = 200) { fade(Elements.ApplyWallpaperTitle) }
+                timestampRange(startMillis = 200) {
+                    fade(Elements.ApplyWallpaperLockScreenCheckbox)
+                }
+                timestampRange(startMillis = 200) {
+                    fade(Elements.ApplyWallpaperHomeScreenCheckbox)
+                }
+                timestampRange(startMillis = 200) { fade(Elements.ApplyWallpaperBottomButtons) }
             }
             from(Scenes.SmallPreview, to = Scenes.FullLockPreview) {
-                spec = spring()
-                fractionRange(end = 0.7f) { fade(Elements.SmallPreviewTopToolbar) }
-                fractionRange(end = 0.7f) { fade(Elements.SmallPreviewBottomActionBar) }
-                fractionRange(end = 0.7f) { fade(SharedElements.HomeScreen) }
+                spec = tween(durationMillis = 350)
+                timestampRange(endMillis = 150) { fade(Elements.SmallPreviewTopToolbar) }
+                timestampRange(endMillis = 150) { fade(Elements.SmallPreviewBottomActionBar) }
+                timestampRange(startMillis = 200) { fade(Elements.FullPreviewTopToolbar) }
             }
             from(Scenes.SmallPreview, to = Scenes.FullHomePreview) {
-                spec = spring()
-                fractionRange(end = 0.7f) { fade(Elements.SmallPreviewTopToolbar) }
-                fractionRange(end = 0.7f) { fade(Elements.SmallPreviewBottomActionBar) }
-                fractionRange(end = 0.7f) { fade(SharedElements.LockScreen) }
+                spec = tween(durationMillis = 350)
+                timestampRange(endMillis = 150) { fade(Elements.SmallPreviewTopToolbar) }
+                timestampRange(endMillis = 150) { fade(Elements.SmallPreviewBottomActionBar) }
+                timestampRange(startMillis = 200) { fade(Elements.FullPreviewTopToolbar) }
             }
         }
     }
