@@ -253,6 +253,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             // be drawn below the second, scene, which will be drawn below the third one, etc.
             scene(Scenes.SmallPreview) {
                 SmallWallpaperPreviewScene(
+                    viewModel = wallpaperPreviewViewModel,
                     sceneState = sceneState,
                     pagerState = pagerState,
                     lockScreenPreview = lockScreenPreview,
@@ -261,6 +262,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
                 ApplyWallpaperScene(
+                    viewModel = wallpaperPreviewViewModel,
+                    sceneState = sceneState,
                     lockScreenPreview = lockScreenPreview,
                     homeScreenPreview = homeScreenPreview,
                 )
