@@ -16,19 +16,14 @@
 
 package com.android.wallpaper.picker.category.ui.view
 
-import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.MyPhotosStarter
 import com.android.wallpaper.picker.MyPhotosStarter.PermissionChangedListener
-import com.android.wallpaper.picker.WallpaperPickerDelegate
-import com.android.wallpaper.picker.category.ui.view.CategoriesFragment.Companion.READ_IMAGE_PERMISSION
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,52 +34,12 @@ import javax.inject.Singleton
 @Singleton
 class MyPhotosStarterImpl @Inject constructor() : MyPhotosStarter {
 
-    private val permissionChangedListeners: MutableList<PermissionChangedListener> = mutableListOf()
-    private val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-
     override fun requestCustomPhotoPicker(
         listener: PermissionChangedListener,
         activity: Activity,
         photoPickerLauncher: ActivityResultLauncher<Intent>,
     ) {
-        // TODO (b/282073506): Figure out a better way to have better photos experience
-        if (!isReadExternalStoragePermissionGranted(activity) && !isNewPickerUi) {
-            val wrappedListener: PermissionChangedListener =
-                object : PermissionChangedListener {
-                    override fun onPermissionsGranted() {
-                        listener.onPermissionsGranted()
-                        showCustomPhotoPicker(photoPickerLauncher)
-                    }
-
-                    override fun onPermissionsDenied(dontAskAgain: Boolean) {
-                        listener.onPermissionsDenied(dontAskAgain)
-                    }
-                }
-            requestExternalStoragePermission(wrappedListener, activity)
-            return
-        }
-
         showCustomPhotoPicker(photoPickerLauncher)
-    }
-
-    private fun isReadExternalStoragePermissionGranted(activity: Activity): Boolean {
-        return activity.packageManager.checkPermission(
-            Manifest.permission.READ_MEDIA_IMAGES,
-            activity.packageName,
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestExternalStoragePermission(
-        listener: PermissionChangedListener?,
-        activity: Activity,
-    ) {
-        if (listener != null) {
-            permissionChangedListeners.add(listener)
-        }
-        activity.requestPermissions(
-            arrayOf<String>(READ_IMAGE_PERMISSION),
-            WallpaperPickerDelegate.READ_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE,
-        )
     }
 
     private fun showCustomPhotoPicker(photoPickerLauncher: ActivityResultLauncher<Intent>) {

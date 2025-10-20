@@ -26,5 +26,11 @@ package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
  */
 data class CategoryWallpapersContentViewModel(
     val rotationEnabled: Boolean,
+    val title: String,
     val wallpaperItems: List<CategoryWallpapersItemViewModel>,
+    val dismissScreen: (suspend () -> Unit),
+    val onRotationStart: (() -> Unit)? = null,
+    val onShowRotationDialog: (() -> Unit)? = null,
+    val onCancelRotationDialog: (() -> Unit)? = null,
+    val onNetworkPreferences: ((Boolean) -> Unit)? = null,
 )

@@ -39,8 +39,8 @@ import com.android.wallpaper.R
 import com.android.wallpaper.model.ImageWallpaperInfo
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.picker.AppbarFragment
-import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -227,19 +227,16 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         persistentWallpaperModelRepository.setWallpaperModel(wallpaperModel)
         val isMultiPanel = multiPanesChecker.isMultiPanesEnabled(appContext)
         val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context = appContext,
-                isAssetIdPresent = true,
-                isViewAsHome = true,
-                isNewTask = isMultiPanel,
-                shouldCategoryRefresh = isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects =
-                    navigateToExtendedWallpaperEffects ?: false,
-            )
+            WallpaperPreviewActivity.intentBuilder(appContext, isAssetIdPresent = true)
+                .viewAsHome(true)
+                .newTask(isMultiPanel)
+                .refreshCategory(isCreativeCategories)
+                .navigateToExtendedEffects(navigateToExtendedWallpaperEffects ?: false)
+                .build()
         ActivityUtils.startActivityForResultSafely(
             activity,
             previewIntent,
-            VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+            CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
         )
     }
 

@@ -16,14 +16,33 @@
 
 package com.android.wallpaper.picker.wallpapers.ui.view.viewmodel
 
+import android.app.WallpaperInfo
+import android.app.WallpaperManager
+import android.app.WallpaperManager.FLAG_LOCK
+import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
+import android.text.TextUtils
+import android.util.ArraySet
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_CELLULAR_OK
+import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_WIFI_ONLY
+import com.android.wallpaper.module.WallpaperPreferences
+import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
+import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 /**
  * [CategoryWallpapersViewModel] is responsible for preparing and managing UI-related data for the
@@ -34,36 +53,307 @@ class CategoryWallpapersViewModel
 @Inject
 constructor(
     private val categoryWallpapersInteractor: CategoryWallpapersInteractor,
+    private val persistentWallpaperModelRepository: PersistentWallpaperModelRepository,
+    private val wallpaperManager: WallpaperManager,
+    private val wallpaperPreferences: WallpaperPreferences,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
+
+    private val _showRotationDialog = MutableStateFlow(false)
+    /**
+     * [StateFlow] indicating whether the rotation setup dialog is currently visible.
+     *
+     * `true` when the user has clicked to start rotation and the confirmation dialog is displayed.
+     */
+    val showRotationDialog: StateFlow<Boolean> = _showRotationDialog
+
+    private val _isRotationLoading = MutableStateFlow(false)
+
+    /**
+     * [StateFlow] indicating whether the wallpaper rotation process is currently executing
+     *
+     * When `true`, the dialog content should typically show a [CircularProgressIndicator] and
+     * disable action buttons.
+     */
+    val isRotationLoading: StateFlow<Boolean> = _isRotationLoading
+
+    private val _networkPreference = MutableStateFlow(NETWORK_PREFERENCE_WIFI_ONLY)
+    /**
+     * [StateFlow] representing the user's current network preference for downloading wallpapers.
+     *
+     * This value is typically used to control a checkbox in the rotation dialog. The value follows
+     * an integer convention:
+     * - `NETWORK_PREFERENCE_WIFI_ONLY` (often 0): Synchronization only occurs over Wi-Fi.
+     * - Non-zero value (often 1): Synchronization is allowed over any network (Wi-Fi or cellular).
+     */
+    val networkPreference: StateFlow<Int> = _networkPreference
 
     /**
      * This [Flow] emits [CategoryWallpapersContentViewModel] by mapping the [List<WallpaperModel>]
      * of a category to [List<CategoryWallpapersItemViewModel>]
      */
     val categoryWallpapersContentViewModel: Flow<CategoryWallpapersContentViewModel> =
-        categoryWallpapersInteractor.selectedCategoryWallpapers.map { wallpapers ->
-            val wallpaperItems =
-                wallpapers.map {
-                    CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
-                        thumbnailAsset = it.commonWallpaperData.thumbAsset,
-                        title = it.commonWallpaperData.title,
-                        contentDescription = it.commonWallpaperData.title,
-                    )
-                }
+        combine(
+            categoryWallpapersInteractor.selectedCategoryWallpapers,
+            categoryWallpapersInteractor.categoryTitle,
+            categoryWallpapersInteractor.isRotationEnabled,
+        ) { wallpapers, title, isRotationEnabled ->
+            if (DEBUG) {
+                Log.d(TAG, "WallpaperModels: ${wallpapers.size}")
+            }
 
-            // this is just a placeholder to test the view layer
-            return@map CategoryWallpapersContentViewModel(
-                rotationEnabled = false,
-                wallpaperItems =
-                    listOf(
-                        CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory(
-                            wallpaperItems
-                        ),
-                        CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory(
-                            wallpaperItems
-                        ),
-                    ),
+            val groupedWallpapers =
+                wallpapers
+                    .groupBy { wallpaper ->
+                        val groupName =
+                            when (wallpaper) {
+                                is WallpaperModel.LiveWallpaperModel ->
+                                    wallpaper.liveWallpaperData.groupName
+                                is WallpaperModel.StaticWallpaperModel ->
+                                    wallpaper.downloadableWallpaperData?.groupName
+                                else -> null
+                            }
+
+                        if (groupName.isNullOrEmpty()) {
+                            DEFAULT_GROUP
+                        } else {
+                            groupName
+                        }
+                    }
+                    .toMutableMap()
+
+            if (DEBUG) {
+                Log.d(TAG, "Wallpaper groups: ")
+                for ((groupName, wallpapers) in groupedWallpapers) {
+                    Log.d(TAG, "Group NAME: ${groupName}")
+                    for (wallpaper in wallpapers) {
+                        Log.d(TAG, "${wallpaper}")
+                    }
+                }
+            }
+
+            val firstEntry = groupedWallpapers.keys.firstOrNull()
+
+            val templates = buildList {
+                if (
+                    firstEntry != null &&
+                        firstEntry != DEFAULT_GROUP &&
+                        (groupedWallpapers[firstEntry]?.get(0)
+                            is WallpaperModel.LiveWallpaperModel) &&
+                        (groupedWallpapers[firstEntry]?.get(0)
+                                as? WallpaperModel.LiveWallpaperModel)
+                            ?.creativeWallpaperData != null &&
+                        (groupedWallpapers[firstEntry]?.size ?: 0) > 1
+                ) {
+                    add(CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory(firstEntry))
+                    val items =
+                        groupedWallpapers[firstEntry]?.map {
+                            CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
+                                thumbnailAsset = it.commonWallpaperData.thumbAsset,
+                                title = it.commonWallpaperData.title,
+                                contentDescription = it.commonWallpaperData.title,
+                                getLaunchActivityIntent = {
+                                    persistentWallpaperModelRepository.setWallpaperModel(it)
+                                    val previewIntent =
+                                        WallpaperPreviewActivity.intentBuilder(context, true)
+                                            .refreshCategory(true)
+                                            .navigateToExtendedEffects(false)
+                                            .build()
+                                    return@ThumbnailsViewModelCategory previewIntent
+                                },
+                            )
+                        }
+                    items?.let {
+                        add(CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory(it))
+                        groupedWallpapers.remove(firstEntry)
+                    }
+                }
+            }
+
+            val wallpaperItems = buildList {
+                for ((groupName, wallpapers) in groupedWallpapers) {
+                    if (groupName != DEFAULT_GROUP) {
+                        add(
+                            CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory(
+                                groupName
+                            )
+                        )
+                    }
+                    val currentHomeWallpaper: android.app.WallpaperInfo? =
+                        wallpaperManager.getWallpaperInfo(FLAG_SYSTEM)
+                    val currentLockWallpaper: android.app.WallpaperInfo? =
+                        wallpaperManager.getWallpaperInfo(FLAG_LOCK)
+                    val appliedWallpaperIds = getAppliedWallpaperIds()
+
+                    val items =
+                        wallpapers.map {
+                            CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
+                                thumbnailAsset = it.commonWallpaperData.thumbAsset,
+                                title = it.commonWallpaperData.title,
+                                contentDescription = it.commonWallpaperData.title,
+                                isApplied =
+                                    if (it is WallpaperModel.LiveWallpaperModel) {
+                                        it.isApplied(currentHomeWallpaper, currentLockWallpaper)
+                                    } else {
+                                        appliedWallpaperIds.contains(
+                                            it.commonWallpaperData.id.uniqueId
+                                        )
+                                    },
+                                isDownloadable =
+                                    (it as? WallpaperModel.StaticWallpaperModel)
+                                        ?.downloadableWallpaperData != null,
+                                getLaunchActivityIntent = {
+                                    persistentWallpaperModelRepository.setWallpaperModel(it)
+                                    val previewIntent =
+                                        WallpaperPreviewActivity.intentBuilder(context, true)
+                                            .refreshCategory(true)
+                                            .navigateToExtendedEffects(false)
+                                            .build()
+                                    return@ThumbnailsViewModelCategory previewIntent
+                                },
+                            )
+                        }
+                    val isResizeable: Boolean =
+                        ((wallpapers.getOrNull(0) as? WallpaperModel.LiveWallpaperModel)
+                            ?.creativeWallpaperData == null) && groupedWallpapers.size == 1
+
+                    val areTilesLarge: Boolean =
+                        (isResizeable && items.size <= MIN_THUMBNAILS_RESIZE_GRID)
+                    val columnCount =
+                        if (areTilesLarge) {
+                            MIN_COLUMN_COUNT
+                        } else {
+                            MAX_COLUMN_COUNT
+                        }
+
+                    val rows = items.chunked(columnCount)
+
+                    rows.forEach { row ->
+                        add(
+                            CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory(
+                                rowThumbnails = row,
+                                totalColumns = columnCount,
+                                areTilesLarge = areTilesLarge,
+                            )
+                        )
+                    }
+                }
+            }
+
+            if (DEBUG) {
+                Log.d(TAG, "here is the list of wallpaperItems yo: ${wallpaperItems}")
+            }
+
+            return@combine CategoryWallpapersContentViewModel(
+                rotationEnabled = isRotationEnabled,
+                onRotationStart = { startRotation() },
+                onShowRotationDialog = { onRotationStartClick() },
+                onCancelRotationDialog = { onCancelRotationDialog() },
+                onNetworkPreferences = { isWifiOnly -> updateNetworkPreferences(isWifiOnly) },
+                title = title,
+                wallpaperItems = templates + wallpaperItems,
+                dismissScreen = { _dismissScreenEvent.emit(Unit) },
             )
         }
+
+    /**
+     * A [Flow] that emits the loading state for fetching wallpapers of the currently selected
+     * category.
+     *
+     * Emits `true` when a request to fetch wallpapers is active, and `false` otherwise. This flow
+     * is typically observed by the UI to show or hide a loading indicator.
+     */
+    val categoryWallpapersIsLoading: Flow<Boolean> =
+        categoryWallpapersInteractor.isWallpapersFetching
+
+    override fun onCleared() {
+        super.onCleared()
+        categoryWallpapersInteractor.clearSelectedCategory()
+    }
+
+    private fun startRotation() {
+        viewModelScope.launch {
+            _isRotationLoading.value = true
+            try {
+                categoryWallpapersInteractor.startRotation(_networkPreference.value)
+                _dismissScreenEvent.emit(Unit)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failure starting wallpaper rotation")
+            } finally {
+                _isRotationLoading.value = false
+                _showRotationDialog.value = false
+                _networkPreference.value = NETWORK_PREFERENCE_WIFI_ONLY
+            }
+        }
+    }
+
+    private fun onRotationStartClick() {
+        _showRotationDialog.value = true
+    }
+
+    private fun onCancelRotationDialog() {
+        _showRotationDialog.value = false
+        _networkPreference.value = NETWORK_PREFERENCE_WIFI_ONLY
+    }
+
+    private val _dismissScreenEvent = MutableSharedFlow<Unit>() // one-time signal
+    val dismissScreenEvent: SharedFlow<Unit> = _dismissScreenEvent
+
+    private fun updateNetworkPreferences(isWifi: Boolean) {
+        _networkPreference.value =
+            if (isWifi) NETWORK_PREFERENCE_WIFI_ONLY else NETWORK_PREFERENCE_CELLULAR_OK
+    }
+
+    // TODO(b/444284275): remove references to remote ids
+    private fun getAppliedWallpaperIds(): Set<String> {
+        val wallpaperInfo = wallpaperManager?.wallpaperInfo
+        val appliedWallpaperIds: MutableSet<String> = ArraySet()
+        val homeWallpaperId =
+            if (wallpaperInfo != null) {
+                wallpaperInfo.serviceName
+            } else {
+                wallpaperPreferences.getHomeWallpaperRemoteId()
+            }
+        if (!homeWallpaperId.isNullOrEmpty()) {
+            appliedWallpaperIds.add(homeWallpaperId)
+        }
+        val isLockWallpaperApplied =
+            wallpaperManager!!.getWallpaperId(WallpaperManager.FLAG_LOCK) >= 0
+        val lockWallpaperId = wallpaperPreferences.getLockWallpaperRemoteId()
+        if (isLockWallpaperApplied && !lockWallpaperId.isNullOrEmpty()) {
+            appliedWallpaperIds.add(lockWallpaperId)
+        }
+        return appliedWallpaperIds
+    }
+
+    private fun WallpaperModel.LiveWallpaperModel.isApplied(
+        currentHomeWallpaper: WallpaperInfo?,
+        currentLockWallpaper: WallpaperInfo?,
+    ): Boolean {
+        val component: WallpaperInfo = liveWallpaperData.systemWallpaperInfo
+        val serviceName = component.serviceName
+        val isAppliedToHome =
+            currentHomeWallpaper != null &&
+                TextUtils.equals(currentHomeWallpaper.serviceName, serviceName)
+        val isAppliedToLock =
+            currentLockWallpaper != null &&
+                TextUtils.equals(currentLockWallpaper.serviceName, serviceName)
+
+        return if (creativeWallpaperData != null) {
+            ((isAppliedToHome || isAppliedToLock) && creativeWallpaperData.isCurrent)
+        } else {
+            isAppliedToHome || isAppliedToLock
+        }
+    }
+
+    companion object {
+        const val DEBUG = false
+        const val TAG = "CategoryWallpapersViewModel"
+        const val DEFAULT_GROUP = "default_group"
+        const val MIN_COLUMN_COUNT: Int = 2
+
+        const val MAX_COLUMN_COUNT: Int = 3
+
+        const val MIN_THUMBNAILS_RESIZE_GRID: Int = 8
+    }
 }

@@ -67,8 +67,7 @@ public class DefaultCategoryProvider implements CategoryProvider {
      * Relative category priorities. Lower numbers correspond to higher priorities (i.e., should
      * appear higher in the categories list).
      */
-    public static final int PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_DISABLED = 1;
-    private static final int PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED = 51;
+    public static final int PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED = 51;
     private static final int PRIORITY_SYSTEM = 100;
     private static final int PRIORITY_ON_DEVICE = 200;
     private static final int PRIORITY_LIVE = 300;
@@ -118,14 +117,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
     }
 
     @Override
-    public Category getCategory(int index) {
-        if (!mFetchedCategories) {
-            throw new IllegalStateException("Categories are not available");
-        }
-        return mCategories.get(index);
-    }
-
-    @Override
     public Category getCategory(String collectionId) {
         Category category;
         for (int i = 0; i < mCategories.size(); i++) {
@@ -137,37 +128,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
         return null;
     }
 
-    @Override
-    public boolean isCategoriesFetched() {
-        return mFetchedCategories;
-    }
-
-    @Override
-    public boolean resetIfNeeded() {
-        if (mNetworkStatus != mNetworkStatusNotifier.getNetworkStatus()
-                || mLocale != getLocale()) {
-            mCategories.clear();
-            mFetchedCategories = false;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * This function returns the value of priority of MyPhotos depending on whether
-     * the CreativeWallpaperFlag is enabled or not
-     * @param context
-     * @return the value of priority of MyPhotos
-     */
-    public static int getPriorityMyPhotos(Context context) {
-        boolean isCreativeWallpaperFlagEnabled = InjectorProvider.getInjector().getFlags()
-                .isAIWallpaperEnabled(context);
-        if (isCreativeWallpaperFlagEnabled) {
-            return PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED;
-        } else
-            return PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_DISABLED;
-    }
-
     /**
      * Returns an appropriate "my photos" custom photo category for the given device form factor.
      */
@@ -175,7 +135,7 @@ public class DefaultCategoryProvider implements CategoryProvider {
         return new ImageCategory(
                 context.getString(R.string.my_photos_category_title),
                 context.getString(R.string.image_wallpaper_collection_id),
-                getPriorityMyPhotos(context),
+                PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED,
                 R.drawable.wallpaperpicker_emptystate /* overlayIconResId */);
     }
 

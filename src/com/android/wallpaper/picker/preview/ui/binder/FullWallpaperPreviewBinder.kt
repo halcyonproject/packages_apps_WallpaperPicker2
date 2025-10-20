@@ -37,7 +37,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import androidx.transition.TransitionListenerAdapter
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.TouchForwardingLayout
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -79,6 +78,7 @@ object FullWallpaperPreviewBinder {
         savedInstanceState: Bundle?,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        signalConfigChange: Boolean = false,
         onStartTransition: (() -> Unit)? = null,
         onWallpaperLoaded: ((Boolean) -> Unit)? = null,
     ) {
@@ -113,18 +113,16 @@ object FullWallpaperPreviewBinder {
                             object : TransitionListenerAdapter() {
                                 override fun onTransitionStart(transition: Transition) {
                                     super.onTransitionStart(transition)
-                                    if (BaseFlags.get().isNewPickerUi()) {
-                                        // When putting the surface on top for full transition, the
-                                        // card view is behind the surface view so we need to apply
-                                        // radius on surface view instead
-                                        wallpaperSurface.cornerRadius = previewCard.radius
-                                        workspaceSurface.cornerRadius = previewCard.radius
-                                        // Set top z order during shared element transition to
-                                        // prevent showing any other surfaces, e.g. background
-                                        // engine
-                                        wallpaperSurface.setZOrderOnTop(true)
-                                        workspaceSurface.setZOrderOnTop(true)
-                                    }
+                                    // When putting the surface on top for full transition, the
+                                    // card view is behind the surface view so we need to apply
+                                    // radius on surface view instead
+                                    wallpaperSurface.cornerRadius = previewCard.radius
+                                    workspaceSurface.cornerRadius = previewCard.radius
+                                    // Set top z order during shared element transition to
+                                    // prevent showing any other surfaces, e.g. background
+                                    // engine
+                                    wallpaperSurface.setZOrderOnTop(true)
+                                    workspaceSurface.setZOrderOnTop(true)
                                     if (isPreviewingFullScreen) {
                                         scrimView.isVisible = true
                                         scrimView.alpha = 0f
@@ -138,13 +136,11 @@ object FullWallpaperPreviewBinder {
 
                                 override fun onTransitionEnd(transition: Transition) {
                                     super.onTransitionEnd(transition)
-                                    if (BaseFlags.get().isNewPickerUi()) {
-                                        // When shared element transition finished, set z order back
-                                        // to media overlay, to place z order between background
-                                        // engine and app UI (background engine z order is media)
-                                        wallpaperSurface.setZOrderMediaOverlay(true)
-                                        workspaceSurface.setZOrderMediaOverlay(true)
-                                    }
+                                    // When shared element transition finished, set z order back
+                                    // to media overlay, to place z order between background
+                                    // engine and app UI (background engine z order is media)
+                                    wallpaperSurface.setZOrderMediaOverlay(true)
+                                    workspaceSurface.setZOrderMediaOverlay(true)
                                     setFinalPreviewCardRadiusAndEndLoading(isPreviewingFullScreen)
                                     transitionDisposableHandle?.dispose()
                                     transitionDisposableHandle = null
@@ -221,11 +217,9 @@ object FullWallpaperPreviewBinder {
                         lifecycleOwner = lifecycleOwner,
                         wallpaperConnectionUtils = wallpaperConnectionUtils,
                         isFirstBindingDeferred = isFirstBindingDeferred,
+                        signalConfigChange = signalConfigChange,
                         onStartTransition = onStartTransition,
                     )
-                if (!BaseFlags.get().isNewPickerUi()) {
-                    wallpaperSurface.setZOrderMediaOverlay(true)
-                }
                 wallpaperSurface.holder.addCallback(surfaceCallback)
             }
             // When OnDestroy, release the surface
@@ -326,6 +320,7 @@ object FullWallpaperPreviewBinder {
         lifecycleOwner: LifecycleOwner,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
         isFirstBindingDeferred: CompletableDeferred<Boolean>,
+        signalConfigChange: Boolean,
         onStartTransition: (() -> Unit)?,
     ): SurfaceViewUtils.SurfaceCallback {
         return object : SurfaceViewUtils.SurfaceCallback {
@@ -360,6 +355,7 @@ object FullWallpaperPreviewBinder {
                                     engineRenderingConfig,
                                     isFirstBindingDeferred,
                                     disconnectOnWallpaperChange = false,
+                                    signalConfigChange = signalConfigChange,
                                     onPreviewReady = { onStartTransition?.invoke() },
                                 )
                                 if (!viewModel.isAccessibilityEnabled()) {

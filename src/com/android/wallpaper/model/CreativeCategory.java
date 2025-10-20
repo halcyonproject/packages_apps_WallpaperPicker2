@@ -141,8 +141,8 @@ public class CreativeCategory extends WallpaperCategory {
         List<WallpaperInfo> wallpapers = readCreativeWallpapers(
                 context, getCollectionId(), mWallpaperInfo);
         synchronized (this) {
-            getMutableWallpapers().clear();
-            getMutableWallpapers().addAll(wallpapers);
+            getWallpapers().clear();
+            getWallpapers().addAll(wallpapers);
         }
         if (receiver != null) {
             receiver.onWallpapersReceived(wallpapers);
@@ -225,6 +225,6 @@ public class CreativeCategory extends WallpaperCategory {
         // if there is at least one wallpaper then we show the collection of wallpapers
         // NOTE: don't count the "add walpapper button" wallpaper. This is why <= 1 is being used
         // as opposed to <= 0
-        return getMutableWallpapers() == null || getMutableWallpapers().size() <= 1;
+        return getUnmodifiableWallpapers() == null || getUnmodifiableWallpapers().size() <= 1;
     }
 }

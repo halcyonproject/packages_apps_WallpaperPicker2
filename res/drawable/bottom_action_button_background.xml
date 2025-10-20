@@ -20,7 +20,7 @@
         <selector>
             <item android:state_selected="false">
                 <shape>
-                    <solid android:color="?android:colorBackground" />
+                    <solid android:color="@color/materialColorSurfaceContainer" />
                     <corners android:radius="@dimen/bottom_action_button_radius" />
                 </shape>
             </item>

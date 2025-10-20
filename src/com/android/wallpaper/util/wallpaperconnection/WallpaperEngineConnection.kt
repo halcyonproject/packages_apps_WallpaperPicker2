@@ -238,16 +238,25 @@ class WallpaperEngineConnection(
             surfaceView: SurfaceView,
             description: WallpaperDescription,
         ) {
-            if (
-                tryPreUAttach(
+            try {
+                wallpaperService.attach(
                     wallpaperEngineConnection,
-                    wallpaperService,
+                    surfaceView.windowToken,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA,
+                    true,
+                    surfaceView.width,
+                    surfaceView.height,
+                    Rect(0, 0, 0, 0),
+                    surfaceView.display.displayId,
                     destinationFlag,
-                    surfaceView,
+                    null,
+                    description,
                 )
-            ) {
                 return
+            } catch (e: NoSuchMethodError) {
+                Log.w(TAG, "Error calling Baklava version of attach, trying previous versions", e)
             }
+
             if (
                 tryPreBAttach(
                     wallpaperEngineConnection,
@@ -259,19 +268,16 @@ class WallpaperEngineConnection(
                 return
             }
 
-            wallpaperService.attach(
-                wallpaperEngineConnection,
-                surfaceView.windowToken,
-                WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA,
-                true,
-                surfaceView.width,
-                surfaceView.height,
-                Rect(0, 0, 0, 0),
-                surfaceView.display.displayId,
-                destinationFlag,
-                null,
-                description,
-            )
+            if (
+                tryPreUAttach(
+                    wallpaperEngineConnection,
+                    wallpaperService,
+                    destinationFlag,
+                    surfaceView,
+                )
+            ) {
+                return
+            }
         }
     }
 

@@ -18,10 +18,10 @@ package com.android.wallpaper.util
 
 import android.content.Context
 import android.net.Uri
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.CurrentWallpaperInfo
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.WallpaperInfo
+import com.android.wallpaper.module.CurrentWallpaperInfoFactory
 import com.android.wallpaper.module.InjectorProvider
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -42,85 +42,27 @@ object CurrentWallpaperInfoUtils {
     ): Pair<WallpaperInfo, WallpaperInfo> = suspendCoroutine { continuation ->
         val injector = InjectorProvider.getInjector()
         val currentWallpaperFactory = injector.getCurrentWallpaperInfoFactory(context)
-        currentWallpaperFactory.createCurrentWallpaperInfos(context, forceRefresh) {
-            homeWallpaper,
-            lockWallpaper,
-            _ ->
-            val preferences = injector.getPreferences(context)
-            val hw =
-                if (
-                    !BaseFlags.get().isRecentWallpapersFromSystemEnabled(context) &&
-                        homeWallpaper is CurrentWallpaperInfo
+        currentWallpaperFactory.createCurrentWallpaperInfos(
+            context,
+            forceRefresh,
+            object : CurrentWallpaperInfoFactory.WallpaperInfoCallback {
+                override fun onWallpaperInfoCreated(
+                    homeWallpaper: WallpaperInfo,
+                    lockWallpaper: WallpaperInfo?,
+                    presentationMode: Int,
                 ) {
-                    homeWallpaper.augmentByRecent(
-                        context,
-                        Screen.HOME_SCREEN,
-                        preferences.getHomeWallpaperRecentsKey(),
-                        updateRecents,
-                        onFetchUri.invoke(homeWallpaper, Screen.HOME_SCREEN),
-                    )
-                } else {
-                    homeWallpaper
-                }
-            val lw =
-                if (lockWallpaper == null) {
-                    hw
-                } else if (
-                    !BaseFlags.get().isRecentWallpapersFromSystemEnabled(context) &&
-                        lockWallpaper is CurrentWallpaperInfo
-                ) {
-                    lockWallpaper.augmentByRecent(
-                        context,
-                        Screen.LOCK_SCREEN,
-                        preferences.getLockWallpaperRecentsKey(),
-                        updateRecents,
-                        onFetchUri.invoke(lockWallpaper, Screen.LOCK_SCREEN),
-                    )
-                } else {
-                    lockWallpaper
-                }
+                    val preferences = injector.getPreferences(context)
+                    val hw = homeWallpaper
+                    val lw = lockWallpaper ?: homeWallpaper
 
-            if (updateRecents) {
-                preferences.setHomeWallpaperRecentsKey(hw.wallpaperId)
-                preferences.setLockWallpaperRecentsKey(lw.wallpaperId)
-            }
-
-            continuation.resume(Pair(hw, lw))
-        }
-    }
-
-    /** Augments the current wallpaper info by its recent wallpaper data. */
-    private fun CurrentWallpaperInfo.augmentByRecent(
-        context: Context,
-        screen: Screen,
-        recentKey: String?,
-        updateRecents: Boolean,
-        sharableUri: Uri?,
-    ): CurrentWallpaperInfo {
-        val cropHints =
-            if (InjectorProvider.getInjector().getFlags().isMultiCropEnabled()) {
-                wallpaperCropHints
-            } else {
-                null
-            }
-
-        return object :
-                CurrentWallpaperInfo(
-                    getAttributions(context),
-                    getActionUrl(context),
-                    getCollectionId(context),
-                    screen.toFlag(),
-                    sharableUri,
-                    wallpaperId,
-                ) {
-                override fun getWallpaperId(): String {
-                    if (!updateRecents) {
-                        return super.getWallpaperId()
+                    if (updateRecents) {
+                        preferences.setHomeWallpaperRecentsKey(hw.wallpaperId)
+                        preferences.setLockWallpaperRecentsKey(lw.wallpaperId)
                     }
 
-                    return recentKey ?: super.getWallpaperId()
+                    continuation.resume(Pair(hw, lw))
                 }
-            }
-            .apply { wallpaperCropHints = cropHints }
+            },
+        )
     }
 }

@@ -95,6 +95,7 @@ class WallpaperModelUtils {
         fun getLiveWallpaperModel(
             wallpaperId: String,
             collectionId: String,
+            title: String = SAMPLE_TITLE2,
             placeholderColor: Int = DEFAULT_PLACEHOLDER_COLOR,
             attribution: List<String>? = emptyList(),
             actionUrl: String? = DEFAULT_ACTION_URL,
@@ -113,7 +114,7 @@ class WallpaperModelUtils {
                 commonWallpaperData =
                     CommonWallpaperData(
                         id = WallpaperId(systemWallpaperInfo.component, wallpaperId, collectionId),
-                        title = SAMPLE_TITLE2,
+                        title = title,
                         attributions = attribution,
                         exploreActionUrl = actionUrl,
                         thumbAsset = asset,

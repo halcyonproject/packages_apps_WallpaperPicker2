@@ -27,14 +27,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TitleTextAppearance"
-        android:textColor="?android:textColorPrimary" />
+        android:textColor="@color/materialColorOnSurface" />
 
     <TextView
         android:id="@+id/wallpaper_info_subtitle1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/wallpaper_info_pane_subtitle1_top_margin"
-        android:textColor="?android:textColorSecondary"
+        android:textColor="@color/materialColorOnSurfaceVariant"
         android:textSize="14sp"
         android:visibility="gone" />
 
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/wallpaper_info_pane_subtitle2_top_margin"
-        android:textColor="?android:textColorSecondary"
+        android:textColor="@color/materialColorOnSurfaceVariant"
         android:textSize="14sp"
         android:visibility="gone" />
 

@@ -20,6 +20,7 @@ import android.content.Context
 import android.util.Log
 import com.android.wallpaper.model.Category
 import com.android.wallpaper.picker.category.client.DefaultWallpaperCategoryClient
+import com.android.wallpaper.picker.category.client.LiveWallpapersClient
 import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.util.converter.category.CategoryFactory
@@ -39,6 +40,7 @@ constructor(
     @ApplicationContext val context: Context,
     private val defaultWallpaperClient: DefaultWallpaperCategoryClient,
     private val categoryFactory: CategoryFactory,
+    private val liveWallpapersClient: LiveWallpapersClient,
     @BackgroundDispatcher private val backgroundScope: CoroutineScope,
 ) : WallpaperCategoryRepository {
 
@@ -94,6 +96,12 @@ constructor(
         backgroundScope.launch { fetchAllCategories() }
     }
 
+    override fun refreshDueToLocaleChange() {
+        _isDefaultCategoriesFetched.value = false
+        defaultWallpaperClient.resetResources()
+        backgroundScope.launch { fetchAllCategories() }
+    }
+
     private suspend fun fetchAllCategories() {
         try {
             fetchSystemCategories()
@@ -123,8 +131,7 @@ constructor(
                                 // factory class because
                                 // the lambda depends on [CategoryModel]
                                 fetchWallpapers = { _ ->
-                                    // just returning the cached wallpapers for now
-                                    categoryModel.collectionCategoryData?.wallpaperModels
+                                    liveWallpapersClient.getAllWallpapers(excludedPackageNames)
                                 }
                             )
                     )

@@ -15,9 +15,12 @@
  */
 package com.android.wallpaper.picker.preview.ui.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.SurfaceView
 import android.view.View
+import android.view.View.OnAttachStateChangeListener
 import android.view.ViewGroup
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
@@ -32,41 +35,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
+import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.DefaultElementContentPicker
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.theme.PlatformTheme
+import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.model.Screen
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.AppbarFragment
-import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScreen
-import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScreen
-import com.android.wallpaper.picker.preview.ui.view.WallpaperPreviewHomeScreen
-import com.android.wallpaper.picker.preview.ui.view.WallpaperPreviewLockScreen
+import com.android.wallpaper.picker.common.preview.ui.binder.PreviewBinder
+import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScene
+import com.android.wallpaper.picker.preview.ui.view.PreviewScreen
+import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
- * This fragment displays the preview of the selected wallpaper on all available workspaces and
- * device displays.
+ * This fragment hosts the wallpaper preview screen. The screen has two major functions:
+ * 1. preview wallpapers: it displays the preview of the selected wallpaper on all available
+ *    workspaces and devices displays.
+ * 2. apply wallpapers: users can apply the wallpaper to the devices.
+ *
+ * [WallpaperPreviewFragment] can only be used by refactor_wallpaper_previewScreen_flag.
  */
 @AndroidEntryPoint(AppbarFragment::class)
 class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
 
     object Scenes {
-        val SmallPreview = SceneKey(debugName = "SmallPreview")
-        val FullLockPreview = SceneKey(debugName = "FullLockPreview")
-        val FullHomePreview = SceneKey(debugName = "FullHomePreview")
-        val ApplyWallpaper = SceneKey(debugName = "ApplyWallpaper")
+        val SmallPreview = SceneKey(debugName = "SmallPreviewScene")
+        val FullLockPreview = SceneKey(debugName = "FullLockPreviewScene")
+        val FullHomePreview = SceneKey(debugName = "FullHomePreviewScene")
+        val ApplyWallpaper = SceneKey(debugName = "ApplyWallpaperScene")
     }
 
     object Elements {
-        val LockScreen = ElementKey(debugName = "LockScreen")
-        val HomeScreen = ElementKey(debugName = "HomeScreen")
         val SmallPreviewTopToolbar = ElementKey(debugName = "SmallPreviewTopToolbar")
         val SmallPreviewBottomActionBar = ElementKey(debugName = "SmallPreviewBottomActionBar")
         val ApplyWallpaperTitle = ElementKey(debugName = "ApplyWallpaperTitle")
@@ -77,19 +92,153 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         val ApplyWallpaperBottomButtons = ElementKey(debugName = "ApplyWallpaperBottomButtons")
     }
 
+    object SharedElements {
+        val LockScreen =
+            MovableElementKey(
+                debugName = "LockScreen",
+                contentPicker =
+                    DefaultElementContentPicker(
+                        contents =
+                            setOf(
+                                Scenes.SmallPreview,
+                                Scenes.FullLockPreview,
+                                Scenes.FullHomePreview,
+                                Scenes.ApplyWallpaper,
+                            )
+                    ),
+            )
+        val HomeScreen =
+            MovableElementKey(
+                debugName = "HomeScreen",
+                contentPicker =
+                    DefaultElementContentPicker(
+                        contents =
+                            setOf(
+                                Scenes.SmallPreview,
+                                Scenes.FullLockPreview,
+                                Scenes.FullHomePreview,
+                                Scenes.ApplyWallpaper,
+                            )
+                    ),
+            )
+    }
+
+    @Inject lateinit var displayUtils: DisplayUtils
+    @Inject lateinit var liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils
+
+    private val wallpaperPreviewViewModel by activityViewModels<WallpaperPreviewViewModel>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+            throw IllegalStateException(
+                "$this can only be used when " +
+                    "refactor_wallpaper_preview_screen_flag is turned on."
+            )
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        val lockScreenPreview =
+            SurfaceView(context).also {
+                // Hide surface view until the to-be-parented surface controls are ready. This makes
+                // sure surfaceCreated is called and we can reparent the surface controls in the
+                // callback.
+                it.isVisible = false
+            }
+        val homeScreenPreview =
+            SurfaceView(context).also {
+                // Hide surface view until the to-be-parented surface controls are ready. This makes
+                // sure surfaceCreated is called and we can reparent the surface controls in the
+                // callback.
+                it.isVisible = false
+            }
+
+        // Note that we need to make sure the parent container view is attached to window, so that
+        // the surface control's token and the container's window token are ready.
+        // The host token is used by the external rendering to listen to its lifecycle, so that when
+        // the token is dead, the external rendering can release resources accordingly.
+        if (container?.isAttachedToWindow == true) {
+            bindPreviews(container, lockScreenPreview, homeScreenPreview)
+        } else {
+            container?.addOnAttachStateChangeListener(
+                object : OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(view: View) {
+                        bindPreviews(view, lockScreenPreview, homeScreenPreview)
+                    }
+
+                    override fun onViewDetachedFromWindow(p0: View) {
+                        // Do nothing intended
+                    }
+                }
+            )
+        }
+
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { PlatformTheme { WallpaperPreviewRootContent() } }
+            setContent {
+                PlatformTheme {
+                    WallpaperPreviewRootContent(
+                        lockScreenPreview = lockScreenPreview,
+                        homeScreenPreview = homeScreenPreview,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun bindPreviews(
+        rootView: View,
+        lockScreenPreview: SurfaceView,
+        homeScreenPreview: SurfaceView,
+    ) {
+        val applicationContext: Context = rootView.context.applicationContext
+        val hostToken = rootView.rootSurfaceControl?.inputTransferToken?.token
+        val windowToken = rootView.windowToken
+
+        if (hostToken != null && windowToken != null) {
+            // TODO(b/332742248): Handle foldable case for DeviceDisplayType.
+            // Bind lock screen preview
+            PreviewBinder.bind(
+                preview = lockScreenPreview,
+                viewModel = wallpaperPreviewViewModel,
+                applicationContext = applicationContext,
+                viewLifecycleOwner = viewLifecycleOwner,
+                screen = Screen.LOCK_SCREEN,
+                displaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
+                deviceDisplayType = DeviceDisplayType.SINGLE,
+                display = requireActivity().display,
+                hostToken = hostToken,
+                windowToken = windowToken,
+                liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
+            )
+            // Bind home screen preview
+            PreviewBinder.bind(
+                preview = homeScreenPreview,
+                viewModel = wallpaperPreviewViewModel,
+                applicationContext = applicationContext,
+                viewLifecycleOwner = viewLifecycleOwner,
+                screen = Screen.HOME_SCREEN,
+                displaySize = displayUtils.getRealSize(displayUtils.getWallpaperDisplay()),
+                deviceDisplayType = DeviceDisplayType.SINGLE,
+                display = requireActivity().display,
+                hostToken = hostToken,
+                windowToken = windowToken,
+                liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
+            )
         }
     }
 
     @Composable
-    fun WallpaperPreviewRootContent(modifier: Modifier = Modifier) {
+    fun WallpaperPreviewRootContent(
+        lockScreenPreview: SurfaceView,
+        homeScreenPreview: SurfaceView,
+        modifier: Modifier = Modifier,
+    ) {
         val sceneState =
             rememberMutableSceneTransitionLayoutState(
                 initialScene = Scenes.SmallPreview,
@@ -102,51 +251,45 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         SceneTransitionLayout(state = sceneState, modifier = modifier) {
             // The order of the scene here matters. During transitions the first defined scene will
             // be drawn below the second, scene, which will be drawn below the third one, etc.
-            scene(Scenes.SmallPreview) { SmallWallpaperPreviewScreen(sceneState, pagerState) }
+            scene(Scenes.SmallPreview) {
+                SmallWallpaperPreviewScene(
+                    sceneState = sceneState,
+                    pagerState = pagerState,
+                    lockScreenPreview = lockScreenPreview,
+                    homeScreenPreview = homeScreenPreview,
+                )
+            }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
-                ApplyWallpaperScreen()
+                ApplyWallpaperScene(
+                    lockScreenPreview = lockScreenPreview,
+                    homeScreenPreview = homeScreenPreview,
+                )
             }
             scene(Scenes.FullLockPreview, userActions = mapOf(Back to Scenes.SmallPreview)) {
-                FullLockPreviewScreen()
+                FullPreviewScene(Screen.LOCK_SCREEN, lockScreenPreview)
             }
             scene(Scenes.FullHomePreview, userActions = mapOf(Back to Scenes.SmallPreview)) {
-                FullHomePreviewScreen()
+                FullPreviewScene(Screen.HOME_SCREEN, homeScreenPreview)
             }
         }
     }
 
     @Composable
-    fun ContentScope.FullLockPreviewScreen() {
+    fun ContentScope.FullPreviewScene(screen: Screen, preview: View) {
         val windowSize: IntSize = LocalWindowInfo.current.containerSize
         val phoneAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            WallpaperPreviewLockScreen(
-                modifier =
-                    Modifier.element(Elements.LockScreen)
-                        .fillMaxHeight()
-                        .aspectRatio(phoneAspectRatio)
-            )
+            MovableElement(
+                key =
+                    when (screen) {
+                        Screen.LOCK_SCREEN -> SharedElements.LockScreen
+                        Screen.HOME_SCREEN -> SharedElements.HomeScreen
+                    },
+                modifier = Modifier.fillMaxHeight().aspectRatio(phoneAspectRatio),
+            ) {
+                content { PreviewScreen(preview = preview, modifier = Modifier.fillMaxSize()) }
+            }
         }
-    }
-
-    @Composable
-    fun ContentScope.FullHomePreviewScreen() {
-        val windowSize: IntSize = LocalWindowInfo.current.containerSize
-        val phoneAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            WallpaperPreviewHomeScreen(
-                modifier =
-                    Modifier.element(Elements.HomeScreen)
-                        .fillMaxHeight()
-                        .aspectRatio(phoneAspectRatio)
-            )
-        }
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun PreviewFragmentComposeContent() {
-        PlatformTheme { WallpaperPreviewRootContent() }
     }
 
     private fun sceneTransitions(): SceneTransitions {
@@ -164,13 +307,13 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                 spec = spring()
                 fractionRange(end = 0.7f) { fade(Elements.SmallPreviewTopToolbar) }
                 fractionRange(end = 0.7f) { fade(Elements.SmallPreviewBottomActionBar) }
-                fractionRange(end = 0.7f) { fade(Elements.HomeScreen) }
+                fractionRange(end = 0.7f) { fade(SharedElements.HomeScreen) }
             }
             from(Scenes.SmallPreview, to = Scenes.FullHomePreview) {
                 spec = spring()
                 fractionRange(end = 0.7f) { fade(Elements.SmallPreviewTopToolbar) }
                 fractionRange(end = 0.7f) { fade(Elements.SmallPreviewBottomActionBar) }
-                fractionRange(end = 0.7f) { fade(Elements.LockScreen) }
+                fractionRange(end = 0.7f) { fade(SharedElements.LockScreen) }
             }
         }
     }

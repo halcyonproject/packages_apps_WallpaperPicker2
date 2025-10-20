@@ -25,8 +25,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.customization.picker.clock.shared.ClockSize
-import com.android.systemui.shared.Flags
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.module.logging.UserEventLogger
@@ -37,7 +35,6 @@ import com.android.wallpaper.picker.customization.shared.model.WallpaperDestinat
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_FADE_ALPHA
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_HIDE_ALPHA
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.Companion.PREVIEW_SHOW_ALPHA
-import com.android.wallpaper.picker.customization.ui.viewmodel.PreviewAlpha
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
@@ -56,7 +53,6 @@ import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.EnumSet
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -89,6 +85,12 @@ constructor(
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    /**
+     * Data class defining the target alpha that a preview should be set to. If shouldAnimate is
+     * true, the preview will animate to the target alpha value.
+     */
+    data class PreviewAlpha(val alpha: Float, val shouldAnimate: Boolean)
 
     // Don't update smaller display since we always use portrait, always use wallpaper display on
     // single display device.
@@ -274,12 +276,9 @@ constructor(
                         currentPreviewScreen,
                     ) { isCroppable, hasTooltipBeenShown, previewScreen ->
                         // Only show tooltip if it has not been shown before.
-                        val shouldShow = isCroppable && !hasTooltipBeenShown
-                        if (BaseFlags.get().isNewPickerUi()) {
-                            shouldShow && previewScreen == PreviewScreen.SMALL_PREVIEW
-                        } else {
-                            shouldShow
-                        }
+                        isCroppable &&
+                            !hasTooltipBeenShown &&
+                            previewScreen == PreviewScreen.SMALL_PREVIEW
                     }
                     .distinctUntilChanged()
 
@@ -443,9 +442,7 @@ constructor(
     val showSetWallpaperDialog = _showSetWallpaperDialog.asStateFlow()
 
     private val _setWallpaperDialogSelectedScreens: MutableStateFlow<Set<Screen>> =
-        MutableStateFlow(
-            if (Flags.newCustomizationPickerUi()) setOf() else EnumSet.allOf(Screen::class.java)
-        )
+        MutableStateFlow(setOf())
     val setWallpaperDialogSelectedScreens: StateFlow<Set<Screen>> =
         _setWallpaperDialogSelectedScreens.asStateFlow()
 
@@ -480,10 +477,7 @@ constructor(
     fun onSetWallpaperDialogScreenSelected(screen: Screen) {
         val previousSelection = _setWallpaperDialogSelectedScreens.value
         _setWallpaperDialogSelectedScreens.value =
-            if (
-                previousSelection.contains(screen) &&
-                    (previousSelection.size > 1 || BaseFlags.get().isNewPickerUi())
-            ) {
+            if (previousSelection.contains(screen)) {
                 previousSelection.minus(screen)
             } else {
                 previousSelection.plus(screen)

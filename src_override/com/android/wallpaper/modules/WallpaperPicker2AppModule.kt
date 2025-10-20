@@ -20,11 +20,13 @@ import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.module.DefaultExtendedEffectsHelper
 import com.android.wallpaper.module.DefaultPartnerProvider
 import com.android.wallpaper.module.DefaultRecentWallpaperManager
+import com.android.wallpaper.module.DefaultThirdPartyLiveWallpaperModelFactory
 import com.android.wallpaper.module.DefaultWallpaperPreferences
 import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.Injector
 import com.android.wallpaper.module.PartnerProvider
 import com.android.wallpaper.module.RecentWallpaperManager
+import com.android.wallpaper.module.ThirdPartyLiveWallpaperModelFactory
 import com.android.wallpaper.module.WallpaperPicker2Injector
 import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.NoOpUserEventLogger
@@ -61,6 +63,8 @@ import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvi
 import com.android.wallpaper.picker.preview.ui.binder.DefaultApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.util.DefaultImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
+import com.android.wallpaper.picker.wallpapers.data.repository.DefaultRotationInitializerFactory
+import com.android.wallpaper.picker.wallpapers.data.repository.RotationInitializerFactory
 import com.android.wallpaper.util.converter.DefaultPhotosErrorConvertor
 import com.android.wallpaper.util.converter.DefaultWallpaperModelFactory
 import com.android.wallpaper.util.converter.PhotosErrorConvertor
@@ -197,6 +201,18 @@ abstract class WallpaperPicker2AppModule {
     abstract fun bindApplyWallpaperOptionsProvider(
         impl: DefaultApplyWallpaperOptionsProvider
     ): ApplyWallpaperOptionsProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindThirdPartyLiveWallpaperModelFactory(
+        impl: DefaultThirdPartyLiveWallpaperModelFactory
+    ): ThirdPartyLiveWallpaperModelFactory
+
+    @Binds
+    @Singleton
+    abstract fun bindRotationInitializerFactory(
+        impl: DefaultRotationInitializerFactory
+    ): RotationInitializerFactory
 
     companion object {
 

@@ -118,14 +118,12 @@ object ActivityUtils {
         val context = activity.applicationContext
 
         val previewIntent =
-            WallpaperPreviewActivity.newIntent(
-                context,
-                true,
-                isViewAsHome,
-                isMultiPanesEnabled,
-                isCreativeCategories,
-                shouldNavigateToExtendedWallpaperEffects,
-            )
+            WallpaperPreviewActivity.intentBuilder(context, true)
+                .viewAsHome(isViewAsHome)
+                .newTask(isMultiPanesEnabled)
+                .refreshCategory(isCreativeCategories)
+                .navigateToExtendedEffects(shouldNavigateToExtendedWallpaperEffects)
+                .build()
 
         startActivityForResultSafely(activity, previewIntent, requestCode)
     }
@@ -216,7 +214,12 @@ object ActivityUtils {
      */
     @JvmStatic
     fun isLaunchedFromLauncher(intent: Intent): Boolean {
-        return LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER ==
-            intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE)
+        return isLaunchedFromLauncher(intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE))
+    }
+
+    /** Returns `true` if the launch source is the home screen (launcher); `false` otherwise. */
+    @JvmStatic
+    fun isLaunchedFromLauncher(launchSource: String?): Boolean {
+        return LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER == launchSource
     }
 }

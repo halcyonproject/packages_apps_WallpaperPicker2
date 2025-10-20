@@ -30,17 +30,15 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentManager
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.module.DailyLoggingAlarmScheduler
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
-import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
-import com.android.wallpaper.picker.WallpaperPickerDelegate.PREVIEW_WALLPAPER_REQUEST_CODE
-import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
-import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.ToolbarBinder
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionViewUtil
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -50,6 +48,7 @@ import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,7 +69,6 @@ class CustomizationPickerActivity2 :
 
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
     @Inject lateinit var customizationOptionViewUtil: CustomizationOptionViewUtil
-    @Inject lateinit var customizationOptionsBinder: CustomizationOptionsBinder
     @Inject lateinit var workspaceCallbackBinder: WorkspaceCallbackBinder
     @Inject lateinit var toolbarBinder: ToolbarBinder
     @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
@@ -89,6 +87,8 @@ class CustomizationPickerActivity2 :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        DailyLoggingAlarmScheduler.setAlarm(applicationContext)
 
         if (intent != null) {
             logger.logAppLaunched(intent)
@@ -159,6 +159,10 @@ class CustomizationPickerActivity2 :
                                     KEY_SHORTCUT_SLOT_ID,
                                     intent.extras?.getString(KEY_SHORTCUT_SLOT_ID),
                                 )
+                                putString(
+                                    WALLPAPER_LAUNCH_SOURCE,
+                                    intent.extras?.getString(WALLPAPER_LAUNCH_SOURCE),
+                                )
                             }
                     }, // fragment
                     CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
@@ -188,7 +192,8 @@ class CustomizationPickerActivity2 :
     }
 
     override fun isUpArrowSupported(): Boolean {
-        return !ActivityUtils.isSUWMode(baseContext)
+        return BaseFlags.get().shouldShowDesktopUi(baseContext) ||
+            !ActivityUtils.isSUWMode(baseContext)
     }
 
     @TargetApi(36)
@@ -245,5 +250,8 @@ class CustomizationPickerActivity2 :
 
     companion object {
         const val CUSTOMIZATION_PICKER_FRAGMENT_TAG = "customization_picker_fragment"
+        const val PREVIEW_LIVE_WALLPAPER_REQUEST_CODE = 4
+        const val VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE = 2
+        const val PREVIEW_WALLPAPER_REQUEST_CODE = 1
     }
 }

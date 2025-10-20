@@ -25,7 +25,6 @@ import android.os.Parcel;
 
 import androidx.annotation.Nullable;
 
-import com.android.systemui.shared.Flags;
 import com.android.wallpaper.asset.Asset;
 import com.android.wallpaper.asset.BuiltInWallpaperAsset;
 import com.android.wallpaper.asset.CurrentWallpaperAsset;
@@ -104,7 +103,7 @@ public class CurrentWallpaperInfo extends WallpaperInfo {
 
     @Override
     public String getWallpaperId() {
-        if (Flags.newCustomizationPickerUi() && mWallpaperId != null) {
+        if (mWallpaperId != null) {
             return mWallpaperId;
         } else {
             return UNKNOWN_CURRENT_WALLPAPER_ID + mWallpaperManagerFlag;
@@ -150,7 +149,7 @@ public class CurrentWallpaperInfo extends WallpaperInfo {
         BaseFlags flags = InjectorProvider.getInjector().getFlags();
         // Only get the full wallpaper asset when previewing a multi-crop wallpaper, otherwise get
         // the cropped asset.
-        boolean getFullAsset = flags.isMultiCropEnabled() && !mCropHints.isEmpty();
+        boolean getFullAsset = !mCropHints.isEmpty();
 
         return (isSystemBuiltIn)
                 ? new BuiltInWallpaperAsset(context)

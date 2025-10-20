@@ -54,7 +54,8 @@ constructor(
     onDeviceWallpapersInteractor: OnDeviceWallpapersInteractor,
     @Assisted private val viewModelScope: CoroutineScope,
 ) {
-
+    private val carouselItemsMinCount =
+        context.resources.getInteger(R.integer.wallpaper_carousel_items_min_count)
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
 
@@ -193,12 +194,12 @@ constructor(
                     creatives
                 }
             // if more than 3 curated photos return only curated photos
-            if (curatedPhotos.size > CAROUSEL_ITEMS_THRESHOLD) {
+            if (curatedPhotos.size > carouselItemsMinCount) {
                 return@combine curatedPhotos
-            } else if (creativeCategories.size >= CAROUSEL_ITEMS_THRESHOLD) {
+            } else if (creativeCategories.size >= carouselItemsMinCount) {
                 // if creatives more or equal to 3 than return only creatives
                 return@combine creativeCategories
-            } else if (defaultWallpapers.size >= CAROUSEL_ITEMS_THRESHOLD) {
+            } else if (defaultWallpapers.size >= carouselItemsMinCount) {
                 // otherwise just return on-device wallpapers
                 return@combine defaultWallpapers
             } else {
@@ -212,7 +213,7 @@ constructor(
      */
     val shouldShowSuggestedPhotosLabel: Flow<Boolean> =
         curatedPhotoCarouselItems.map { curatedPhotos: List<TileViewModel> ->
-            return@map curatedPhotos.size > CAROUSEL_ITEMS_THRESHOLD
+            return@map curatedPhotos.size > carouselItemsMinCount
         }
 
     private fun navigateToPreviewScreen(
@@ -266,9 +267,5 @@ constructor(
 
         data class NavigateToExtendedWallpaperEffects(val wallpaperModel: WallpaperModel?) :
             NavigationEvent()
-    }
-
-    companion object {
-        const val CAROUSEL_ITEMS_THRESHOLD = 3
     }
 }

@@ -75,27 +75,12 @@
     <meta-data android:name="com.android.wallpaper.asset.WallpaperGlideModule"
          android:value="GlideModule"/>
 
-    <activity android:name="com.android.wallpaper.picker.CustomizationPickerActivity"
-        android:label="@string/app_name"
-        android:relinquishTaskIdentity="true"
-        android:resizeableActivity="false"
-        android:theme="@style/WallpaperTheme.NoBackground"
-        android:exported="true">
-    </activity>
-
     <activity android:name="com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2"
         android:label="@string/app_name"
         android:relinquishTaskIdentity="true"
         android:resizeableActivity="false"
         android:theme="@style/WallpaperTheme.NoBackground"
         android:configChanges="assetsPaths|uiMode"
-        android:exported="true">
-    </activity>
-
-    <activity android:name="com.android.wallpaper.picker.PassThroughCustomizationPickerActivity"
-        android:label="@string/app_name"
-        android:resizeableActivity="false"
-        android:theme="@style/WallpaperTheme.NoBackground"
         android:exported="true">
     </activity>
 
@@ -135,18 +120,6 @@
       </intent-filter>
     </activity-alias>
 
-    <activity android:name="com.android.wallpaper.picker.PreviewActivity"
-         android:resizeableActivity="false"
-         android:theme="@style/WallpaperTheme.Preview">
-    </activity>
-
-    <activity
-         android:name="com.android.wallpaper.picker.FullPreviewActivity"
-         android:taskAffinity="@string/full_screen_task_affinity"
-         android:resizeableActivity="false"
-         android:theme="@style/WallpaperTheme.Preview">
-    </activity>
-
       <activity
           android:name="com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity"
           android:excludeFromRecents="true"
@@ -166,11 +139,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <data android:mimeType="image/*"/>
       </intent-filter>
-    </activity>
-
-    <activity android:name="com.android.wallpaper.picker.ViewOnlyPreviewActivity"
-         android:resizeableActivity="false"
-         android:theme="@style/WallpaperTheme.Preview">
     </activity>
   </application>
 

@@ -20,7 +20,6 @@ import android.graphics.Point
 import android.util.AttributeSet
 import android.widget.LinearLayout
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 
 /**
@@ -65,7 +64,7 @@ class DualDisplayAspectRatioLayout(context: Context, attrs: AttributeSet?) :
 
         // Width based calculation
         var newHeight = parentWidth / (largeDisplayAR + smallDisplayAR)
-        if (newHeight > this.measuredHeight && BaseFlags.get().isNewPickerUi()) {
+        if (newHeight > this.measuredHeight) {
             // If new height derived from width is larger than original height, use height based
             // calculation.
             newHeight = this.measuredHeight.toFloat()

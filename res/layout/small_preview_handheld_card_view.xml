@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (C) 2023 The Android Open Source Project
+  ~ Copyright (C) 2024 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,18 +22,9 @@ the header bar -->
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <com.android.wallpaper.picker.DisplayAspectRatioFrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipChildren="false">
-
-        <include
-            android:id="@+id/preview"
-            layout="@layout/small_wallpaper_preview_card"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"/>
-    </com.android.wallpaper.picker.DisplayAspectRatioFrameLayout>
+    <include
+        android:id="@+id/preview"
+        layout="@layout/wallpaper_preview_card2" />
 
     <ViewStub
         android:id="@+id/small_preview_tooltip_stub"

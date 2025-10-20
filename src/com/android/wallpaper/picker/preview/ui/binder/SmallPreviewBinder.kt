@@ -28,7 +28,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import androidx.transition.TransitionListenerAdapter
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -168,11 +167,6 @@ object SmallPreviewBinder {
                         ) {
                             wallpaperSurface.setZOrderOnTop(true)
                             workspaceSurface.setZOrderOnTop(true)
-                        } else {
-                            // If transitioning to another small preview, keep child surfaces hidden
-                            // until transition ends.
-                            wallpaperSurface.visibility = View.INVISIBLE
-                            workspaceSurface.visibility = View.INVISIBLE
                         }
                     }
 
@@ -184,18 +178,6 @@ object SmallPreviewBinder {
                         ) {
                             wallpaperSurface.setZOrderMediaOverlay(true)
                             workspaceSurface.setZOrderMediaOverlay(true)
-                        } else {
-                            wallpaperSurface.visibility = View.VISIBLE
-                            workspaceSurface.visibility = View.VISIBLE
-                            wallpaperSurface.alpha = 0f
-                            workspaceSurface.alpha = 0f
-
-                            val mediumAnimTimeMs =
-                                view.resources
-                                    .getInteger(android.R.integer.config_mediumAnimTime)
-                                    .toLong()
-                            wallpaperSurface.startFadeInAnimation(mediumAnimTimeMs)
-                            workspaceSurface.startFadeInAnimation(mediumAnimTimeMs)
                         }
 
                         transition.removeListener(this)
@@ -224,17 +206,14 @@ object SmallPreviewBinder {
                             Triple(onClick, previewScreen, tab)
                         }
                         .collect { (onClick, previewScreen, tab) ->
-                            if (
-                                BaseFlags.get().isNewPickerUi() &&
-                                    previewScreen != PreviewScreen.SMALL_PREVIEW
-                            ) {
+                            if (previewScreen != PreviewScreen.SMALL_PREVIEW) {
                                 view.setOnClickListener(null)
                             } else {
                                 onClick?.let {
                                     view.setOnClickListener {
                                         // If tab != screen, it's pager switching tab and no need to
                                         // set z order
-                                        if (BaseFlags.get().isNewPickerUi() && tab == screen) {
+                                        if (tab == screen) {
                                             // Set top z order for shared element transition
                                             wallpaperSurface.setZOrderOnTop(true)
                                             workspaceSurface.setZOrderOnTop(true)

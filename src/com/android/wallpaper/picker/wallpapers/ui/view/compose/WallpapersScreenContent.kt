@@ -16,43 +16,93 @@
 
 package com.android.wallpaper.picker.wallpapers.ui.view.compose
 
+import android.app.Activity
+import android.graphics.Point
+import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.android.compose.PlatformOutlinedButton
+import com.android.compose.PlatformTextButton
+import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.wallpaper.R
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersContentViewModel
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersItemViewModel
+import com.android.wallpaper.util.ResourceUtils
 import com.android.wallpaper.util.SizeCalculator
+import kotlinx.coroutines.launch
 
 /** Scale factor used to calculate the height of template tiles */
-private const val THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
+private const val TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
+
+/** Scale factor used to calculate the width of template tiles */
+private const val TILE_WIDTH_SCALE_FACTOR: Float = 0.95f
+
+private const val TAG = "WallpapersScreenContent"
 
 /**
  * Displays the main screen content for category wallpapers using a [LazyColumn].
@@ -63,45 +113,211 @@ private const val THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
 @Composable
 fun WallpapersScreenContent(
     viewModel: CategoryWallpapersContentViewModel,
+    isRotationDialogShowing: Boolean,
+    isRotationLoading: Boolean,
+    networkPreference: Int,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier.fillMaxSize()) {
-        items(viewModel.wallpaperItems) { item ->
-            when (item) {
-                is CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory -> {
-                    Text(
-                        text = item.title,
-                        modifier =
-                            modifier.padding(dimensionResource(R.dimen.category_grid_edge_space)),
-                    )
-                }
 
-                is CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory -> {
-                    Text(
-                        text = item.title,
-                        modifier =
-                            modifier.padding(
-                                horizontal =
-                                    dimensionResource(
-                                        R.dimen.grid_item_individual_padding_horizontal
-                                    ),
-                                vertical =
-                                    dimensionResource(R.dimen.grid_item_individual_padding_bottom),
-                            ),
-                    )
-                }
+    val activity = LocalActivity.current
+    val featuredTileSize: DpSize =
+        activity?.let { SizeCalculator.getFeaturedIndividualTileSize(it) }?.toDpSize()
+            ?: DpSize(0.dp, 0.dp)
+    val regularTileSize: DpSize =
+        activity?.let { SizeCalculator.getIndividualTileSize(it) }?.toDpSize() ?: DpSize(0.dp, 0.dp)
 
-                is CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory -> {
-                    HorizontalGridSection(thumbnails = item.thumbnailAssets, maxRows = 2)
-                }
+    Column(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(
+                    top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                    bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+                )
+    ) {
+        TopToolbar(
+            viewModel.title,
+            viewModel.rotationEnabled,
+            viewModel.onShowRotationDialog,
+            modifier = modifier,
+        )
+        LazyColumn(modifier = modifier.fillMaxSize()) {
+            items(viewModel.wallpaperItems) { item ->
+                when (item) {
+                    is CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory -> {
+                        SectionLabel(item.title, modifier.wrapContentSize().padding(start = 18.dp))
+                    }
 
-                is CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory -> {
-                    ThumbnailCard(item)
-                }
+                    is CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory -> {
+                        SectionLabel(item.title, modifier.wrapContentSize().padding(start = 20.dp))
+                    }
 
-                is CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory -> {
-                    ThumbnailGridSection(thumbnails = item.thumbnailAssets, columns = 3)
+                    is CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory -> {
+                        HorizontalGridSection(
+                            thumbnails = item.thumbnailAssets,
+                            viewModel = viewModel,
+                            maxRows = 2,
+                        )
+                    }
+
+                    is CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory -> {
+                        ThumbnailCard(item, viewModel = viewModel)
+                    }
+
+                    is CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory -> {
+                        val tileSize = if (item.areTilesLarge) featuredTileSize else regularTileSize
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                        ) {
+                            item.rowThumbnails.forEach { thumb ->
+                                ThumbnailCard(
+                                    thumb,
+                                    viewModel = viewModel,
+                                    modifier = Modifier.size(tileSize),
+                                )
+                            }
+
+                            // Add spacers to align the last row
+                            repeat(item.totalColumns - item.rowThumbnails.size) {
+                                Spacer(modifier = Modifier.size(tileSize))
+                            }
+                        }
+                    }
                 }
+            }
+        }
+    }
+
+    if (isRotationDialogShowing) {
+        val colorScheme = MaterialTheme.colorScheme
+        AlertDialog(
+            shape = RoundedCornerShape(24.dp),
+            textContentColor = colorScheme.onSurface,
+            title = {
+                Text(
+                    text = stringResource(R.string.start_rotation_dialog_body),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            onDismissRequest = { viewModel.onCancelRotationDialog?.invoke() },
+            text = {
+                if (isRotationLoading) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = modifier.fillMaxWidth(),
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = modifier.fillMaxWidth().offset(x = -24.dp),
+                    ) {
+                        Checkbox(
+                            checked = networkPreference != 0,
+                            onCheckedChange = viewModel.onNetworkPreferences,
+                            modifier = modifier.clearAndSetSemantics {},
+                        )
+
+                        Text(
+                            text =
+                                stringResource(
+                                    R.string.start_rotation_dialog_wifi_only_option_message
+                                ),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                if (!isRotationLoading) {
+                    PlatformTextButton(onClick = { viewModel.onRotationStart?.invoke() }) {
+                        Text(stringResource(android.R.string.ok))
+                    }
+                }
+            },
+            dismissButton = {
+                if (!isRotationLoading) {
+                    PlatformOutlinedButton(
+                        onClick = { viewModel.onCancelRotationDialog?.invoke() }
+                    ) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                }
+            },
+        )
+    }
+}
+
+@Composable
+fun SectionLabel(text: String, modifier: Modifier) {
+    val colorScheme = MaterialTheme.colorScheme
+    Text(
+        text = text,
+        modifier = modifier,
+        fontSize = 16.sp,
+        lineHeight = 15.sp,
+        color = colorScheme.onSurface,
+        textAlign = TextAlign.Center,
+        fontWeight = FontWeight.W500,
+    )
+}
+
+@Composable
+fun TopToolbar(
+    title: String,
+    isRotationEnabled: Boolean,
+    startRotation: (() -> Unit)?,
+    modifier: Modifier,
+) {
+    val activity = LocalActivity.current as ComponentActivity
+    val colorScheme = MaterialTheme.colorScheme
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+    ) {
+        Box(
+            modifier =
+                Modifier.clickable { /* Handle back */ }
+                    .padding(vertical = 4.dp)
+                    .padding(end = 16.dp)
+        ) {
+            IconButton(
+                modifier = Modifier.size(40.dp),
+                onClick = { activity.onBackPressedDispatcher.onBackPressed() },
+                colors =
+                    IconButtonDefaults.iconButtonColors()
+                        .copy(containerColor = colorScheme.surfaceContainerHighest),
+                shape = CircleShape,
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_nav_back_24dp),
+                    contentDescription = stringResource(R.string.bottom_action_bar_back),
+                    tint = colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            modifier = Modifier.weight(1f),
+            text = title,
+            fontSize = 20.sp,
+            color = colorScheme.onSurface,
+        )
+        if (isRotationEnabled) {
+            IconButton(onClick = { startRotation?.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_slideshow_24dp),
+                    contentDescription = "Slideshow",
+                    tint = colorScheme.onSurface,
+                )
             }
         }
     }
@@ -119,6 +335,7 @@ fun WallpapersScreenContent(
 @Composable
 fun HorizontalGridSection(
     thumbnails: List<CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory>,
+    viewModel: CategoryWallpapersContentViewModel,
     maxRows: Int,
     modifier: Modifier = Modifier,
 ) {
@@ -127,8 +344,9 @@ fun HorizontalGridSection(
         LocalActivity.current?.let { SizeCalculator.getFeaturedIndividualTileSize(it).y.toFloat() }
             ?: with(density) { 260.dp.toPx() }
 
-    val heightDp =
-        with(density) { (THUMBNAIL_TILE_HEIGHT_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
+    val heightDp = with(density) { (TILE_HEIGHT_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
+    val widthDp = with(density) { (TILE_WIDTH_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
+
     LazyHorizontalGrid(
         rows = GridCells.Fixed(maxRows),
         modifier =
@@ -154,42 +372,25 @@ fun HorizontalGridSection(
                 horizontal = dimensionResource(R.dimen.featured_wallpaper_grid_edge_space)
             ),
     ) {
-        items(thumbnails) { thumbnail -> ThumbnailCard(thumbnail) }
+        items(thumbnails) { thumbnail ->
+            ThumbnailCard(
+                thumbnail = thumbnail,
+                viewModel = viewModel,
+                modifier = modifier.size(width = widthDp, height = heightDp),
+                showLabel = true,
+            )
+        }
     }
 }
 
-/**
- * Displays a grid of thumbnails arranged in a fixed number of columns.
- *
- * @param thumbnails List of thumbnail view models to display.
- * @param columns Number of columns in the grid.
- */
 @Composable
-fun ThumbnailGridSection(
-    thumbnails: List<CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory>,
-    columns: Int,
-    modifier: Modifier = Modifier,
-) {
-    val rows = (thumbnails.size + columns - 1) / columns
+fun Point.toDpSize(): DpSize {
+    val density = LocalDensity.current
 
-    Column(
-        modifier = modifier.fillMaxWidth().padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        for (rowIndex in 0 until rows) {
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                for (colIndex in 0 until columns) {
-                    val itemIndex = rowIndex * columns + colIndex
-                    if (itemIndex < thumbnails.size) {
-                        ThumbnailCard(thumbnails[itemIndex])
-                    }
-                }
-            }
-        }
-    }
+    val widthInDp = with(density) { this@toDpSize.x.toDp() }
+    val heightInDp = with(density) { this@toDpSize.y.toDp() }
+
+    return DpSize(width = widthInDp, height = heightInDp)
 }
 
 /**
@@ -201,20 +402,125 @@ fun ThumbnailGridSection(
 @Composable
 fun ThumbnailCard(
     thumbnail: CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory,
+    viewModel: CategoryWallpapersContentViewModel,
     modifier: Modifier = Modifier,
+    showLabel: Boolean = false,
 ) {
     Card(
-        modifier = modifier.size(120.dp).clickable { thumbnail.onSectionClicked?.invoke() },
+        modifier = modifier.clickable { thumbnail.getLaunchActivityIntent?.invoke() },
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
         elevation = CardDefaults.cardElevation(),
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            // Replace this with an image loader
-            Text(
-                text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
-                modifier = modifier.align(Alignment.BottomStart).padding(8.dp),
-                color = Color.White,
+            AssetImageView(
+                thumbnail = thumbnail,
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxSize(),
             )
+            if (showLabel) {
+                Text(
+                    text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
+                    modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
+                    color = Color.White,
+                )
+            }
+            if (thumbnail.isDownloadable) {
+                LayerListImage(
+                    id = R.drawable.ic_download_badge,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                )
+            } else if (thumbnail.isApplied) {
+                LayerListImage(
+                    id = R.drawable.wallpaper_check_circle_24dp,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                )
+            }
         }
     }
+}
+
+@Composable
+fun LayerListImage(
+    @DrawableRes id: Int,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+) {
+    val context = LocalContext.current
+    val drawable = AppCompatResources.getDrawable(context, id)
+
+    drawable?.let {
+        Image(
+            painter = rememberDrawablePainter(drawable = it),
+            contentDescription = contentDescription,
+            modifier = modifier,
+        )
+    }
+}
+
+/**
+ * A circular progress indicator. It appears immediately when `isLoading` is true and disappears
+ * immediately when `isLoading` is false.
+ *
+ * @param isLoading A boolean state indicating whether content is currently loading.
+ * @param modifier The modifier to be applied to the loading indicator.
+ */
+@Composable
+fun LoadingSpinner(isLoading: Boolean, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = isLoading,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.Center),
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(48.dp))
+        }
+    }
+}
+
+// TODO(b/441293395): Deprecate Asset class and migrate image loading to use GlideImageView
+@Composable
+fun AssetImageView(
+    thumbnail: CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory,
+    viewModel: CategoryWallpapersContentViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+            onResult = { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    coroutineScope.launch { viewModel.dismissScreen() }
+                }
+            },
+        )
+
+    AndroidView(
+        factory = { context ->
+            ImageView(context).apply {
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                layoutParams =
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    )
+            }
+        },
+        update = { imageView ->
+            thumbnail.thumbnailAsset.loadDrawable(
+                context,
+                imageView,
+                ResourceUtils.getColorAttr(context, android.R.attr.colorSecondary),
+            )
+        },
+        modifier =
+            modifier.clickable {
+                val intent = thumbnail.getLaunchActivityIntent?.invoke()
+                intent?.let { launcher.launch(it) }
+            },
+    )
 }

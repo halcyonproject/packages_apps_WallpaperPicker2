@@ -18,6 +18,7 @@ package com.android.customization.picker.icon.shared.model
 
 interface IconStyle {
     val nameResId: Int
+    val loggingId: Int
 
     fun getIsThemedIcon(): Boolean
 }

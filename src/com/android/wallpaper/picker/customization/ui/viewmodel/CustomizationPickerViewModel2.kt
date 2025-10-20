@@ -26,6 +26,9 @@ import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.picker.common.preview.ui.viewmodel.BasePreviewViewModel
+import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
+import com.android.wallpaper.util.ActivityUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -43,13 +46,21 @@ class CustomizationPickerViewModel2
 @Inject
 constructor(
     @ApplicationContext private val context: Context,
+    customizationOptionUtil: CustomizationOptionUtil,
     customizationOptionsViewModelFactory: CustomizationOptionsViewModelFactory,
     basePreviewViewModelFactory: BasePreviewViewModel.Factory,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    /**
+     * Data class defining the target alpha that a preview should be set to. If shouldAnimate is
+     * true, the preview will animate to the target alpha value.
+     */
+    data class PreviewAlpha(val alpha: Float, val showLabel: Boolean, val shouldAnimate: Boolean)
+
     private val initialDestination: String? = savedStateHandle[KEY_DESTINATION]
     private val initialShortcutSlotId: String? = savedStateHandle[KEY_SHORTCUT_SLOT_ID]
+    private val launchSource: String? = savedStateHandle[WALLPAPER_LAUNCH_SOURCE]
 
     val customizationOptionsViewModel =
         customizationOptionsViewModelFactory.create(
@@ -64,9 +75,17 @@ constructor(
         CUSTOMIZATION_OPTION,
     }
 
+    private val initialPreviewScreen =
+        initialDestination
+            ?.let { customizationOptionUtil.getCustomizationOptionFromDestination(it) }
+            ?.let { customizationOptionUtil.getScreenFromOption(it) }
+    private val isLaunchedFromLauncher = ActivityUtils.isLaunchedFromLauncher(launchSource)
     private val _selectedPreviewScreen =
         MutableStateFlow(
-            if (BaseFlags.get().shouldShowDesktopUi(context)) HOME_SCREEN else LOCK_SCREEN
+            initialPreviewScreen
+                ?: if (isLaunchedFromLauncher || BaseFlags.get().shouldShowDesktopUi(context))
+                    HOME_SCREEN
+                else LOCK_SCREEN
         )
     val selectedPreviewScreen = _selectedPreviewScreen.asStateFlow()
 
@@ -163,18 +182,36 @@ constructor(
             when (navigationScreen) {
                 PickerScreen.MAIN ->
                     if (previewScreen == targetScreen)
-                        PreviewAlpha(alpha = PREVIEW_SHOW_ALPHA, shouldAnimate = true)
-                    else PreviewAlpha(alpha = PREVIEW_FADE_ALPHA, shouldAnimate = true)
+                        PreviewAlpha(
+                            alpha = PREVIEW_SHOW_ALPHA,
+                            showLabel = true,
+                            shouldAnimate = true,
+                        )
+                    else
+                        PreviewAlpha(
+                            alpha = PREVIEW_FADE_ALPHA,
+                            showLabel = true,
+                            shouldAnimate = true,
+                        )
                 PickerScreen.CUSTOMIZATION_OPTION -> {
                     when (previewScreen) {
                         targetScreen ->
-                            PreviewAlpha(alpha = PREVIEW_SHOW_ALPHA, shouldAnimate = true)
-                        else -> PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = true)
+                            PreviewAlpha(
+                                alpha = PREVIEW_SHOW_ALPHA,
+                                showLabel = false,
+                                shouldAnimate = true,
+                            )
+                        else ->
+                            PreviewAlpha(
+                                alpha = PREVIEW_HIDE_ALPHA,
+                                showLabel = false,
+                                shouldAnimate = true,
+                            )
                     }
                 }
             }
         } else {
-            PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, shouldAnimate = false)
+            PreviewAlpha(alpha = PREVIEW_HIDE_ALPHA, showLabel = false, shouldAnimate = false)
         }
     }
 

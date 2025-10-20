@@ -24,7 +24,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.picker.category.ui.view.adapter.CategoryAdapter
 import com.android.wallpaper.picker.category.ui.viewmodel.SectionViewModel
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
@@ -55,17 +54,14 @@ class CategorySectionViewHolder(itemView: View, private val windowWidth: Int) :
         shouldAnimateColor: () -> Boolean,
         lifecycleOwner: LifecycleOwner,
     ) {
-        val isNewPickerUi = BaseFlags.get().isNewPickerUi()
 
-        if (isNewPickerUi) {
-            sectionTitle.setTextAppearance(R.style.TextAppearance_DeviceDefault_Small_TitleMedium)
-            ColorUpdateBinder.bind(
-                setColor = { color -> sectionTitle.setTextColor(color) },
-                color = colorUpdateViewModel.colorOnSurface,
-                shouldAnimate = shouldAnimateColor,
-                lifecycleOwner = lifecycleOwner,
-            )
-        }
+        sectionTitle.setTextAppearance(R.style.TextAppearance_DeviceDefault_Small_TitleMedium)
+        ColorUpdateBinder.bind(
+            setColor = { color -> sectionTitle.setTextColor(color) },
+            color = colorUpdateViewModel.colorOnSurface,
+            shouldAnimate = shouldAnimateColor,
+            lifecycleOwner = lifecycleOwner,
+        )
         categoryHeader.visibility = View.GONE
 
         if (item.sectionTitle != null) {

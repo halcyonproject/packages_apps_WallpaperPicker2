@@ -194,7 +194,7 @@
     <!-- Preview customization pane styles -->
     <style name="WallpaperPicker.CustomizationPaneStyle" parent="@android:style/Theme.DeviceDefault.Settings">
         <item name="tabTextAppearance">@style/WallpaperPicker.Preview.TextAppearance.NoAllCaps</item>
-        <item name="tabIndicatorColor">?android:attr/textColorPrimary</item>
+        <item name="tabIndicatorColor">@color/materialColorOnSurface</item>
         <item name="tabGravity">fill</item>
         <item name="tabMaxWidth">0dp</item>
     </style>
@@ -209,8 +209,6 @@
     <style name="WallpaperPicker.Preview.TextAppearance.NoAllCaps.LabelLargeEmphasized" />
 
     <!-- Set wallpaper destination item -->
-    <!-- Studio can't directly reference ?androidprv:attr/textColorOnAccent here,
-     so we set the text color on the dialog items instead. -->
     <style name="set_wallpaper_destination_item">
         <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
         <item name="android:minHeight">@dimen/set_wallpaper_dialog_item_min_height</item>

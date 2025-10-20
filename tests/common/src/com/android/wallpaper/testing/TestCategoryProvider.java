@@ -41,9 +41,8 @@ public class TestCategoryProvider implements CategoryProvider {
         ArrayList<WallpaperInfo> wallpapers = new ArrayList<>();
         WallpaperInfo wallpaperInfo = new TestStaticWallpaperInfo(0);
         wallpapers.add(wallpaperInfo);
-        Category category2 = new com.android.wallpaper.testing.TestWallpaperCategory(
-                "Test category", "init_collection", wallpapers,
-                1 /* priority */);
+        Category category2 = new TestWallpaperCategory("Test category", "init_collection",
+                wallpapers, 1 /* priority */);
 
         mCategories = new ArrayList<>();
         mCategories.add(category1);
@@ -71,11 +70,6 @@ public class TestCategoryProvider implements CategoryProvider {
     }
 
     @Override
-    public Category getCategory(int index) {
-        return mCategories == null ? null : mCategories.get(index);
-    }
-
-    @Override
     public Category getCategory(String collectionId) {
         Category category;
         for (int i = 0; i < mCategories.size(); i++) {
@@ -85,17 +79,6 @@ public class TestCategoryProvider implements CategoryProvider {
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean isCategoriesFetched() {
-        return false;
-    }
-
-    @Override
-    public boolean resetIfNeeded() {
-        mCategories.clear();
-        return true;
     }
 
     @Override
