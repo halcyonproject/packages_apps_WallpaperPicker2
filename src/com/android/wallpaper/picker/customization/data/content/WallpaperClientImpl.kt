@@ -49,7 +49,6 @@ import com.android.wallpaper.model.StaticWallpaperPrefMetadata
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.model.WallpaperModelsPair
 import com.android.wallpaper.module.InjectorProvider
-import com.android.wallpaper.module.RecentWallpaperManager
 import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
@@ -91,7 +90,6 @@ constructor(
     private val wallpaperPreferences: WallpaperPreferences,
     private val wallpaperModelFactory: WallpaperModelFactory,
     private val logger: UserEventLogger,
-    private val recentWallpaperManager: RecentWallpaperManager,
     @BackgroundDispatcher val backgroundScope: CoroutineScope,
 ) : WallpaperClient {
 
@@ -521,12 +519,7 @@ constructor(
     private suspend fun getCurrentWallpaperFromFactory(
         destination: WallpaperDestination
     ): RecentWallpaperModel {
-        val currentWallpapers =
-            getCurrentWallpapers(context, updateRecents = false, forceRefresh = false) {
-                info,
-                screen ->
-                recentWallpaperManager.getCurrentWallpaperBitmapUri(info, screen)
-            }
+        val currentWallpapers = getCurrentWallpapers(context, forceRefresh = false)
         val wallpaper: WallpaperInfo =
             if (destination == LOCK) {
                 currentWallpapers.second
@@ -543,10 +536,7 @@ constructor(
     }
 
     override suspend fun getCurrentWallpaperModels(forceRefresh: Boolean): WallpaperModelsPair {
-        val currentWallpapers =
-            getCurrentWallpapers(context, updateRecents = false, forceRefresh) { info, screen ->
-                recentWallpaperManager.getCurrentWallpaperBitmapUri(info, screen)
-            }
+        val currentWallpapers = getCurrentWallpapers(context, forceRefresh)
         val homeWallpaper = currentWallpapers.first
         val lockWallpaper = currentWallpapers.second
         return WallpaperModelsPair(
@@ -587,12 +577,7 @@ constructor(
                 )
             }
         } else {
-            val currentWallpapers =
-                getCurrentWallpapers(context, updateRecents = false, forceRefresh = false) {
-                    info,
-                    screen ->
-                    recentWallpaperManager.getCurrentWallpaperBitmapUri(info, screen)
-                }
+            val currentWallpapers = getCurrentWallpapers(context, forceRefresh = false)
             val wallpaper =
                 if (currentWallpapers.first.wallpaperId == wallpaperId) {
                     currentWallpapers.first

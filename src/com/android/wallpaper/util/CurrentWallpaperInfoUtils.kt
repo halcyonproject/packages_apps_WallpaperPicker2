@@ -17,9 +17,6 @@
 package com.android.wallpaper.util
 
 import android.content.Context
-import android.net.Uri
-import com.android.wallpaper.model.CurrentWallpaperInfo
-import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.CurrentWallpaperInfoFactory
 import com.android.wallpaper.module.InjectorProvider
@@ -36,9 +33,7 @@ object CurrentWallpaperInfoUtils {
      */
     suspend fun getCurrentWallpapers(
         context: Context,
-        updateRecents: Boolean,
         forceRefresh: Boolean,
-        onFetchUri: (CurrentWallpaperInfo, Screen) -> Uri?,
     ): Pair<WallpaperInfo, WallpaperInfo> = suspendCoroutine { continuation ->
         val injector = InjectorProvider.getInjector()
         val currentWallpaperFactory = injector.getCurrentWallpaperInfoFactory(context)
@@ -51,16 +46,7 @@ object CurrentWallpaperInfoUtils {
                     lockWallpaper: WallpaperInfo?,
                     presentationMode: Int,
                 ) {
-                    val preferences = injector.getPreferences(context)
-                    val hw = homeWallpaper
-                    val lw = lockWallpaper ?: homeWallpaper
-
-                    if (updateRecents) {
-                        preferences.setHomeWallpaperRecentsKey(hw.wallpaperId)
-                        preferences.setLockWallpaperRecentsKey(lw.wallpaperId)
-                    }
-
-                    continuation.resume(Pair(hw, lw))
+                    continuation.resume(Pair(homeWallpaper, lockWallpaper ?: homeWallpaper))
                 }
             },
         )
