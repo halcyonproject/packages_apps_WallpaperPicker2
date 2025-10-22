@@ -43,13 +43,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +59,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
@@ -69,6 +70,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * [ApplyWallpaperScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout. It is
@@ -80,6 +82,7 @@ fun ContentScope.ApplyWallpaperScene(
     sceneState: MutableSceneTransitionLayoutState,
     lockScreenPreview: View,
     homeScreenPreview: View,
+    onWallpaperApplied: () -> Unit,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
@@ -97,6 +100,10 @@ fun ContentScope.ApplyWallpaperScene(
         viewModel.onHomeCheckBoxChecked.collectAsStateWithLifecycle(null)
     val isApplyButtonEnabled: Boolean by
         viewModel.isApplyButtonEnabled.collectAsStateWithLifecycle(false)
+    val onApplyWallpaper: (suspend () -> Unit)? by
+        viewModel.setWallpaperDialogOnConfirmButtonClicked.collectAsStateWithLifecycle(null)
+    val isApplyWallpaperProgressDialogVisible: Boolean by
+        viewModel.isSetWallpaperProgressBarVisible.collectAsStateWithLifecycle(false)
 
     Box(
         modifier =
@@ -189,7 +196,12 @@ fun ContentScope.ApplyWallpaperScene(
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    onClick = {},
+                    onClick = {
+                        coroutineScope.launch {
+                            onApplyWallpaper?.invoke()
+                            onWallpaperApplied.invoke()
+                        }
+                    },
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = colorScheme.primary,
@@ -219,6 +231,12 @@ fun ContentScope.ApplyWallpaperScene(
                 ) {
                     Text(stringResource(R.string.cancel))
                 }
+            }
+        }
+
+        if (isApplyWallpaperProgressDialogVisible) {
+            Dialog(onDismissRequest = { /* Prevent dismissal */ }) {
+                ApplyWallpaperProgressDialog()
             }
         }
     }
@@ -272,5 +290,25 @@ fun CheckboxWithText(
             )
         }
         Text(text = text, fontSize = 16.sp, color = colorScheme.onSurface)
+    }
+}
+
+@Composable
+private fun ApplyWallpaperProgressDialog() {
+    val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    Row(
+        modifier =
+            Modifier.background(color = colorScheme.surface, shape = RoundedCornerShape(28.dp))
+                .padding(24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(32.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = stringResource(id = R.string.set_wallpaper_progress_message),
+            style = typography.bodyLarge,
+            color = colorScheme.onSurface,
+        )
     }
 }
