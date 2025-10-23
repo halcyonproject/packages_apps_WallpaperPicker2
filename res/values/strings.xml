@@ -182,6 +182,16 @@
       Wallpaper will change automatically every day
     </string>
 
+    <!-- Content description for lists which can be collapse. [CHAR LIMIT=none] -->
+    <string name="collapse_content_description">
+      Collapse
+    </string>
+
+    <!-- Content description for lists which can be expanded. [CHAR LIMIT=none] -->
+    <string name="expand_content_description">
+      Expand
+    </string>
+
     <!-- Label for a button linking to Android Settings. [CHAR LIMIT=50] -->
     <string name="settings_button_label">
       Settings
