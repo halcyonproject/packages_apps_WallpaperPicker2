@@ -74,11 +74,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -103,6 +106,8 @@ private const val TILE_HEIGHT_SCALE_FACTOR: Float = 1.2f
 private const val TILE_WIDTH_SCALE_FACTOR: Float = 0.95f
 
 private const val TAG = "WallpapersScreenContent"
+
+private const val THUMBNAIL_TEST_TAG = "wp_thumbnail"
 
 /**
  * Displays the main screen content for category wallpapers using a [LazyColumn].
@@ -134,6 +139,9 @@ fun WallpapersScreenContent(
                     top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
                     bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
                 )
+                // This semantics modifier is used to make testTags act like resource IDs,
+                // which allows UI automation tools like Espresso to find elements using their testTag.
+                .semantics { testTagsAsResourceId = true }
     ) {
         TopToolbar(
             viewModel.title,
@@ -407,7 +415,10 @@ fun ThumbnailCard(
     showLabel: Boolean = false,
 ) {
     Card(
-        modifier = modifier.clickable { thumbnail.getLaunchActivityIntent?.invoke() },
+        modifier =
+            modifier.testTag(THUMBNAIL_TEST_TAG).clickable {
+                thumbnail.getLaunchActivityIntent?.invoke()
+            },
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
         elevation = CardDefaults.cardElevation(),
     ) {
