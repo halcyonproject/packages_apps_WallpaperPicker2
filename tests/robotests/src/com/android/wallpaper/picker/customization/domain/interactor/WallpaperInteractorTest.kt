@@ -25,8 +25,8 @@ import androidx.test.filters.SmallTest
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.picker.broadcast.BroadcastDispatcher
 import com.android.wallpaper.picker.customization.data.repository.WallpaperRepository
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import com.android.wallpaper.testing.FakeWallpaperClient
 import com.android.wallpaper.testing.TestWallpaperPreferences
 import com.android.wallpaper.testing.collectLastValue
@@ -94,7 +94,7 @@ class WallpaperInteractorTest {
     fun `previews - handles empty recents list`() =
         testScope.runTest {
             client.setRecentWallpapers(
-                buildMap { put(WallpaperDestination.HOME, listOf<WallpaperModel>()) }
+                buildMap { put(WallpaperDestination.HOME, listOf<LegacyRecentWallpaperModel>()) }
             )
             val homeWallpaperUpdateEvents =
                 collectLastValue(underTest.wallpaperUpdateEvents(Screen.HOME_SCREEN))
