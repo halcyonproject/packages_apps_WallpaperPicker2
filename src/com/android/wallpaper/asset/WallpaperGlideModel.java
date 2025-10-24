@@ -22,22 +22,24 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.IntDef;
+
 import com.bumptech.glide.load.Key;
 import com.bumptech.glide.signature.ObjectKey;
 
-import androidx.annotation.IntDef;
+
 
 /**
  * Glide model representing wallpaper image data retrieved from {@link WallpaperManager}.
  * <p>
  * Instances of this class can be used to load wallpaper images normally retrieved directly from the
  * {@link WallpaperManager} by passing to Glide's {@link com.bumptech.glide.RequestBuilder#load} and
- * registering {@link WallpaperModelLoader} on Glide's {@link com.bumptech.glide.Registry} in a
+ * registering {@link WallpaperGlideModelLoader} on Glide's {@link com.bumptech.glide.Registry} in a
  * custom {@link com.bumptech.glide.module.GlideModule}.
  */
-public class WallpaperModel {
+public class WallpaperGlideModel {
     public static final int SOURCE_BUILT_IN = 0;
-    private static final String TAG = "WallpaperModel";
+    private static final String TAG = "WallpaperGlideModel";
     private static final boolean SCALE_TO_FIT = true;
     private static final float HORIZONTAL_CENTER_ALIGNED = 0.5f;
     private static final float VERTICAL_CENTER_ALIGNED = 0.5f;
@@ -45,7 +47,7 @@ public class WallpaperModel {
     private int mWallpaperSource;
     private WallpaperManager mWallpaperManager;
 
-    public WallpaperModel(Context context, @Source int wallpaperSource) {
+    public WallpaperGlideModel(Context context, @Source int wallpaperSource) {
         mWallpaperSource = wallpaperSource;
         mWallpaperManager = WallpaperManager.getInstance(context);
     }
