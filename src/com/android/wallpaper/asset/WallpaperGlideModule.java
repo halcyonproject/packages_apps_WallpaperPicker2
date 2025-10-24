@@ -7,7 +7,7 @@ import com.android.wallpaper.asset.CurrentWallpaperAssetLoader.CurrentWallpaperA
 import com.android.wallpaper.asset.LiveWallpaperThumbAssetLoader.LiveWallpaperThumbAssetLoaderFactory;
 import com.android.wallpaper.asset.ResourceAssetLoader.ResourceAssetLoaderFactory;
 import com.android.wallpaper.asset.SystemStaticAssetLoader.SystemStaticAssetLoaderFactory;
-import com.android.wallpaper.asset.WallpaperModelLoader.WallpaperModelLoaderFactory;
+import com.android.wallpaper.asset.WallpaperGlideModelLoader.WallpaperGlideModelLoaderFactory;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
@@ -35,7 +35,8 @@ public class WallpaperGlideModule implements GlideModule {
         builder.setDiskCache(new InternalCacheDiskCacheFactory(
                 context, WALLPAPER_DISK_CACHE_SIZE_BYTES));
 
-        // Default # of bitmap pool screens is 4, so reduce to 2 to make room for the additional memory
+        // Default # of bitmap pool screens is 4, so reduce to 2 to make room for the additional
+        // memory
         // consumed by tiling large images in preview and also the large bitmap consumed by the live
         // wallpaper for daily rotation.
         MemorySizeCalculator calculator = new MemorySizeCalculator.Builder(context)
@@ -49,7 +50,8 @@ public class WallpaperGlideModule implements GlideModule {
 
     @Override
     public void registerComponents(Context context, Glide glide, Registry registry) {
-        registry.append(WallpaperModel.class, Drawable.class, new WallpaperModelLoaderFactory());
+        registry.append(WallpaperGlideModel.class, Drawable.class,
+                new WallpaperGlideModelLoaderFactory());
         registry.append(ResourceAsset.class, InputStream.class, new ResourceAssetLoaderFactory());
         registry.append(SystemStaticAsset.class, InputStream.class,
                 new SystemStaticAssetLoaderFactory());
