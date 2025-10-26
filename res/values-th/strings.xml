@@ -56,6 +56,10 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"ดาวน์โหลดวอลเปเปอร์แรก…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"ดาวน์โหลดวอลเปเปอร์แรกไม่ได้ ตรวจสอบการตั้งค่าเครือข่ายและลองอีกครั้ง"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"วอลเปเปอร์จะเปลี่ยนโดยอัตโนมัติทุกวัน"</string>
+    <!-- no translation found for collapse_content_description (47845329734521980) -->
+    <skip />
+    <!-- no translation found for expand_content_description (2422558308356416382) -->
+    <skip />
     <string name="settings_button_label" msgid="8724734130079207955">"การตั้งค่า"</string>
     <string name="explore" msgid="7468719504199497281">"สำรวจ"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"วอลเปเปอร์ถัดไป"</string>

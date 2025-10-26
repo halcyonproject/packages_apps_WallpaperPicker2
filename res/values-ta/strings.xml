@@ -56,6 +56,10 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"முதல் வால்பேப்பரைப் பதிவிறக்குகிறது…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"முதல் வால்பேப்பரைப் பதிவிறக்க முடியவில்லை. உங்கள் நெட்வொர்க் அமைப்புகளைச் சரிபார்த்து, மீண்டும் முயலவும்."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"ஒவ்வொரு நாளும் வால்பேப்பர் தானாகவே மாறும்"</string>
+    <!-- no translation found for collapse_content_description (47845329734521980) -->
+    <skip />
+    <!-- no translation found for expand_content_description (2422558308356416382) -->
+    <skip />
     <string name="settings_button_label" msgid="8724734130079207955">"அமைப்புகள்"</string>
     <string name="explore" msgid="7468719504199497281">"மேலும் அறிக"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"அடுத்த வால்பேப்பர்"</string>

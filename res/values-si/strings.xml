@@ -56,6 +56,10 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"පළමු වෝල්පේපරය බාගනිමින්..."</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"පළමු වෝල්පේපරය බාගැනීමට නොහැකිය. කරුණාකර ඔබගේ ජාල සැකසීම් පරීක්ෂා කර නැවත උත්සාහ කරන්න."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"සෑම දිනකම වෝල්පේපරය ස්වයංක්‍රියව වෙනස් වනු ඇත"</string>
+    <!-- no translation found for collapse_content_description (47845329734521980) -->
+    <skip />
+    <!-- no translation found for expand_content_description (2422558308356416382) -->
+    <skip />
     <string name="settings_button_label" msgid="8724734130079207955">"සැකසීම්"</string>
     <string name="explore" msgid="7468719504199497281">"ගවේෂණය කරන්න"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"ඊළඟ වෝල්පේපරය"</string>
