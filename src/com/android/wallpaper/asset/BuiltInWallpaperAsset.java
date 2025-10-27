@@ -56,15 +56,16 @@ public final class BuiltInWallpaperAsset extends Asset {
     private final Context mContext;
 
     private Point mDimensions;
-    private WallpaperModel mBuiltInWallpaperModel;
+    private WallpaperGlideModel mBuiltInWallpaperGlideModel;
 
     /**
      * @param context The application's context.
      */
     public BuiltInWallpaperAsset(Context context) {
         if (VERSION.SDK_INT < VERSION_CODES.KITKAT) {
-            throw new AssertionError("BuiltInWallpaperAsset should not be instantiated on a pre-KitKat"
-                    + " build");
+            throw new AssertionError(
+                    "BuiltInWallpaperAsset should not be instantiated on a pre-KitKat"
+                            + " build");
         }
 
         mContext = context.getApplicationContext();
@@ -101,18 +102,18 @@ public final class BuiltInWallpaperAsset extends Asset {
 
     @Override
     public void decodeBitmap(int targetWidth, int targetHeight, boolean useHardwareBitmapIfPossible,
-                             BitmapReceiver receiver) {
+            BitmapReceiver receiver) {
         sExecutorService.execute(() -> {
             final WallpaperManager wallpaperManager = WallpaperManager.getInstance(mContext);
 
             Drawable drawable = (targetWidth <= 0 || targetHeight <= 0)
                     ? wallpaperManager.getBuiltInDrawable()
                     : wallpaperManager.getBuiltInDrawable(
-                        targetWidth,
-                        targetHeight,
-                        SCALE_TO_FIT,
-                        HORIZONTAL_CENTER_ALIGNED,
-                        VERTICAL_CENTER_ALIGNED);
+                            targetWidth,
+                            targetHeight,
+                            SCALE_TO_FIT,
+                            HORIZONTAL_CENTER_ALIGNED,
+                            VERTICAL_CENTER_ALIGNED);
 
             // Manually request that WallpaperManager loses its reference to the built-in wallpaper
             // bitmap, which can occupy a large memory allocation for the lifetime of the app.
@@ -152,14 +153,15 @@ public final class BuiltInWallpaperAsset extends Asset {
 
     @Override
     public void loadDrawable(Context context, ImageView imageView, int placeholderColor) {
-        if (mBuiltInWallpaperModel == null) {
-            mBuiltInWallpaperModel =
-                    new WallpaperModel(context.getApplicationContext(), WallpaperModel.SOURCE_BUILT_IN);
+        if (mBuiltInWallpaperGlideModel == null) {
+            mBuiltInWallpaperGlideModel =
+                    new WallpaperGlideModel(context.getApplicationContext(),
+                            WallpaperGlideModel.SOURCE_BUILT_IN);
         }
 
         Glide.with(context)
                 .asDrawable()
-                .load(mBuiltInWallpaperModel)
+                .load(mBuiltInWallpaperGlideModel)
                 .apply(RequestOptions.centerCropTransform()
                         .placeholder(new ColorDrawable(placeholderColor)))
                 .transition(DrawableTransitionOptions.withCrossFade())

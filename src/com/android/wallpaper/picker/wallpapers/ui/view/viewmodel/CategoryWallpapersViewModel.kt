@@ -244,14 +244,25 @@ constructor(
                 Log.d(TAG, "here is the list of wallpaperItems yo: ${wallpaperItems}")
             }
 
+            // TODO(b/454852600): flag to be added here by replacing the 'false' value below
+            val isNewUIEnabled = false && !templates.isNullOrEmpty()
+
+            val wallpaperItem =
+                if (isNewUIEnabled) {
+                    wallpaperItems + templates
+                } else {
+                    templates + wallpaperItems
+                }
+
             return@combine CategoryWallpapersContentViewModel(
                 rotationEnabled = isRotationEnabled,
+                isNewUIEnabled = isNewUIEnabled,
                 onRotationStart = { startRotation() },
                 onShowRotationDialog = { onRotationStartClick() },
                 onCancelRotationDialog = { onCancelRotationDialog() },
                 onNetworkPreferences = { isWifiOnly -> updateNetworkPreferences(isWifiOnly) },
                 title = title,
-                wallpaperItems = templates + wallpaperItems,
+                wallpaperItems = wallpaperItem,
                 dismissScreen = { _dismissScreenEvent.emit(Unit) },
             )
         }

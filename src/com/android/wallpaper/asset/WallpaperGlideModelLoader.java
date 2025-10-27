@@ -17,6 +17,8 @@ package com.android.wallpaper.asset;
 
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.Nullable;
+
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.Options;
@@ -25,38 +27,38 @@ import com.bumptech.glide.load.model.ModelLoader;
 import com.bumptech.glide.load.model.ModelLoaderFactory;
 import com.bumptech.glide.load.model.MultiModelLoaderFactory;
 
-import androidx.annotation.Nullable;
-
 /**
  * Custom Glide {@link ModelLoader} which can load {@link Drawable} objects from
- * {@link WallpaperModel} objects.
+ * {@link WallpaperGlideModel} objects.
  */
-public class WallpaperModelLoader implements ModelLoader<WallpaperModel, Drawable> {
+public class WallpaperGlideModelLoader implements ModelLoader<WallpaperGlideModel, Drawable> {
 
     @Override
-    public boolean handles(WallpaperModel wallpaperModel) {
+    public boolean handles(WallpaperGlideModel wallpaperGlideModel) {
         return true;
     }
 
     @Nullable
     @Override
-    public LoadData<Drawable> buildLoadData(WallpaperModel wallpaperModel, int width, int height,
-                                            Options options) {
-        return new LoadData<>(wallpaperModel.getKey(),
-                new WallpaperFetcher(wallpaperModel, width, height));
+    public LoadData<Drawable> buildLoadData(WallpaperGlideModel wallpaperGlideModel, int width,
+            int height,
+            Options options) {
+        return new LoadData<>(wallpaperGlideModel.getKey(),
+                new WallpaperFetcher(wallpaperGlideModel, width, height));
     }
 
     /**
-     * Factory that constructs {@link WallpaperModelLoader} instances.
+     * Factory that constructs {@link WallpaperGlideModelLoader} instances.
      */
-    public static class WallpaperModelLoaderFactory
-            implements ModelLoaderFactory<WallpaperModel, Drawable> {
-        public WallpaperModelLoaderFactory() {
+    public static class WallpaperGlideModelLoaderFactory
+            implements ModelLoaderFactory<WallpaperGlideModel, Drawable> {
+        public WallpaperGlideModelLoaderFactory() {
         }
 
         @Override
-        public ModelLoader<WallpaperModel, Drawable> build(MultiModelLoaderFactory multiFactory) {
-            return new WallpaperModelLoader();
+        public ModelLoader<WallpaperGlideModel, Drawable> build(
+                MultiModelLoaderFactory multiFactory) {
+            return new WallpaperGlideModelLoader();
         }
 
         @Override
@@ -66,23 +68,23 @@ public class WallpaperModelLoader implements ModelLoader<WallpaperModel, Drawabl
     }
 
     /**
-     * Fetcher class for fetching wallpaper image data from a {@link WallpaperModel}.
+     * Fetcher class for fetching wallpaper image data from a {@link WallpaperGlideModel}.
      */
     private static class WallpaperFetcher implements DataFetcher<Drawable> {
 
-        private WallpaperModel mWallpaperModel;
+        private WallpaperGlideModel mWallpaperGlideModel;
         private int mWidth;
         private int mHeight;
 
-        public WallpaperFetcher(WallpaperModel wallpaperModel, int width, int height) {
-            mWallpaperModel = wallpaperModel;
+        WallpaperFetcher(WallpaperGlideModel wallpaperGlideModel, int width, int height) {
+            mWallpaperGlideModel = wallpaperGlideModel;
             mWidth = width;
             mHeight = height;
         }
 
         @Override
         public void loadData(Priority priority, DataCallback<? super Drawable> callback) {
-            callback.onDataReady(mWallpaperModel.getDrawable(mWidth, mHeight));
+            callback.onDataReady(mWallpaperGlideModel.getDrawable(mWidth, mHeight));
         }
 
         @Override

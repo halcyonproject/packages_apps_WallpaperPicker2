@@ -135,19 +135,21 @@ object PreviewBinder {
                 //   preview to show correspondent clock.
                 launch {
                     viewModel.wallpaperColorsModel.collect { wallpaperColorsModel ->
-                        // Create SurfaceControl for the workspace
-                        val workspaceRenderResult: WorkspaceRenderResult? =
-                            renderWorkspacePreview(
-                                screen = screen,
-                                deviceDisplayType = deviceDisplayType,
-                                wallpaperPreviewViewModel = viewModel,
-                                wallpaperColorsModel = wallpaperColorsModel,
-                                displaySize = displaySize,
-                                hostToken = hostToken,
-                            )
-                        // Release before assigning a new surface control
-                        workspaceSurfaceControl.value?.release()
-                        workspaceSurfaceControl.value = workspaceRenderResult?.surfaceControl
+                        if (workspaceSurfaceControl.value == null) {
+                            // Create SurfaceControl for the workspace
+                            val workspaceRenderResult: WorkspaceRenderResult? =
+                                renderWorkspacePreview(
+                                    screen = screen,
+                                    deviceDisplayType = deviceDisplayType,
+                                    wallpaperPreviewViewModel = viewModel,
+                                    wallpaperColorsModel = wallpaperColorsModel,
+                                    displaySize = displaySize,
+                                    hostToken = hostToken,
+                                )
+                            workspaceSurfaceControl.value = workspaceRenderResult?.surfaceControl
+                        } else {
+                            // TODO (b/423956081): Use callback messages to update the color.
+                        }
                     }
                 }
 

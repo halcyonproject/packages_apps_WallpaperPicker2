@@ -886,19 +886,22 @@ constructor(@ApplicationContext private val context: Context) : WallpaperPrefere
             WallpaperPersister.DEST_HOME_SCREEN -> {
                 setHomeWallpaperCollectionId(collectionId!!)
                 setHomeWallpaperRemoteId(wallpaperId)
+                setHomeWallpaperEffects(null)
             }
             WallpaperPersister.DEST_LOCK_SCREEN -> {
                 setLockWallpaperCollectionId(collectionId!!)
                 setLockWallpaperRemoteId(wallpaperId!!)
+                setLockWallpaperEffects(null)
             }
             WallpaperPersister.DEST_BOTH -> {
                 setHomeWallpaperCollectionId(collectionId!!)
                 setHomeWallpaperRemoteId(wallpaperId)
                 setLockWallpaperCollectionId(collectionId)
                 setLockWallpaperRemoteId(wallpaperId!!)
+                setHomeWallpaperEffects(null)
+                setLockWallpaperEffects(null)
             }
         }
-        setHomeWallpaperEffects(null)
     }
 
     override fun storeLatestWallpaper(

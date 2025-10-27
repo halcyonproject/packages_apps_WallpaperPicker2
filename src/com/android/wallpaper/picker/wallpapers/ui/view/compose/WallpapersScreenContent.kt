@@ -27,9 +27,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,18 +69,27 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -104,6 +115,8 @@ private const val TILE_WIDTH_SCALE_FACTOR: Float = 0.95f
 
 private const val TAG = "WallpapersScreenContent"
 
+private const val THUMBNAIL_TEST_TAG = "wp_thumbnail"
+
 /**
  * Displays the main screen content for category wallpapers using a [LazyColumn].
  *
@@ -118,6 +131,8 @@ fun WallpapersScreenContent(
     networkPreference: Int,
     modifier: Modifier = Modifier,
 ) {
+
+    var expanded by remember { mutableStateOf(true) } // initial state (expanded)
 
     val activity = LocalActivity.current
     val featuredTileSize: DpSize =
@@ -134,6 +149,9 @@ fun WallpapersScreenContent(
                     top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
                     bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
                 )
+                // This semantics modifier is used to make testTags act like resource IDs,
+                // which allows UI automation tools like Espresso to find elements using their testTag.
+                .semantics { testTagsAsResourceId = true }
     ) {
         TopToolbar(
             viewModel.title,
@@ -149,7 +167,47 @@ fun WallpapersScreenContent(
                     }
 
                     is CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory -> {
-                        SectionLabel(item.title, modifier.wrapContentSize().padding(start = 20.dp))
+                        if (viewModel.isNewUIEnabled) {
+                            Row(
+                                modifier =
+                                    Modifier.fillMaxWidth()
+                                        .clickable { expanded = !expanded }
+                                        .padding(start = 18.dp, end = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                val colorScheme = MaterialTheme.colorScheme
+                                Text(
+                                    text = item.title,
+                                    modifier = modifier,
+                                    fontSize = 16.sp,
+                                    lineHeight = 15.sp,
+                                    color = colorScheme.onSurface,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.W500,
+                                )
+
+                                Icon(
+                                    imageVector =
+                                        ImageVector.vectorResource(
+                                            R.drawable.ic_arrow_forward_24px
+                                        ),
+                                    contentDescription =
+                                        if (expanded)
+                                            stringResource(R.string.collapse_content_description)
+                                        else stringResource(R.string.expand_content_description),
+                                    modifier =
+                                        Modifier.rotate(if (expanded) 90f else 0f)
+                                            .animateContentSize(),
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        } else {
+                            SectionLabel(
+                                item.title,
+                                modifier.wrapContentSize().padding(start = 20.dp),
+                            )
+                        }
                     }
 
                     is CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory -> {
@@ -166,22 +224,23 @@ fun WallpapersScreenContent(
 
                     is CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory -> {
                         val tileSize = if (item.areTilesLarge) featuredTileSize else regularTileSize
+                        AnimatedVisibility(visible = expanded) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                            ) {
+                                item.rowThumbnails.forEach { thumb ->
+                                    ThumbnailCard(
+                                        thumb,
+                                        viewModel = viewModel,
+                                        modifier = Modifier.size(tileSize),
+                                    )
+                                }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                        ) {
-                            item.rowThumbnails.forEach { thumb ->
-                                ThumbnailCard(
-                                    thumb,
-                                    viewModel = viewModel,
-                                    modifier = Modifier.size(tileSize),
-                                )
-                            }
-
-                            // Add spacers to align the last row
-                            repeat(item.totalColumns - item.rowThumbnails.size) {
-                                Spacer(modifier = Modifier.size(tileSize))
+                                // Add spacers to align the last row
+                                repeat(item.totalColumns - item.rowThumbnails.size) {
+                                    Spacer(modifier = Modifier.size(tileSize))
+                                }
                             }
                         }
                     }
@@ -407,7 +466,10 @@ fun ThumbnailCard(
     showLabel: Boolean = false,
 ) {
     Card(
-        modifier = modifier.clickable { thumbnail.getLaunchActivityIntent?.invoke() },
+        modifier =
+            modifier.testTag(THUMBNAIL_TEST_TAG).clickable {
+                thumbnail.getLaunchActivityIntent?.invoke()
+            },
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
         elevation = CardDefaults.cardElevation(),
     ) {
@@ -418,11 +480,24 @@ fun ThumbnailCard(
                 modifier = Modifier.fillMaxSize(),
             )
             if (showLabel) {
-                Text(
-                    text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
-                    modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
-                    color = Color.White,
-                )
+                if (viewModel.isNewUIEnabled) {
+                    Text(
+                        text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
+                        modifier =
+                            Modifier.align(Alignment.Center)
+                                .clip(RoundedCornerShape(100))
+                                .background(Color.Black.copy(alpha = 0.5f))
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                } else {
+                    Text(
+                        text = thumbnail.title ?: stringResource(R.string.default_wallpaper_title),
+                        modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
+                        color = Color.White,
+                    )
+                }
             }
             if (thumbnail.isDownloadable) {
                 LayerListImage(

@@ -16,12 +16,14 @@
 package com.android.wallpaper.picker.preview.ui.fragment
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -49,16 +51,20 @@ import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.theme.PlatformTheme
+import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.common.preview.ui.binder.PreviewBinder
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
 import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScene
 import com.android.wallpaper.picker.preview.ui.view.PreviewScreen
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -253,6 +259,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             // be drawn below the second, scene, which will be drawn below the third one, etc.
             scene(Scenes.SmallPreview) {
                 SmallWallpaperPreviewScene(
+                    viewModel = wallpaperPreviewViewModel,
                     sceneState = sceneState,
                     pagerState = pagerState,
                     lockScreenPreview = lockScreenPreview,
@@ -261,8 +268,32 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
                 ApplyWallpaperScene(
+                    viewModel = wallpaperPreviewViewModel,
+                    sceneState = sceneState,
                     lockScreenPreview = lockScreenPreview,
                     homeScreenPreview = homeScreenPreview,
+                    onWallpaperApplied = {
+                        Toast.makeText(
+                                context,
+                                R.string.wallpaper_set_successfully_message,
+                                Toast.LENGTH_SHORT,
+                            )
+                            .show()
+
+                        activity?.let { activityReference ->
+                            val intent =
+                                Intent(activityReference, CustomizationPickerActivity2::class.java)
+                            // Clear the whole Activity stack and restart the
+                            // CustomizationPickerActivity2 to make sure to go back to the main
+                            // screen.
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            if (wallpaperPreviewViewModel.isViewAsHome) {
+                                intent.putExtra(WALLPAPER_LAUNCH_SOURCE, LAUNCH_SOURCE_LAUNCHER)
+                            }
+                            activityReference.startActivity(intent)
+                            activityReference.finish()
+                        }
+                    },
                 )
             }
             scene(Scenes.FullLockPreview, userActions = mapOf(Back to Scenes.SmallPreview)) {

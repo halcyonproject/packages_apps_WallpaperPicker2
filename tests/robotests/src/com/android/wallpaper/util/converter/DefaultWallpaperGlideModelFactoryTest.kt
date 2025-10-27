@@ -38,7 +38,7 @@ import org.robolectric.annotation.Config
 @HiltAndroidTest
 @Config(shadows = [ShadowWallpaperInfo::class])
 @RunWith(RobolectricTestRunner::class)
-class DefaultWallpaperModelFactoryTest {
+class DefaultWallpaperGlideModelFactoryTest {
     @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
     @Inject @ApplicationContext lateinit var context: Context
