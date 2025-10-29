@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Laai tans eerste muurpapier af …"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Kan nie die eerste muurpapier aflaai nie. Gaan jou netwerkinstellings na en probeer weer."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Muurpapier sal elke dag outomaties verander"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"Vou in"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Vou uit"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Instellings"</string>
     <string name="explore" msgid="7468719504199497281">"Verken"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Volgende muurpapier"</string>
