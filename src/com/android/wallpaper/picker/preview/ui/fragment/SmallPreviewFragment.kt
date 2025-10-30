@@ -134,9 +134,9 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
         currentView =
             inflater.inflate(
                 if (isFoldable) {
-                    R.layout.fragment_small_preview_foldable2
+                    R.layout.fragment_small_preview_foldable
                 } else {
-                    R.layout.fragment_small_preview_handheld2
+                    R.layout.fragment_small_preview_handheld
                 },
                 container,
                 /* attachToRoot= */ false,
