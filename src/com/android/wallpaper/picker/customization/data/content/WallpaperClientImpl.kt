@@ -42,7 +42,6 @@ import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BitmapUtils
 import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.asset.StreamableAsset
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.LiveWallpaperPrefMetadata
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.StaticWallpaperPrefMetadata
@@ -52,13 +51,13 @@ import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.BOTH
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toDestinationInt
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toSetWallpaperFlags
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.HOME
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.LOCK
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel as RecentWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
@@ -94,8 +93,8 @@ constructor(
 ) : WallpaperClient {
 
     private var recentsContentProviderAvailable: Boolean? = null
-    private val recentHomeWallpapers = MutableStateFlow<List<RecentWallpaperModel>?>(null)
-    private val recentLockWallpapers = MutableStateFlow<List<RecentWallpaperModel>?>(null)
+    private val recentHomeWallpapers = MutableStateFlow<List<LegacyRecentWallpaperModel>?>(null)
+    private val recentLockWallpapers = MutableStateFlow<List<LegacyRecentWallpaperModel>?>(null)
 
     init {
         backgroundScope.launch {
@@ -335,8 +334,6 @@ constructor(
                 destination =
                     UserEventLogger.toWallpaperDestinationForLogging(destination.toDestinationInt()),
             )
-
-
         }
     }
 
@@ -469,7 +466,7 @@ constructor(
 
     private suspend fun queryRecentWallpapers(
         destination: WallpaperDestination
-    ): List<RecentWallpaperModel> =
+    ): List<LegacyRecentWallpaperModel> =
         if (!areRecentsAvailable()) {
             listOf(getCurrentWallpaperFromFactory(destination))
         } else {
@@ -478,7 +475,7 @@ constructor(
 
     private fun queryAllRecentWallpapers(
         destination: WallpaperDestination
-    ): List<RecentWallpaperModel> {
+    ): List<LegacyRecentWallpaperModel> {
         context.contentResolver
             .query(
                 LIST_RECENTS_URI.buildUpon().appendPath(destination.asString()).build(),
@@ -504,7 +501,7 @@ constructor(
                             if (titleColumnIndex > -1) cursor.getString(titleColumnIndex) else null
 
                         add(
-                            RecentWallpaperModel(
+                            LegacyRecentWallpaperModel(
                                 wallpaperId = wallpaperId,
                                 placeholderColor = placeholderColor,
                                 lastUpdated = lastUpdated,
@@ -518,7 +515,7 @@ constructor(
 
     private suspend fun getCurrentWallpaperFromFactory(
         destination: WallpaperDestination
-    ): RecentWallpaperModel {
+    ): LegacyRecentWallpaperModel {
         val currentWallpapers = getCurrentWallpapers(context, forceRefresh = false)
         val wallpaper: WallpaperInfo =
             if (destination == LOCK) {
@@ -528,7 +525,7 @@ constructor(
             }
         val colors = wallpaperManager.getWallpaperColors(destination.toSetWallpaperFlags())
 
-        return RecentWallpaperModel(
+        return LegacyRecentWallpaperModel(
             wallpaperId = wallpaper.wallpaperId,
             placeholderColor = colors?.primaryColor?.toArgb() ?: Color.TRANSPARENT,
             title = wallpaper.getTitle(context),

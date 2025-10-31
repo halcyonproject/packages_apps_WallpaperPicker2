@@ -24,8 +24,8 @@ import androidx.test.filters.SmallTest
 import com.android.wallpaper.picker.broadcast.BroadcastDispatcher
 import com.android.wallpaper.picker.customization.data.repository.WallpaperRepository
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperInteractor
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import com.android.wallpaper.testing.FakeWallpaperClient
 import com.android.wallpaper.testing.TestWallpaperPreferences
 import com.android.wallpaper.testing.collectLastValue
@@ -102,9 +102,21 @@ class WallpaperQuickSwitchViewModelTest {
 
             val models =
                 listOf(
-                    WallpaperModel(wallpaperId = "aaa", placeholderColor = 1200, title = "title1"),
-                    WallpaperModel(wallpaperId = "bbb", placeholderColor = 1300, title = "title2"),
-                    WallpaperModel(wallpaperId = "ccc", placeholderColor = 1400, title = "title3"),
+                    LegacyRecentWallpaperModel(
+                        wallpaperId = "aaa",
+                        placeholderColor = 1200,
+                        title = "title1",
+                    ),
+                    LegacyRecentWallpaperModel(
+                        wallpaperId = "bbb",
+                        placeholderColor = 1300,
+                        title = "title2",
+                    ),
+                    LegacyRecentWallpaperModel(
+                        wallpaperId = "ccc",
+                        placeholderColor = 1400,
+                        title = "title3",
+                    ),
                 )
             client.setRecentWallpapers(buildMap { put(WallpaperDestination.HOME, models) })
 
@@ -118,7 +130,7 @@ class WallpaperQuickSwitchViewModelTest {
 
             val models =
                 FakeWallpaperClient.INITIAL_RECENT_WALLPAPERS.mapIndexed { idx, wp ->
-                    WallpaperModel(
+                    LegacyRecentWallpaperModel(
                         wallpaperId = wp.wallpaperId,
                         placeholderColor = wp.placeholderColor,
                         lastUpdated = if (idx == 0) 100 else wp.lastUpdated,
@@ -157,7 +169,7 @@ class WallpaperQuickSwitchViewModelTest {
         }
 
     private fun expectations(
-        models: List<WallpaperModel> = FakeWallpaperClient.INITIAL_RECENT_WALLPAPERS,
+        models: List<LegacyRecentWallpaperModel> = FakeWallpaperClient.INITIAL_RECENT_WALLPAPERS,
         selectedIndex: Int = 0,
         selectingIndex: Int? = null,
     ): List<ExpectedOption> {
