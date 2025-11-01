@@ -111,7 +111,7 @@
     <string name="download_effects" msgid="2772742927165716701">"इफेक्टहरू डाउनलोड गर्नुहोस्"</string>
     <string name="bottom_action_bar_slideshow_wallpaper" msgid="509770525179533154">"स्लाइड सो वालपेपर"</string>
     <string name="bottom_action_bar_apply" msgid="2983308349819178932">"लागू गर्नुहोस्"</string>
-    <string name="accessibility_preview_pager" msgid="1839869637405028575">"<xliff:g id="ID_2">%2$d</xliff:g> मध्ये पृष्ठ <xliff:g id="ID_1">%1$d</xliff:g>"</string>
+    <string name="accessibility_preview_pager" msgid="1839869637405028575">"पेज <xliff:g id="ID_2">%2$d</xliff:g> मध्ये <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="next_page_content_description" msgid="6268461446679584152">"अर्को"</string>
     <string name="previous_page_content_description" msgid="1138597031571078429">"अघिल्लो"</string>
     <string name="wallpaper_title" msgid="6754214682228331092">"वालपेपर"</string>

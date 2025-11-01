@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"ਪਹਿਲਾ ਵਾਲਪੇਪਰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"ਪਹਿਲਾ ਵਾਲਪੇਪਰ ਡਾਊਨਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀਆਂ ਨੈੱਟਵਰਕ ਸੈਟਿੰਗਾਂ ਦੀ ਜਾਂਚ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"ਵਾਲਪੇਪਰ ਸਵੈਚਲਿਤ ਤੌਰ \'ਤੇ ਹਰ ਦਿਨ ਬਦਲੇਗਾ"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"ਸਮੇਟੋ"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"ਵਿਸਤਾਰ ਕਰੋ"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"ਸੈਟਿੰਗਾਂ"</string>
     <string name="explore" msgid="7468719504199497281">"ਪੜਚੋਲ ਕਰੋ"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"ਅਗਲਾ ਵਾਲਪੇਪਰ"</string>

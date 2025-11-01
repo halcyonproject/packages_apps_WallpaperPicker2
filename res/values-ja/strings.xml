@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"最初の壁紙をダウンロードしています…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"最初の壁紙をダウンロードできませんでした。ネットワークの設定を確認してから、もう一度お試しください。"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"毎日、壁紙が自動的に変わります"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"閉じる"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"開く"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"設定"</string>
     <string name="explore" msgid="7468719504199497281">"詳細"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"次の壁紙"</string>
