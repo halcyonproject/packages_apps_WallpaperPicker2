@@ -27,8 +27,8 @@ import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.WallpaperModelsPair
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
@@ -38,7 +38,10 @@ import kotlinx.coroutines.flow.Flow
 interface WallpaperClient {
 
     /** Lists the most recent wallpapers. The first one is the most recent (current) wallpaper. */
-    fun recentWallpapers(destination: WallpaperDestination, limit: Int): Flow<List<WallpaperModel>>
+    fun recentWallpapers(
+        destination: WallpaperDestination,
+        limit: Int,
+    ): Flow<List<LegacyRecentWallpaperModel>>
 
     /**
      * Asynchronously sets a static wallpaper.

@@ -27,8 +27,8 @@ import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.WallpaperModelsPair
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
@@ -60,7 +60,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
     private var deferred = mutableListOf<(suspend () -> Unit)>()
 
     fun setRecentWallpapers(
-        recentWallpapersByDestination: Map<WallpaperDestination, List<WallpaperModel>>
+        recentWallpapersByDestination: Map<WallpaperDestination, List<LegacyRecentWallpaperModel>>
     ) {
         _recentWallpapers.value = recentWallpapersByDestination
     }
@@ -78,7 +78,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
     override fun recentWallpapers(
         destination: WallpaperDestination,
         limit: Int,
-    ): Flow<List<WallpaperModel>> {
+    ): Flow<List<LegacyRecentWallpaperModel>> {
         return _recentWallpapers.map { wallpapersByScreen ->
             val wallpapers =
                 wallpapersByScreen[destination] ?: error("No wallpapers for screen $destination")
@@ -90,7 +90,7 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
         }
     }
 
-    fun getCurrentWallpaper(destination: WallpaperDestination): WallpaperModel {
+    fun getCurrentWallpaper(destination: WallpaperDestination): LegacyRecentWallpaperModel {
         return _recentWallpapers.value[destination]?.get(0)
             ?: error("No wallpapers for screen $destination")
     }
@@ -209,9 +209,21 @@ class FakeWallpaperClient @Inject constructor() : WallpaperClient {
     companion object {
         val INITIAL_RECENT_WALLPAPERS =
             listOf(
-                WallpaperModel(wallpaperId = "zero", placeholderColor = 0, title = "title1"),
-                WallpaperModel(wallpaperId = "one", placeholderColor = 1, title = "title2"),
-                WallpaperModel(wallpaperId = "two", placeholderColor = 2, title = "title3"),
+                LegacyRecentWallpaperModel(
+                    wallpaperId = "zero",
+                    placeholderColor = 0,
+                    title = "title1",
+                ),
+                LegacyRecentWallpaperModel(
+                    wallpaperId = "one",
+                    placeholderColor = 1,
+                    title = "title2",
+                ),
+                LegacyRecentWallpaperModel(
+                    wallpaperId = "two",
+                    placeholderColor = 2,
+                    title = "title3",
+                ),
             )
     }
 }

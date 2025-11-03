@@ -56,6 +56,10 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"पहिलो वालपेपर डाउनलोड गर्दै…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"पहिलो वालपेपर डाउनलोड गर्न सकिएन। कृपया आफ्ना नेटवर्कसम्बन्धी सेटिङहरूको जाँच गरी फेरि प्रयास गर्नुहोस्।"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"वालपेपर हरेक दिन स्वतः परिवर्तन हुने छ"</string>
+    <!-- no translation found for collapse_content_description (47845329734521980) -->
+    <skip />
+    <!-- no translation found for expand_content_description (2422558308356416382) -->
+    <skip />
     <string name="settings_button_label" msgid="8724734130079207955">"सेटिङहरू"</string>
     <string name="explore" msgid="7468719504199497281">"अन्वेषण गर्नुहोस्"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"अर्को वालपेपर"</string>
@@ -107,7 +111,7 @@
     <string name="download_effects" msgid="2772742927165716701">"इफेक्टहरू डाउनलोड गर्नुहोस्"</string>
     <string name="bottom_action_bar_slideshow_wallpaper" msgid="509770525179533154">"स्लाइड सो वालपेपर"</string>
     <string name="bottom_action_bar_apply" msgid="2983308349819178932">"लागू गर्नुहोस्"</string>
-    <string name="accessibility_preview_pager" msgid="1839869637405028575">"<xliff:g id="ID_2">%2$d</xliff:g> मध्ये पृष्ठ <xliff:g id="ID_1">%1$d</xliff:g>"</string>
+    <string name="accessibility_preview_pager" msgid="1839869637405028575">"पेज <xliff:g id="ID_2">%2$d</xliff:g> मध्ये <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="next_page_content_description" msgid="6268461446679584152">"अर्को"</string>
     <string name="previous_page_content_description" msgid="1138597031571078429">"अघिल्लो"</string>
     <string name="wallpaper_title" msgid="6754214682228331092">"वालपेपर"</string>

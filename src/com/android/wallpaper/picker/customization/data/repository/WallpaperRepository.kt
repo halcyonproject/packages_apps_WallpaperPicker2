@@ -29,8 +29,8 @@ import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
 import com.android.wallpaper.picker.broadcast.BroadcastDispatcher
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
@@ -102,7 +102,7 @@ constructor(
     // TODO(b/395679036) Remove the use of local preferences
     private fun currentWallpaperKey(
         destination: WallpaperDestination,
-        previews: List<WallpaperModel>?,
+        previews: List<LegacyRecentWallpaperModel>?,
     ): String {
         val key =
             when (destination) {
@@ -129,7 +129,7 @@ constructor(
     fun recentWallpapers(
         destination: WallpaperDestination,
         limit: Int,
-    ): Flow<List<WallpaperModel>> {
+    ): Flow<List<LegacyRecentWallpaperModel>> {
         return client
             .recentWallpapers(destination = destination, limit = limit)
             .flowOn(backgroundDispatcher)

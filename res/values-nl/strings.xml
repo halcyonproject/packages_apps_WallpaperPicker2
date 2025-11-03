@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Eerste achtergrond downloaden…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Kan eerste achtergrond niet downloaden. Controleer je netwerkinstellingen en probeer het opnieuw."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Achtergrond wordt automatisch elke dag gewijzigd"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"Samenvouwen"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Uitvouwen"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Instellingen"</string>
     <string name="explore" msgid="7468719504199497281">"Bekijken"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Volgende achtergrond"</string>

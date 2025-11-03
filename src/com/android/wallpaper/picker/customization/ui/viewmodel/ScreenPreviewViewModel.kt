@@ -24,8 +24,8 @@ import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperInteractor
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import com.android.wallpaper.util.PreviewUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -64,7 +64,7 @@ open class ScreenPreviewViewModel(
             wallpaperInteractor.loadThumbnail(
                 wallpaper.wallpaperId,
                 wallpaper.lastUpdated,
-                getWallpaperDestination()
+                getWallpaperDestination(),
             )
         }
     }
@@ -74,7 +74,7 @@ open class ScreenPreviewViewModel(
     }
 
     /** Returns a flow that is updated whenever the wallpaper has been updated */
-    private fun wallpaperUpdateEvents(s: Screen = screen): Flow<WallpaperModel?> {
+    private fun wallpaperUpdateEvents(s: Screen = screen): Flow<LegacyRecentWallpaperModel?> {
         return wallpaperInteractor.wallpaperUpdateEvents(s)
     }
 
@@ -99,9 +99,7 @@ open class ScreenPreviewViewModel(
     }
 
     open val isLoading: Flow<Boolean> =
-        wallpaperInteractor.isSelectingWallpaper(
-            destination = getWallpaperDestination(),
-        )
+        wallpaperInteractor.isSelectingWallpaper(destination = getWallpaperDestination())
 
     private fun getWallpaperDestination() =
         if (screen == Screen.LOCK_SCREEN) {

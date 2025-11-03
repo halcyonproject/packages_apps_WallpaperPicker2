@@ -17,8 +17,8 @@
 
 package com.android.wallpaper.picker.customization.shared.model
 
-/** Models a single wallpaper preview. */
-data class WallpaperModel(
+/** Models a single wallpaper preview. TODO (b/455596220): Investigate the usage of this class */
+data class LegacyRecentWallpaperModel(
     val wallpaperId: String,
     val placeholderColor: Int,
     val lastUpdated: Long = -1,

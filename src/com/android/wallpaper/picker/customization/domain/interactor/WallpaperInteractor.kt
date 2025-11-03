@@ -21,8 +21,8 @@ import android.graphics.Bitmap
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
 import com.android.wallpaper.picker.customization.data.repository.WallpaperRepository
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +37,7 @@ class WallpaperInteractor @Inject constructor(private val repository: WallpaperR
     val maxOptions = repository.maxOptions
 
     /** Returns a flow that is updated whenever the wallpaper has been updated */
-    fun wallpaperUpdateEvents(screen: Screen): Flow<WallpaperModel?> {
+    fun wallpaperUpdateEvents(screen: Screen): Flow<LegacyRecentWallpaperModel?> {
         return when (screen) {
             Screen.LOCK_SCREEN ->
                 previews(WallpaperDestination.LOCK, 1).map { recentWallpapers ->
@@ -73,7 +73,10 @@ class WallpaperInteractor @Inject constructor(private val repository: WallpaperR
      *
      * The first one is the most recent (current) wallpaper.
      */
-    fun previews(destination: WallpaperDestination, maxResults: Int): Flow<List<WallpaperModel>> {
+    fun previews(
+        destination: WallpaperDestination,
+        maxResults: Int,
+    ): Flow<List<LegacyRecentWallpaperModel>> {
         return repository.recentWallpapers(destination = destination, limit = maxResults).map {
             previews ->
             if (previews.size > maxResults) {
