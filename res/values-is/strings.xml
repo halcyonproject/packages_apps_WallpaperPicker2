@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Sækir fyrsta veggfóður…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Ekki tókst að sækja fyrsta veggfóður. Athugaðu netstillingarnar og reyndu aftur."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Veggfóðrið breytist sjálfkrafa á hverjum degi"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"Minnka"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Stækka"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Stillingar"</string>
     <string name="explore" msgid="7468719504199497281">"Skoða"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Næsta veggfóður"</string>

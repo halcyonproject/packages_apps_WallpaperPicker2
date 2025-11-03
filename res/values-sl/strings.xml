@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Prenašanje prvega ozadja …"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Prvega ozadja ni bilo mogoče prenesti. Preverite omrežne nastavitve in poskusite znova."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Ozadje se bo samodejno zamenjalo vsak dan"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"Strni"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Razširi"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Nastavitve"</string>
     <string name="explore" msgid="7468719504199497281">"Raziščite"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Naslednje ozadje"</string>

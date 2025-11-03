@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Λήψη πρώτης ταπετσαρίας…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Δεν ήταν δυνατή η λήψη της πρώτης ταπετσαρίας. Ελέγξτε τις ρυθμίσεις δικτύου σας και δοκιμάστε ξανά."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Η ταπετσαρία θα αλλάζει αυτόματα κάθε μέρα"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"Σύμπτυξη"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Ανάπτυξη"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Ρυθμίσεις"</string>
     <string name="explore" msgid="7468719504199497281">"Εξερεύνηση"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Επόμενη ταπετσαρία"</string>
