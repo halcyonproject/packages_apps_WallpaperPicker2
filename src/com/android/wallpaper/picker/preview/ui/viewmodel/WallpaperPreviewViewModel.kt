@@ -19,6 +19,7 @@ import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
 import android.stats.style.StyleEnums
+import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
@@ -106,7 +107,7 @@ constructor(
 
     val isViewAsHome = savedStateHandle.get<Boolean>(EXTRA_VIEW_AS_HOME) ?: false
 
-    fun getWallpaperPreviewSource(): Screen =
+    private fun getWallpaperPreviewSource(): Screen =
         if (isViewAsHome) Screen.HOME_SCREEN else Screen.LOCK_SCREEN
 
     val wallpaper: StateFlow<WallpaperModel?> = interactor.wallpaperModel
@@ -263,9 +264,7 @@ constructor(
     }
 
     private val isWallpaperCroppable: Flow<Boolean> =
-        wallpaper.map { wallpaper ->
-            wallpaper is StaticWallpaperModel && !wallpaper.isDownloadableWallpaper()
-        }
+        wallpaper.map { wallpaper -> wallpaper?.isCroppable() ?: false }
 
     val smallTooltipViewModel =
         object : PreviewTooltipBinder.TooltipViewModel {
@@ -402,6 +401,15 @@ constructor(
                         )
                     }
                 }
+            } else {
+                null
+            }
+        }
+
+    val onCancelCrop: Flow<(() -> Unit)?> =
+        wallpaper.map { wallpaper ->
+            if (wallpaper is StaticWallpaperModel && !wallpaper.isDownloadableWallpaper()) {
+                { staticWallpaperPreviewViewModel.forceEmitFullResWallpaperViewModel() }
             } else {
                 null
             }
@@ -622,7 +630,7 @@ constructor(
 
     val isSmallPreviewClickable =
         actionsInteractor.imageEffectsModel.map {
-            it.status != ImageEffectsRepository.EffectStatus.EFFECT_APPLY_IN_PROGRESS
+            (it.status != ImageEffectsRepository.EffectStatus.EFFECT_APPLY_IN_PROGRESS)
         }
 
     fun onSmallPreviewClicked(
@@ -669,7 +677,29 @@ constructor(
         return AccessibilityUtil.isAccessibilityEnabled(am)
     }
 
+    private val _onLockDispatchTouchEvent: MutableStateFlow<((event: MotionEvent) -> Unit)?> =
+        MutableStateFlow(null)
+    val onLockDispatchTouchEvent: Flow<((event: MotionEvent) -> Unit)?> =
+        _onLockDispatchTouchEvent.asStateFlow()
+
+    fun setOnLockDispatchTouchEvent(listener: (event: MotionEvent) -> Unit) {
+        _onLockDispatchTouchEvent.value = listener
+    }
+
+    private val _onHomeDispatchTouchEvent: MutableStateFlow<((event: MotionEvent) -> Unit)?> =
+        MutableStateFlow(null)
+    val onHomeDispatchTouchEvent: Flow<((event: MotionEvent) -> Unit)?> =
+        _onHomeDispatchTouchEvent.asStateFlow()
+
+    fun setOnHomeDispatchTouchEvent(listener: (event: MotionEvent) -> Unit) {
+        _onHomeDispatchTouchEvent.value = listener
+    }
+
     companion object {
+        fun WallpaperModel.isCroppable(): Boolean {
+            return this is StaticWallpaperModel && !this.isDownloadableWallpaper()
+        }
+
         private fun WallpaperModel.isDownloadableWallpaper(): Boolean {
             return this is StaticWallpaperModel && downloadableWallpaperData != null
         }

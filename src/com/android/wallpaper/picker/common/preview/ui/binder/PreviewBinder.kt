@@ -26,6 +26,7 @@ import android.os.RemoteException
 import android.service.wallpaper.IWallpaperEngine
 import android.util.Log
 import android.view.Display
+import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.SurfaceHolder
@@ -33,6 +34,7 @@ import android.view.SurfaceView
 import android.view.SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -43,15 +45,22 @@ import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.picker.customization.shared.model.WallpaperColorsModel
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
+import com.android.wallpaper.picker.preview.shared.model.CropSizeModel
+import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.binder.StaticWallpaperPreviewBinder2
+import com.android.wallpaper.picker.preview.ui.util.SubsamplingScaleImageViewUtil.setOnNewCropListener
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.Companion.isCroppable
 import com.android.wallpaper.picker.preview.ui.viewmodel.WorkspacePreviewConfigViewModel
 import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.SurfaceViewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
+import com.android.wallpaper.util.WallpaperCropUtils
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import java.lang.Integer.min
 import kotlin.coroutines.resume
+import kotlin.math.max
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -119,6 +128,7 @@ object PreviewBinder {
                                 renderStaticWallpaperPreview(
                                     applicationContext = applicationContext,
                                     lifecycleOwner = viewLifecycleOwner,
+                                    screen = screen,
                                     viewModel = viewModel,
                                     displaySize = displaySize,
                                     display = display,
@@ -223,12 +233,26 @@ object PreviewBinder {
     private fun renderStaticWallpaperPreview(
         applicationContext: Context,
         lifecycleOwner: LifecycleOwner,
+        screen: Screen,
         viewModel: WallpaperPreviewViewModel,
         displaySize: Point,
         display: Display,
         hostToken: IBinder,
     ): WallpaperSurfaceControl.Static {
-        val scaleImageView = SubsamplingScaleImageView(applicationContext)
+        val scaleImageView =
+            SubsamplingScaleImageView(applicationContext).apply {
+                setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM)
+                setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
+
+                if (viewModel.wallpaper.value?.isCroppable() == true) {
+                    initCrop(
+                        applicationContext = applicationContext,
+                        viewModel = viewModel,
+                        screen = screen,
+                        displaySize = displaySize,
+                    )
+                }
+            }
         val surfaceControlViewHost =
             SurfaceControlViewHost(applicationContext, display, hostToken).apply {
                 setView(scaleImageView, displaySize.x, displaySize.y)
@@ -242,6 +266,51 @@ object PreviewBinder {
         )
         // TODO(b/423956081): PreviewEffectsLoadingBinder to bind loading effect
         return WallpaperSurfaceControl.Static(surfaceControlViewHost)
+    }
+
+    private fun SubsamplingScaleImageView.initCrop(
+        applicationContext: Context,
+        viewModel: WallpaperPreviewViewModel,
+        screen: Screen,
+        displaySize: Point,
+    ) {
+        this.doOnLayout {
+            val imageSize = Point(this.width, this.height)
+            val cropImageSize =
+                WallpaperCropUtils.calculateCropSurfaceSize(
+                    applicationContext.resources,
+                    max(imageSize.x, imageSize.y),
+                    min(imageSize.x, imageSize.y),
+                    imageSize.x,
+                    imageSize.y,
+                )
+
+            this.setOnNewCropListener { crop, zoom ->
+                viewModel.staticWallpaperPreviewViewModel.fullPreviewCropModels[displaySize] =
+                    FullPreviewCropModel(
+                        cropHint = crop,
+                        cropSizeModel =
+                            CropSizeModel(
+                                wallpaperZoom = zoom,
+                                hostViewSize = imageSize,
+                                cropViewSize = cropImageSize,
+                            ),
+                    )
+            }
+        }
+
+        when (screen) {
+            Screen.LOCK_SCREEN -> {
+                viewModel.setOnLockDispatchTouchEvent { event: MotionEvent ->
+                    this.dispatchTouchEvent(event)
+                }
+            }
+            Screen.HOME_SCREEN -> {
+                viewModel.setOnHomeDispatchTouchEvent { event: MotionEvent ->
+                    this.dispatchTouchEvent(event)
+                }
+            }
+        }
     }
 
     private suspend fun renderWorkspacePreview(
