@@ -90,3 +90,10 @@ flag {
     description: "Flag for enabling the photo shuffle feature in the wallpaper picker app"
     bug: "448461866"
 }
+
+flag {
+    name: "collapsable_reordered_ai_wallpapers_screen"
+    namespace: "customization_picker"
+    description: "Flag for enabling the new AI wallpapers layout with collapsable sections and reordered templates"
+    bug: "457835470"
+}
