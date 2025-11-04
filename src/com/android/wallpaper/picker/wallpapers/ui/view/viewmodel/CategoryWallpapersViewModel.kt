@@ -26,6 +26,7 @@ import android.util.ArraySet
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_CELLULAR_OK
 import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_WIFI_ONLY
 import com.android.wallpaper.module.MultiPanesChecker
@@ -248,8 +249,8 @@ constructor(
                 Log.d(TAG, "here is the list of wallpaperItems yo: ${wallpaperItems}")
             }
 
-            // TODO(b/454852600): flag to be added here by replacing the 'false' value below
-            val isNewUIEnabled = false && !templates.isNullOrEmpty()
+            val isNewUIEnabled =
+                BaseFlags.get().isCollabsableSectionInAiEnabled() && !templates.isNullOrEmpty()
 
             val wallpaperItem =
                 if (isNewUIEnabled) {

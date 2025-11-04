@@ -23,6 +23,7 @@ import com.android.systemui.shared.customization.data.content.CustomizationProvi
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
 import com.android.wallpaper.Flags.adaptiveWallpaperFlag
+import com.android.wallpaper.Flags.collapsableReorderedAiWallpapersScreen
 import com.android.wallpaper.Flags.colorPickerUpdateFlag
 import com.android.wallpaper.Flags.composeRefactorFlag
 import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
@@ -54,6 +55,8 @@ abstract class BaseFlags {
     open fun isWallpaperEffectModelDownloadEnabled() = true
 
     open fun isInterruptModelDownloadEnabled() = false
+
+    open fun isCollabsableSectionInAiEnabled() = collapsableReorderedAiWallpapersScreen()
 
     // local flag to enable the refactored version of IPF2
     open fun isWallpapersFragmentEnabled() = refactorIndividualPickerFlag()
