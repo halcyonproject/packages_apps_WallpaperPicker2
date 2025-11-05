@@ -188,7 +188,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
                     if (BaseFlags.get().isWallpapersFragmentEnabled()) {
                         categoryWallpapersRepository.setSelectedCategory(
-                            navigationEvent.categoryModel
+                            category = navigationEvent.categoryModel
                         )
                         switchFragment(CategoryWallpapersFragment())
                     } else {

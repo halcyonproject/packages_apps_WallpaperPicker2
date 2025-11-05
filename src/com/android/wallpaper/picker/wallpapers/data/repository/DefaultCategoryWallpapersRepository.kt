@@ -124,7 +124,7 @@ constructor(
     ): Flow<List<WallpaperModel>> = flow {
         // Cache Check
         val cachedWallpapers = cacheMutex.withLock { wallpapersCache[collectionId] }
-        if (cachedWallpapers != null) {
+        if (!cachedWallpapers.isNullOrEmpty()) {
             emit(cachedWallpapers)
             return@flow // Cache hit, done
         }
@@ -136,7 +136,11 @@ constructor(
         val wallpapers = result ?: emptyList()
 
         // Update cache and emit the fetched value
-        cacheMutex.withLock { wallpapersCache[collectionId] = wallpapers }
+        if (!wallpapers.isNullOrEmpty()) {
+            cacheMutex.withLock { wallpapersCache[collectionId] = wallpapers }
+        } else {
+            purgeCache(collectionId)
+        }
         emit(wallpapers)
     }
 
@@ -156,7 +160,7 @@ constructor(
      * Refreshes the wallpapers for the currently selected category. Purges the cache and manually
      * triggers the flow to restart by setting the category model again.
      */
-    override fun refreshWallpapers() { // MODIFIED
+    override fun refreshWallpapers() {
         _selectedCategoryModel.value?.let { category ->
             backgroundScope.launch {
                 purgeCache(category.commonCategoryData.collectionId)
@@ -206,6 +210,27 @@ constructor(
                 },
             )
         }
+
+    override fun invalidateCache(categoryId: String) {
+        wallpapersCache.remove(categoryId)
+        // when a CRUD operation happens to any category this may trigger a change in other
+        // live wallpaper categories. For example, when selecting a new wallpaper, the content
+        // providers for other live wallpapers will update their data to reflect that change (i.e.
+        // WallpaperModelContract.WALLPAPER_IS_APPLIED)
+        val iterator = wallpapersCache.iterator()
+
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            val wallpaperList = entry.value
+
+            val shouldRemoveCategory =
+                wallpaperList.any { model -> (model as? WallpaperModel.LiveWallpaperModel) != null }
+
+            if (shouldRemoveCategory) {
+                iterator.remove()
+            }
+        }
+    }
 
     companion object {
         const val TAG = "DefaultCategoryWallpapersRepository"

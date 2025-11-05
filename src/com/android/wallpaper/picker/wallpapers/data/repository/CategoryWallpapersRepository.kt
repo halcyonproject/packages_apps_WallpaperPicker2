@@ -64,4 +64,7 @@ interface CategoryWallpapersRepository {
 
     /** This starts the wallpaper rotation process for the current category */
     suspend fun startRotation(networkPreference: Int)
+
+    /** Invalidates the any cached wallpapers for the given [CategoryModel] */
+    fun invalidateCache(categoryId: String)
 }
