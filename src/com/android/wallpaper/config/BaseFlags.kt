@@ -18,6 +18,7 @@ package com.android.wallpaper.config
 import android.content.Context
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
+import com.android.systemui.shared.Flags.workspaceItemsLabelHidden
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
@@ -143,6 +144,8 @@ abstract class BaseFlags {
         // TODO: b/416024080 use a better solution than a config boolean to show desktop UI.
         return desktopUiFlag() && context.resources.getBoolean(R.bool.isDesktopUi)
     }
+
+    open fun isHideAppLabelEnabled(): Boolean = workspaceItemsLabelHidden()
 
     companion object {
         @JvmStatic
