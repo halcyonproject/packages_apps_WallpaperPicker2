@@ -928,6 +928,13 @@ class CustomizationPickerFragment2 :
             layoutInflater.inflate(R.layout.preview_shade, homePreviewContainer, false)
         homePreviewContainer.addView(homePreviewShade)
 
+        // Disable accessibility hierarchy embedding for workspace preview surfaces to ensure
+        // services don't attempt to navigate or interact with purely decorative preview content.
+        val lockWorkspaceSurface: SurfaceView = lockPreview.requireViewById(R.id.workspace_surface)
+        val homeWorkspaceSurface: SurfaceView = homePreview.requireViewById(R.id.workspace_surface)
+        lockWorkspaceSurface.setAccessibilityHierarchyEmbeddingEnabled(false)
+        homeWorkspaceSurface.setAccessibilityHierarchyEmbeddingEnabled(false)
+
         // Sets up focus listeners for the lock preview and home preview to handle accessibility
         // focus events.
         if (BaseFlags.get().shouldShowDesktopUi(rootView.context)) {
