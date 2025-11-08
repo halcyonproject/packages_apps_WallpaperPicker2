@@ -45,6 +45,15 @@ enum class WallpaperDestination {
             }
         }
 
+        fun fromDestinationInt(@Destination destination: Int): WallpaperDestination {
+            return when (destination) {
+                DEST_BOTH -> BOTH
+                DEST_HOME_SCREEN -> HOME
+                DEST_LOCK_SCREEN -> LOCK
+                else -> throw IllegalArgumentException("Bad @Destination value $destination")
+            }
+        }
+
         @Destination
         fun WallpaperDestination.toDestinationInt(): Int {
             return when (this) {
