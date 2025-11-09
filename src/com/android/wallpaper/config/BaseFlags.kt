@@ -89,6 +89,10 @@ abstract class BaseFlags {
     // something goes wrong with PhotoPicker integration.
     open fun isPhotoPickerEnabled() = false
 
+    // This flag is to gate the dependency of default recents on new categories
+    // fetching logic.
+    open fun isRefactorWallpaperDefaults() = false
+
     open fun isKeyguardQuickAffordanceEnabled(context: Context): Boolean {
         return getCachedFlags(context)
             .firstOrNull { flag ->
