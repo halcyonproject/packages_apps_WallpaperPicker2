@@ -28,7 +28,6 @@
     <ImageView
         android:id="@+id/carousel_image_view"
         android:layout_width="match_parent"
-        android:importantForAccessibility="no"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"/>
 

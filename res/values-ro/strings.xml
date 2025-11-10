@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Se descarcă prima imagine de fundal…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Nu se poate descărca prima imagine de fundal. Verifică setările de rețea și încearcă din nou."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Imaginea de fundal se va schimba automat în fiecare zi"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"Restrânge"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Extinde"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Setări"</string>
     <string name="explore" msgid="7468719504199497281">"Explorează"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Următoarea imagine de fundal"</string>

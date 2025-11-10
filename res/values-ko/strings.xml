@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"첫 번째 배경화면을 다운로드하는 중…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"첫 번째 배경화면을 다운로드할 수 없습니다. 네트워크 설정을 확인하고 다시 시도해 주세요."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"배경화면이 매일 자동으로 변경됩니다."</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"접기"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"펼치기"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"설정"</string>
     <string name="explore" msgid="7468719504199497281">"탐색"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"다음 배경화면"</string>

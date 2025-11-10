@@ -38,6 +38,7 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -114,8 +115,27 @@ constructor(
 
     var scaleAndCenter: FullResImageViewUtil.ScaleAndCenter? = null
 
+    private val forceEmitFullResWallpaperViewModel =
+        MutableSharedFlow<Unit>(replay = 1).also {
+            // Emit the initial signal so fullResWallpaperViewModel can fire the first time
+            it.tryEmit(Unit)
+        }
+
+    /**
+     * forceEmitFullResWallpaperViewModel is used to force to emit fullResWallpaperViewModel again.
+     * We need this since in full preview, users can pan and zoom the scaled image view and navigate
+     * back without confirming the crop. In this case, the scaled image view state is dirty and
+     * needs to be updated with the original fullResWallpaperViewModel.
+     */
+    fun forceEmitFullResWallpaperViewModel() {
+        forceEmitFullResWallpaperViewModel.tryEmit(Unit)
+    }
+
     val fullResWallpaperViewModel: Flow<FullResWallpaperViewModel?> =
-        combine(assetDetail, cropHintsInfo) { assetDetail, cropHintsInfo ->
+        combine(assetDetail, cropHintsInfo, forceEmitFullResWallpaperViewModel) {
+                assetDetail,
+                cropHintsInfo,
+                _ ->
                 if (assetDetail == null) {
                     null
                 } else {

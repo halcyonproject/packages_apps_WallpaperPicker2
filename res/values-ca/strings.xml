@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"S\'està baixant el primer fons de pantalla…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"No es pot baixar el primer fons de pantalla. Comprova la configuració de la xarxa i torna-ho a provar."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"El fons de pantalla canviarà automàticament cada dia"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"Replega"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Desplega"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Configuració"</string>
     <string name="explore" msgid="7468719504199497281">"Explora"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Fons de pantalla següent"</string>

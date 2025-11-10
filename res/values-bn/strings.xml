@@ -56,10 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"প্রথম ওয়ালপেপারটিকে ডাউনলোড করা হচ্ছে…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"প্রথম ওয়ালপেপারটিকে ডাউনলোড করা গেল না। অনুগ্রহ করে আপনার নেটওয়ার্ক সেটিংস পরীক্ষা করে আবার চেষ্টা করুন।"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"ওয়ালপেপার প্রতিদিন নিজে থেকে পরিবর্তিত হবে"</string>
-    <!-- no translation found for collapse_content_description (47845329734521980) -->
-    <skip />
-    <!-- no translation found for expand_content_description (2422558308356416382) -->
-    <skip />
+    <string name="collapse_content_description" msgid="47845329734521980">"আড়াল করুন"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"বড় করুন"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"সেটিংস"</string>
     <string name="explore" msgid="7468719504199497281">"ঘুরে দেখুন"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"পরবর্তী ওয়ালপেপার"</string>
