@@ -17,12 +17,18 @@
 package com.android.customization.picker.icon.ui.util
 
 import com.android.customization.picker.icon.shared.model.IconStyle
+import com.android.customization.picker.icon.shared.model.IconStyleModel
+import com.android.wallpaper.picker.common.icon.ui.viewmodel.Icon
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
 @ActivityScoped
 class DefaultIconStyleViewUtil @Inject constructor() : IconStyleViewUtil {
     override fun getOnClick(iconStyle: IconStyle): (() -> Unit)? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getIcon(iconStyleModel: IconStyleModel): Icon? {
         TODO("Not yet implemented")
     }
 }
