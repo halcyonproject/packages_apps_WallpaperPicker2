@@ -79,6 +79,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -176,6 +178,18 @@ constructor(
         previewActionsInteractor.downloadableWallpaperModel.map {
             it.status == DownloadStatus.READY_TO_DOWNLOAD
         }
+
+    val isDownloadComplete: Flow<Boolean> =
+        previewActionsInteractor.downloadableWallpaperModel
+            // 1. Ensure we only react to changes in status
+            .distinctUntilChanged()
+            // 2. Ignore the initial status
+            .drop(1)
+            // 3. Map the DownloadStatus to a Boolean: true only if it is DOWNLOADED
+            .map { it.status == DownloadStatus.DOWNLOADED }
+            // 4. Use distinctUntilChanged again to prevent re-emissions of 'true'
+            //    if the status somehow transitions from DOWNLOADED -> DOWNLOADED.
+            .distinctUntilChanged()
 
     fun downloadWallpaper() {
         previewActionsInteractor.downloadWallpaper()
