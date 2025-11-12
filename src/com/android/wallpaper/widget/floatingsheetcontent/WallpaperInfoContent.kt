@@ -19,12 +19,15 @@ import android.content.Context
 import android.content.Intent
 import com.android.wallpaper.R
 import com.android.wallpaper.model.WallpaperInfo
-import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.WallpaperInfoHelper
 
 /** Floating Sheet Content for displaying wallpaper info */
-class WallpaperInfoContent(private var context: Context, private val wallpaper: WallpaperInfo?) :
-    FloatingSheetContent<WallpaperInfoView>(context) {
+class WallpaperInfoContent(
+    private var context: Context,
+    private val wallpaper: WallpaperInfo?,
+    private val userEventLogger: UserEventLogger,
+) : FloatingSheetContent<WallpaperInfoView>(context) {
 
     private var exploreIntent: Intent? = null
     private var actionLabel: CharSequence? = null
@@ -61,8 +64,7 @@ class WallpaperInfoContent(private var context: Context, private val wallpaper: 
     }
 
     private fun onExploreClicked() {
-        val injector = InjectorProvider.getInjector()
-        injector.getUserEventLogger().logWallpaperExploreButtonClicked()
+        userEventLogger.logWallpaperExploreButtonClicked()
         context.startActivity(exploreIntent)
     }
 
@@ -70,7 +72,7 @@ class WallpaperInfoContent(private var context: Context, private val wallpaper: 
         view!!.populateWallpaperInfo(
             wallpaper!!,
             actionLabel,
-            WallpaperInfoHelper.shouldShowExploreButton(context, exploreIntent)
+            WallpaperInfoHelper.shouldShowExploreButton(context, exploreIntent),
         ) {
             onExploreClicked()
         }
