@@ -64,9 +64,6 @@ data class OptionItemViewModel2<Payload>(
 
     /** Whether onClicked binding should be skipped. */
     val skipOnClickBinding: Boolean = false,
-
-    /** Whether foreground color binding should be skipped. */
-    val skipForegroundColorBinding: Boolean = false,
 ) : Bounceable {
     /** EffectItem container bounce animation logic. */
     override val bounce: Dp
