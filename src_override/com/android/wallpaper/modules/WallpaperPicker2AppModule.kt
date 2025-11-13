@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper.modules
 
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.DefaultEffectsController
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.module.DefaultExtendedEffectsHelper
@@ -207,6 +208,12 @@ abstract class WallpaperPicker2AppModule {
     ): RotationInitializerFactory
 
     companion object {
+
+        @Provides
+        @Singleton
+        fun provideFlags(): BaseFlags {
+            return object : BaseFlags() {}
+        }
 
         @Provides
         @Singleton
