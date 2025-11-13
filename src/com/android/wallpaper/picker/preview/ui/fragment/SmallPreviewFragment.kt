@@ -53,7 +53,6 @@ import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.TrampolinePickerActivity
 import com.android.wallpaper.picker.customization.ui.util.EmptyTransitionListener
-import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperScreenBinder
@@ -252,14 +251,9 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
         ) {
             Toast.makeText(context, R.string.wallpaper_set_successfully_message, Toast.LENGTH_SHORT)
                 .show()
-            val wallpaperModel = wallpaperPreviewViewModel.wallpaper.value
-            if (
-                wallpaperModel != null &&
-                    (wallpaperModel as? WallpaperModel.LiveWallpaperModel) != null
-            ) {
-                categoryWallpapersRepository.invalidateCache(
-                    wallpaperModel.commonWallpaperData.id.collectionId
-                )
+            // should invalidate live wallpaper cache for any wallpaper that is set
+            wallpaperPreviewViewModel.wallpaper?.value?.let {
+                categoryWallpapersRepository.invalidateCache(it.commonWallpaperData.id.collectionId)
             }
             categoryWallpapersRepository.refreshWallpapers()
             if (activityReference != null) {
