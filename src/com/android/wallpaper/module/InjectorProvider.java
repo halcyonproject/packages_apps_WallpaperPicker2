@@ -17,7 +17,9 @@ package com.android.wallpaper.module;
 
 /**
  * Provides the dependency injector statically to components that need it.
+ * @deprecated Use Hilt instead, see b/459863716
  */
+@Deprecated
 public class InjectorProvider {
     private static Injector sInjector = null;
 
