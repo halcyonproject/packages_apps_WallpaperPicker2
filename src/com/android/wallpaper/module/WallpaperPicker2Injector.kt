@@ -45,6 +45,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 
 @Singleton
+@Deprecated("Use Hilt instead, see b/459863716")
 open class WallpaperPicker2Injector
 @Inject
 constructor(

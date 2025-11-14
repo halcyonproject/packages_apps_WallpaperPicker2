@@ -38,6 +38,7 @@ import kotlinx.coroutines.CoroutineScope
  * Interface for a provider of "injected dependencies." (NOTE: The term "injector" is somewhat of a
  * misnomer; this is more aptly a service registry as part of a service locator design pattern.)
  */
+@Deprecated("Use Hilt instead, see b/459863716")
 interface Injector {
     /**
      * Returns a [CoroutineScope] that's bound to the lifecycle of the application.
