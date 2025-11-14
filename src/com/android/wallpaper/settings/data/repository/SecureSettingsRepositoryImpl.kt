@@ -65,6 +65,30 @@ class SecureSettingsRepositoryImpl(
         return intSetting(name, if (defaultValue) 1 else 0).map { it != 0 }
     }
 
+    override fun stringSetting(name: String, defaultValue: String?): Flow<String?> {
+        return callbackFlow {
+                fun trySendString() {
+                    trySend(Settings.Secure.getString(contentResolver, name) ?: defaultValue)
+                }
+                val observer =
+                    object : ContentObserver(null) {
+                        override fun onChange(selfChange: Boolean) {
+                            trySendString()
+                        }
+                    }
+
+                contentResolver.registerContentObserver(
+                    Settings.Secure.getUriFor(name),
+                    /* notifyForDescendants= */ false,
+                    observer,
+                )
+                trySendString()
+
+                awaitClose { contentResolver.unregisterContentObserver(observer) }
+            }
+            .flowOn(backgroundDispatcher)
+    }
+
     override suspend fun setInt(name: String, value: Int) {
         withContext(backgroundDispatcher) { Settings.Secure.putInt(contentResolver, name, value) }
     }
@@ -78,6 +102,12 @@ class SecureSettingsRepositoryImpl(
     override suspend fun setBoolean(name: String, value: Boolean) {
         withContext(backgroundDispatcher) {
             Settings.Secure.putInt(contentResolver, name, if (value) 1 else 0)
+        }
+    }
+
+    override suspend fun setString(name: String, value: String?) {
+        withContext(backgroundDispatcher) {
+            Settings.Secure.putString(contentResolver, name, value)
         }
     }
 
