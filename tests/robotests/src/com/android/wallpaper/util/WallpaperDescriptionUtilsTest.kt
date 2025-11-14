@@ -31,6 +31,7 @@ import com.android.wallpaper.testing.WallpaperModelUtils
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getCollectionId
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getEffects
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getPlaceHolderColor
+import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getUniqueId
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.updateMetadata
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -54,15 +55,17 @@ class WallpaperDescriptionUtilsTest {
         val content = PersistableBundle()
         val collectionId = "collectionId"
         val placeHolderColor = 12345678
+        val uniqueId = "uniqueId"
         val effects = "effects"
         assertThat(getCollectionId(content)).isNull()
         assertThat(getPlaceHolderColor(content)).isNull()
         assertThat(getEffects(content)).isNull()
 
-        updateMetadata(content, collectionId, placeHolderColor, effects)
+        updateMetadata(content, collectionId, placeHolderColor, uniqueId, effects)
 
         assertThat(getCollectionId(content)).isEqualTo(collectionId)
         assertThat(getPlaceHolderColor(content)).isEqualTo(placeHolderColor)
+        assertThat(getUniqueId(content)).isEqualTo(uniqueId)
         assertThat(getEffects(content)).isEqualTo(effects)
     }
 
@@ -73,19 +76,22 @@ class WallpaperDescriptionUtilsTest {
                 content = PersistableBundle(),
                 collectionId = "bogus",
                 placeHolderColor = -1,
+                uniqueId = "",
                 effects = "bogus",
             )
         val collectionId = "collectionId"
         val placeHolderColor = 12345678
+        val uniqueId = "uniqueId"
         val effects = "effects"
         assertThat(getCollectionId(content)).isNotNull()
         assertThat(getPlaceHolderColor(content)).isNotNull()
         assertThat(getEffects(content)).isNotNull()
 
-        updateMetadata(content, collectionId, placeHolderColor, effects)
+        updateMetadata(content, collectionId, placeHolderColor, uniqueId, effects)
 
         assertThat(getCollectionId(content)).isEqualTo(collectionId)
         assertThat(getPlaceHolderColor(content)).isEqualTo(placeHolderColor)
+        assertThat(getUniqueId(content)).isEqualTo(uniqueId)
         assertThat(getEffects(content)).isEqualTo(effects)
     }
 
@@ -108,7 +114,7 @@ class WallpaperDescriptionUtilsTest {
         val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context, componentName)
         val liveWallpaperModel =
             WallpaperModelUtils.getLiveWallpaperModel(
-                wallpaperId = "unused",
+                wallpaperId = "uniqueId",
                 collectionId = "collectionId",
                 systemWallpaperInfo = wallpaperInfo,
                 description = sourceDescription,
@@ -122,6 +128,7 @@ class WallpaperDescriptionUtilsTest {
 
         assertThat(description.component).isEqualTo(componentName)
         assertThat(description.id).isEqualTo("id")
+        assertThat(getUniqueId(description.content)).isEqualTo("uniqueId")
         assertThat(getCollectionId(description.content)).isEqualTo("collectionId")
         assertThat(getPlaceHolderColor(description.content)).isEqualTo(123)
         assertThat(getEffects(description.content)).isEqualTo("effects")
@@ -143,7 +150,7 @@ class WallpaperDescriptionUtilsTest {
         val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context, componentName)
         val liveWallpaperModel =
             WallpaperModelUtils.getLiveWallpaperModel(
-                wallpaperId = "unused",
+                wallpaperId = "uniqueId",
                 collectionId = "collectionId",
                 systemWallpaperInfo = wallpaperInfo,
                 description = sourceDescription,
@@ -157,6 +164,7 @@ class WallpaperDescriptionUtilsTest {
 
         assertThat(description.component).isEqualTo(componentName)
         assertThat(description.id).isEqualTo("id")
+        assertThat(getUniqueId(description.content)).isEqualTo("uniqueId")
         assertThat(getCollectionId(description.content)).isEqualTo("collectionId")
         assertThat(getPlaceHolderColor(description.content)).isEqualTo(123)
         assertThat(getEffects(description.content)).isEqualTo("effects")
@@ -171,7 +179,7 @@ class WallpaperDescriptionUtilsTest {
         val cropRect = Rect(1, 2, 3, 4)
         val staticWallpaperModel =
             WallpaperModelUtils.getStaticWallpaperModel(
-                wallpaperId = "unused",
+                wallpaperId = "uniqueId",
                 collectionId = "collectionId",
                 title = "ignored",
                 placeholderColor = 123,
@@ -183,6 +191,7 @@ class WallpaperDescriptionUtilsTest {
             staticWallpaperModel.toDescription("id", mapOf(Point(100, 200) to cropRect))
 
         assertThat(description.id).isEqualTo("id")
+        assertThat(getUniqueId(description.content)).isEqualTo("uniqueId")
         assertThat(description.component).isEqualTo(null)
         assertThat(getCollectionId(description.content)).isEqualTo("collectionId")
         assertThat(getPlaceHolderColor(description.content)).isEqualTo(123)
