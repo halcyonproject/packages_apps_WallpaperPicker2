@@ -49,7 +49,7 @@ class WallpaperCarouselViewModel
 @AssistedInject
 constructor(
     @ApplicationContext context: Context,
-    curatedPhotosInteractor: CuratedPhotosInteractor,
+    private var curatedPhotosInteractor: CuratedPhotosInteractor,
     creativeCategoryInteractor: CreativeCategoryInteractor,
     onDeviceWallpapersInteractor: OnDeviceWallpapersInteractor,
     @Assisted private val viewModelScope: CoroutineScope,
@@ -58,6 +58,10 @@ constructor(
         context.resources.getInteger(R.integer.wallpaper_carousel_items_min_count)
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
+
+    fun refreshCuratedPhotos() {
+        curatedPhotosInteractor.refreshContent()
+    }
 
     val curatedPhotoCarouselItems: Flow<List<TileViewModel>> =
         curatedPhotosInteractor.category

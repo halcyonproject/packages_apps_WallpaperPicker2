@@ -31,6 +31,7 @@ class CuratedPhotosAdapter(
     val items: List<TileViewModel>,
     val curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
     val userEventLogger: UserEventLogger,
+    private val onInvalidPhoto: (TileViewModel) -> Unit,
 ) : RecyclerView.Adapter<CuratedPhotoHolder>() {
     private var visiblePosition = -1 // Track the position of the visible TextView
 
@@ -48,6 +49,7 @@ class CuratedPhotosAdapter(
             tile,
             holder.itemView.context,
             this.visiblePosition == position,
+            onInvalidPhoto,
         )
     }
 

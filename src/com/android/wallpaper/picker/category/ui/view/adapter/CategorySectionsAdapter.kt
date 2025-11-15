@@ -28,6 +28,7 @@ import com.android.wallpaper.picker.category.ui.view.viewholder.CategorySectionV
 import com.android.wallpaper.picker.category.ui.view.viewholder.CuratedPhotoSectionViewHolder
 import com.android.wallpaper.picker.category.ui.viewmodel.PhotosViewModel
 import com.android.wallpaper.picker.category.ui.viewmodel.SectionViewModel
+import com.android.wallpaper.picker.category.ui.viewmodel.TileViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 
@@ -41,6 +42,7 @@ class CategorySectionsAdapter(
     private var bannerProvider: BannerProvider,
     private var curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
     private var userEventLogger: UserEventLogger,
+    private var onInvalidPhoto: (TileViewModel) -> Unit,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -75,6 +77,7 @@ class CategorySectionsAdapter(
                     bannerProvider = bannerProvider,
                     isSignInBannerVisible = (section as PhotosViewModel).isDismissed,
                     onSignInBannerDismissed = onSignInBannerDismissed,
+                    onInvalidPhoto = onInvalidPhoto,
                 )
             is CategorySectionViewHolder ->
                 holder.bind(

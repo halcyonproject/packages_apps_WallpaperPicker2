@@ -24,6 +24,7 @@ import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.category.ui.view.adapter.CategorySectionsAdapter
 import com.android.wallpaper.picker.category.ui.view.decoration.CategoriesGridPaddingDecoration
 import com.android.wallpaper.picker.category.ui.viewmodel.SectionViewModel
+import com.android.wallpaper.picker.category.ui.viewmodel.TileViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 
@@ -42,6 +43,7 @@ object SectionsBinder {
         bannerProvider: BannerProvider,
         curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
         userEventLogger: UserEventLogger,
+        onInvalidPhoto: (TileViewModel) -> Unit,
     ) {
         sectionsListView.adapter =
             CategorySectionsAdapter(
@@ -54,6 +56,7 @@ object SectionsBinder {
                 bannerProvider,
                 curatedPhotosTimeUtil,
                 userEventLogger,
+                onInvalidPhoto,
             )
         val defaultSpanCount =
             sectionsListView.context.resources.getInteger(R.integer.category_span_count)

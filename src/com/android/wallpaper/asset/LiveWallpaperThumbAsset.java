@@ -219,7 +219,7 @@ public class LiveWallpaperThumbAsset extends Asset {
     public void loadDrawableWithTransition(Context context, ImageView imageView,
             final int transitionDurationMillis,
             @Nullable final DrawableLoadedListener drawableLoadedListener,
-            int placeholderColor) {
+            int placeholderColor, @Nullable PermissionErrorListener permissionErrorListener) {
         RequestOptions reqOptions;
         if (mUri != null) {
             reqOptions = RequestOptions.centerCropTransform().apply(RequestOptions

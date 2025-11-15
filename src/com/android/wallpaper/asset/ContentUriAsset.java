@@ -274,7 +274,8 @@ public final class ContentUriAsset extends StreamableAsset {
     @Override
     public void loadDrawableWithTransition(Context context, ImageView imageView,
             int transitionDurationMillis, @Nullable DrawableLoadedListener drawableLoadedListener,
-            int placeholderColor) {
+            int placeholderColor,
+            @Nullable PermissionErrorListener permissionErrorListener) {
         Glide.with(context)
                 .asDrawable()
                 .load(mUri)
@@ -285,6 +286,16 @@ public final class ContentUriAsset extends StreamableAsset {
                     @Override
                     public boolean onLoadFailed(GlideException e, Object model,
                             Target<Drawable> target, boolean isFirstResource) {
+                        if (e != null) {
+                            for (Throwable t : e.getRootCauses()) {
+                                if (t instanceof SecurityException) {
+                                    if (permissionErrorListener != null) {
+                                        permissionErrorListener.onPermissionError();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
                         return false;
                     }
 
