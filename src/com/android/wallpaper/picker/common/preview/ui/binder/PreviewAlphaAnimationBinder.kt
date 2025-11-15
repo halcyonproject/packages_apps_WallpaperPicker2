@@ -49,7 +49,8 @@ object PreviewAlphaAnimationBinder {
         val homePreview: View = previewPager.requireViewById(R.id.home_preview)
         val homePreviewLabel: TextView = previewPager.requireViewById(R.id.home_preview_label)
         val homePreviewShade: View = homePreview.requireViewById(R.id.preview_shade)
-        val showDesktopUi = BaseFlags.get().shouldShowDesktopUi(previewPager.context)
+        val showDesktopUi =
+            BaseFlags.get(previewPager.context).shouldShowDesktopUi(previewPager.context)
 
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

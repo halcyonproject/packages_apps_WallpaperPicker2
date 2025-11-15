@@ -38,7 +38,7 @@ object LiveWallpaperServiceBinder {
         context: Context,
         wallpaperModel: LiveWallpaperModel,
     ): Pair<ServiceConnection, IWallpaperService> {
-        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+        if (!BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
                 "LiveWallpaperServiceBinder can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."

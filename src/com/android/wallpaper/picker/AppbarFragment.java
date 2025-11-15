@@ -82,7 +82,7 @@ public abstract class AppbarFragment extends BottomActionBarFragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (BaseFlags.get().isPageTransitionsFeatureEnabled(requireContext())) {
+        if (BaseFlags.get(requireContext()).isPageTransitionsFeatureEnabled(requireContext())) {
             setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, /* forward */ true));
             setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, /* forward */ false));
             setExitTransition(new MaterialSharedAxis(MaterialSharedAxis.X, /* forward */ true));

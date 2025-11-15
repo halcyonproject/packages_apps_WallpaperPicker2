@@ -85,7 +85,7 @@ class TileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             // sections with more than 1 column and 1 tile
             tileSize = SizeCalculator.getFeaturedCategoryTileSize(itemView.context, windowWidth)
             tileRadius =
-                if (BaseFlags.get().isMagicPortraitEntryPointsEnabled()) {
+                if (BaseFlags.get(context).isMagicPortraitEntryPointsEnabled()) {
                     context.resources.getDimension(R.dimen.grid_item_all_radius).toInt()
                 } else {
                     tileSize.y

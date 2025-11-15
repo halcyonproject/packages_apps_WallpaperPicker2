@@ -101,7 +101,7 @@ constructor(
                             // Do nothing intended
                         }
                         EffectsController.RESULT_ERROR_PROBE_SUPPORT_FOREGROUND -> {
-                            if (BaseFlags.get().isWallpaperEffectModelDownloadEnabled()) {
+                            if (BaseFlags.get(context).isWallpaperEffectModelDownloadEnabled()) {
                                 _imageEffectsModel.value =
                                     ImageEffectsModel(
                                         EffectStatus.EFFECT_DOWNLOAD_READY,

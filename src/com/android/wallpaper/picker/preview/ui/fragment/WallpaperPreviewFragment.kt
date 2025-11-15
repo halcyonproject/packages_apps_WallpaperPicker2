@@ -129,7 +129,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+        if (!BaseFlags.get(requireContext()).isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
                 "$this can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."

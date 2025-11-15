@@ -18,6 +18,7 @@ package com.android.wallpaper.util.wallpaperconnection
 
 import android.app.WallpaperInfo
 import android.app.wallpaper.WallpaperDescription
+import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.IBinder
@@ -44,6 +45,7 @@ object LiveWallpaperServiceConnector {
      * Android third party users of this code will be running.
      */
     fun attachWallpaperConnection(
+        context: Context,
         wallpaperConnection: IWallpaperConnection,
         wallpaperService: IWallpaperService,
         destinationFlag: Int,
@@ -52,7 +54,7 @@ object LiveWallpaperServiceConnector {
         windowToken: IBinder,
         displayId: Int,
     ) {
-        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+        if (!BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
                 "LiveWallpaperServiceConnector can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."
