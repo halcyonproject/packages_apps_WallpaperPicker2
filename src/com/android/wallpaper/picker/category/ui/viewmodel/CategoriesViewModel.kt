@@ -67,8 +67,8 @@ constructor(
     private val curatedPhotosInteractor: CuratedPhotosInteractor,
     private val myPhotosInteractor: MyPhotosInteractor,
     private val thirdPartyCategoryInteractor: ThirdPartyCategoryInteractor,
-    private val loadindStatusInteractor: CategoriesLoadingStatusInteractor,
-    private val networkStatusInteractor: NetworkStatusInteractor,
+    loadindStatusInteractor: CategoriesLoadingStatusInteractor,
+    networkStatusInteractor: NetworkStatusInteractor,
     private val packageStatusNotifier: PackageStatusNotifier,
     @ApplicationContext private val context: Context,
     private val broadcastDispatcher: BroadcastDispatcher,
@@ -87,7 +87,7 @@ constructor(
     init {
         registerLiveWallpaperReceiver()
         registerThirdPartyWallpaperCategories()
-        if (BaseFlags.get().isPackThemeEnabled()) {
+        if (BaseFlags.get(context).isPackThemeEnabled()) {
             refetchPackThemeCategoryReceiver()
         }
         registerLocaleChangeReceiver()
@@ -418,7 +418,7 @@ constructor(
             ->
             buildList {
                 add(myPhotosViewModel)
-                if (BaseFlags.get().isMagicPortraitEntryPointsEnabled()) {
+                if (BaseFlags.get(context).isMagicPortraitEntryPointsEnabled()) {
                     standaloneCreativeViewModel?.let { add(it) }
                 }
                 creativeViewModel?.let { add(it) }

@@ -192,7 +192,7 @@ constructor(
             creatives: List<TileViewModel>,
             standAlone: List<TileViewModel> ->
             val creativeCategories =
-                if (BaseFlags.get().isMagicPortraitEntryPointsEnabled()) {
+                if (BaseFlags.get(context).isMagicPortraitEntryPointsEnabled()) {
                     standAlone + creatives
                 } else {
                     creatives
