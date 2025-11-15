@@ -42,41 +42,9 @@ public class SizeCalculator {
      */
     private static final int COLUMN_COUNT_THRESHOLD_DP = 820;
 
-    /**
-     * The number of columns for a "fewer columns" configuration of the featured category tiles
-     * grid.
-     */
-    private static final int FEATURED_CATEGORY_FEWER_COLUMNS = 2;
-
-    /**
-     * The number of columns for a "more columns" configuration of the featured category tiles grid.
-     */
-    private static final int FEATURED_CATEGORY_MORE_COLUMNS = 2;
-
-    /**
-     * The number of columns for a "fewer columns" configuration of the featured individual
-     * wallpaper tiles grid.
-     */
-    private static final int FEATURED_INDIVIDUAL_FEWER_COLUMNS = 2;
-
-    /**
-     * The number of columns for a "more columns" configuration of the featured individual wallpaper
-     * tiles grid.
-     */
-    private static final int FEATURED_INDIVIDUAL_MORE_COLUMNS = 2;
-
     // Suppress default constructor for noninstantiability.
     private SizeCalculator() {
         throw new AssertionError("Can't initialize a SizeCalculator.");
-    }
-
-    /**
-     * Returns the number of columns for a grid of category tiles. Selects from fewer and more
-     * columns based on the width of the activity.
-     */
-    public static int getNumCategoryColumns(@NonNull Activity activity) {
-        int windowWidthPx = getActivityWindowWidthPx(activity);
-        return getNumCategoryColumns(activity, windowWidthPx);
     }
 
     /**
@@ -92,18 +60,8 @@ public class SizeCalculator {
      * Returns the number of columns for a grid of featured individual tiles. Selects from fewer and
      * more columns based on the width of the activity.
      */
-    public static int getNumFeaturedIndividualColumns(@NonNull Activity activity) {
-        int windowWidthPx = getActivityWindowWidthPx(activity);
-        return getNumFeaturedIndividualColumns(activity, windowWidthPx);
-    }
-
-    private static int getNumCategoryColumns(Activity activity, int windowWidthPx) {
-        int minColumnCount = activity.getResources().getInteger(
-                R.integer.category_min_column_count);
-        int maxColumnCount = activity.getResources().getInteger(
-                R.integer.category_max_column_count);
-        return getNumColumns(activity, windowWidthPx, minColumnCount,
-                maxColumnCount);
+    public static int getNumFeaturedIndividualColumns() {
+        return 2;
     }
 
     private static int getNumCategoryColumns(Context context, int windowWidthPx) {
@@ -113,14 +71,8 @@ public class SizeCalculator {
                 maxColumnCount);
     }
 
-    private static int getNumFeaturedCategoryColumns(Activity activity, int windowWidthPx) {
-        return getNumColumns(activity, windowWidthPx, FEATURED_CATEGORY_FEWER_COLUMNS,
-                FEATURED_CATEGORY_MORE_COLUMNS);
-    }
-
-    private static int getNumFeaturedCategoryColumns(Context context, int windowWidthPx) {
-        return getNumColumns(context, windowWidthPx, FEATURED_CATEGORY_FEWER_COLUMNS,
-                FEATURED_CATEGORY_MORE_COLUMNS);
+    private static int getNumFeaturedCategoryColumns() {
+        return 2;
     }
 
     private static int getNumIndividualColumns(Activity activity, int windowWidthPx) {
@@ -128,11 +80,6 @@ public class SizeCalculator {
                 activity, windowWidthPx,
                 activity.getResources().getInteger(R.integer.individual_min_column_count),
                 activity.getResources().getInteger(R.integer.individual_max_column_count));
-    }
-
-    private static int getNumFeaturedIndividualColumns(Activity activity, int windowWidthPx) {
-        return getNumColumns(activity, windowWidthPx, FEATURED_INDIVIDUAL_FEWER_COLUMNS,
-                FEATURED_INDIVIDUAL_MORE_COLUMNS);
     }
 
     private static int getNumColumns(
@@ -156,19 +103,6 @@ public class SizeCalculator {
     /**
      * Returns the size of a category grid tile in px.
      */
-    public static Point getCategoryTileSize(@NonNull Activity activity) {
-        Resources res = activity.getResources();
-        int windowWidthPx = getActivityWindowWidthPx(activity);
-
-        int columnCount = getNumCategoryColumns(activity, windowWidthPx);
-        return getSquareTileSize(columnCount, windowWidthPx,
-                res.getDimensionPixelSize(R.dimen.grid_item_category_padding_horizontal),
-                res.getDimensionPixelSize(R.dimen.category_grid_edge_space));
-    }
-
-    /**
-     * Returns the size of a category grid tile in px.
-     */
     public static Point getCategoryTileSize(Context context, int windowWidthPx) {
         Resources res = context.getResources();
 
@@ -181,23 +115,10 @@ public class SizeCalculator {
     /**
      * Returns the size of a featured category grid tile in px.
      */
-    public static Point getFeaturedCategoryTileSize(@NonNull Activity activity) {
-        Resources res = activity.getResources();
-        int windowWidthPx = getActivityWindowWidthPx(activity);
-
-        int columnCount = getNumFeaturedCategoryColumns(activity, windowWidthPx);
-        return getSquareTileSize(columnCount, windowWidthPx,
-                res.getDimensionPixelSize(R.dimen.grid_item_category_padding_horizontal),
-                res.getDimensionPixelSize(R.dimen.category_grid_edge_space));
-    }
-
-    /**
-     * Returns the size of a featured category grid tile in px.
-     */
     public static Point getFeaturedCategoryTileSize(Context context, int windowWidthPx) {
         Resources res = context.getResources();
 
-        int columnCount = getNumFeaturedCategoryColumns(context, windowWidthPx);
+        int columnCount = getNumFeaturedCategoryColumns();
         return getSquareTileSize(columnCount, windowWidthPx,
                 res.getDimensionPixelSize(R.dimen.grid_item_category_padding_horizontal),
                 res.getDimensionPixelSize(R.dimen.category_grid_edge_space));
@@ -223,7 +144,7 @@ public class SizeCalculator {
         Resources res = activity.getResources();
         int windowWidthPx = getActivityWindowWidthPx(activity);
 
-        int columnCount = getNumFeaturedIndividualColumns(activity, windowWidthPx);
+        int columnCount = getNumFeaturedIndividualColumns();
         return getSquareTileSize(columnCount, windowWidthPx,
                 res.getDimensionPixelSize(R.dimen.grid_item_featured_individual_padding_horizontal),
                 res.getDimensionPixelSize(R.dimen.featured_wallpaper_grid_edge_space));
