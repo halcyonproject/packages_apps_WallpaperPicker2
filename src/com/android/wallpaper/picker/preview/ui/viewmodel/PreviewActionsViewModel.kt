@@ -26,10 +26,10 @@ import android.net.wifi.WifiManager
 import android.service.wallpaper.WallpaperSettingsActivity
 import androidx.activity.result.ActivityResultLauncher
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.Effect
 import com.android.wallpaper.effects.EffectsController.EffectEnumInterface
 import com.android.wallpaper.module.ExtendedEffectsHelper
-import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.data.LiveWallpaperData
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -98,7 +98,7 @@ constructor(
     @ApplicationContext private val context: Context,
     @MainDispatcher private val mainScope: CoroutineScope,
 ) {
-    private val flags = InjectorProvider.getInjector().getFlags()
+    private val flags = BaseFlags.get(context)
     val hideInformationFloatingSheet = MutableStateFlow(false)
 
     /** [INFORMATION] */
@@ -708,10 +708,8 @@ constructor(
             return intent
         }
 
-        fun LiveWallpaperModel.isNewCreativeWallpaper(): Boolean {
-            return if (
-                InjectorProvider.getInjector().getFlags().isNewCreativeWallpaperCategoryEnabled()
-            ) {
+        fun LiveWallpaperModel.isNewCreativeWallpaper(context: Context): Boolean {
+            return if (BaseFlags.get(context).isNewCreativeWallpaperCategoryEnabled()) {
                 creativeWallpaperData?.isNewCreativeWallpaper ?: false
             } else {
                 creativeWallpaperData?.deleteUri?.toString()?.isEmpty() == true

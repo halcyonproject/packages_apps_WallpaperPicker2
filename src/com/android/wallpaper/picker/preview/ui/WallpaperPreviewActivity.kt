@@ -144,7 +144,7 @@ class WallpaperPreviewActivity :
                     putBoolean(HIDE_SURFACES_FOR_EXIT_TRANSITION, true)
                 } else if (
                     wallpaper is WallpaperModel.LiveWallpaperModel &&
-                        wallpaper.isNewCreativeWallpaper()
+                        wallpaper.isNewCreativeWallpaper(this@WallpaperPreviewActivity)
                 ) {
                     putAll(wallpaper.getNewCreativeWallpaperArgs())
                     // For creating a new creative wallpaper, replace the default start
