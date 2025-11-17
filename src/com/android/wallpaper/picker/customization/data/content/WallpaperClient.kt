@@ -103,7 +103,7 @@ interface WallpaperClient {
     fun getCurrentCropHints(
         displaySizes: List<Point>,
         @WallpaperManager.SetWallpaperFlags which: Int,
-    ): Map<Point, Rect>?
+    ): Map<Point, Rect>
 
     /** Returns the wallpaper colors for preview a bitmap with a set of crop hints */
     suspend fun getWallpaperColors(bitmap: Bitmap, cropHints: Map<Point, Rect>?): WallpaperColors?
