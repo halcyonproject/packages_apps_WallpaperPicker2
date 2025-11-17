@@ -44,6 +44,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperActionsToggleAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -65,6 +66,7 @@ object PreviewActionsBinder {
         logger: UserEventLogger,
         imageEffectDialogUtil: ImageEffectDialogUtil,
         packageStatusNotifier: PackageStatusNotifier,
+        categoryWallpapersRepository: CategoryWallpapersRepository,
         onNavigateToEditScreen: (intent: Intent) -> Unit,
         onStartShareActivity: (intent: Intent) -> Unit,
     ) {
@@ -146,6 +148,14 @@ object PreviewActionsBinder {
                 }
 
                 launch {
+                    actionsViewModel.isDownloadComplete.collect {
+                        if (it) {
+                            refreshWallpapers(previewViewModel, categoryWallpapersRepository)
+                        }
+                    }
+                }
+
+                launch {
                     actionsViewModel.isDownloadButtonEnabled.collect {
                         actionGroup.setClickListener(
                             DOWNLOAD,
@@ -187,6 +197,10 @@ object PreviewActionsBinder {
                                         null,
                                     )
                                     activity.finish()
+                                    refreshWallpapers(
+                                        previewViewModel,
+                                        categoryWallpapersRepository,
+                                    )
                                 } else if (viewModel.liveWallpaperDeleteIntent != null) {
                                     var deletePackageListener: PackageStatusNotifier.Listener? =
                                         null
@@ -203,6 +217,10 @@ object PreviewActionsBinder {
                                                     packageStatusNotifier.removeListener(listener)
                                                 }
                                                 actionGroup.setIsDeleting(false)
+                                                refreshWallpapers(
+                                                    previewViewModel,
+                                                    categoryWallpapersRepository,
+                                                )
                                                 activity.finish()
                                             }
                                         }
@@ -460,6 +478,18 @@ object PreviewActionsBinder {
                     }
                 }
             }
+        }
+    }
+
+    private fun refreshWallpapers(
+        previewViewModel: WallpaperPreviewViewModel,
+        categoryWallpapersRepository: CategoryWallpapersRepository,
+    ) {
+        val wallpaperModel = previewViewModel.wallpaper.value
+
+        wallpaperModel?.commonWallpaperData?.id?.collectionId?.let {
+            categoryWallpapersRepository.invalidateCache(it)
+            categoryWallpapersRepository.refreshWallpapers()
         }
     }
 }

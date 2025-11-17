@@ -58,6 +58,7 @@ import kotlinx.coroutines.Dispatchers
 
 /** Test implementation of [Injector] */
 @Singleton
+@Deprecated("Use Hilt instead, see b/459863716")
 open class TestInjector
 @Inject
 constructor(

@@ -68,6 +68,7 @@ import com.android.wallpaper.picker.preview.ui.view.PreviewActionGroup
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action
 import com.android.wallpaper.picker.preview.ui.viewmodel.SmallPreviewAlphaAnimationBinder
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
@@ -96,6 +97,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
     @Inject lateinit var imageEffectDialogUtil: ImageEffectDialogUtil
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
     @Inject lateinit var packageStatusNotifier: PackageStatusNotifier
+    @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
 
     private val flags = InjectorProvider.getInjector().getFlags()
 
@@ -249,6 +251,11 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
         ) {
             Toast.makeText(context, R.string.wallpaper_set_successfully_message, Toast.LENGTH_SHORT)
                 .show()
+            // should invalidate live wallpaper cache for any wallpaper that is set
+            wallpaperPreviewViewModel.wallpaper?.value?.let {
+                categoryWallpapersRepository.invalidateCache(it.commonWallpaperData.id.collectionId)
+            }
+            categoryWallpapersRepository.refreshWallpapers()
             if (activityReference != null) {
                 if (wallpaperPreviewViewModel.isNewTask) {
                     activityReference.window?.exitTransition = Slide(Gravity.END)
@@ -513,6 +520,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
             logger = logger,
             imageEffectDialogUtil = imageEffectDialogUtil,
             packageStatusNotifier = packageStatusNotifier,
+            categoryWallpapersRepository = categoryWallpapersRepository,
             onNavigateToEditScreen = { navigateToEditScreen(it) },
             onStartShareActivity = { shareActivityResult.launch(it) },
         )

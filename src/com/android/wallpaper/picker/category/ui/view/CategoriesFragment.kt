@@ -174,7 +174,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         )
 
         CategoriesBinder.bind(
-            categoriesPage = view.requireViewById<RecyclerView>(R.id.content_parent),
+            categoriesPage = view.requireViewById(R.id.content_parent),
             viewModel = categoriesViewModel,
             windowWidth = SizeCalculator.getActivityWindowWidthPx(this.activity),
             colorUpdateViewModel = colorUpdateViewModel,
@@ -188,7 +188,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
                     if (BaseFlags.get().isWallpapersFragmentEnabled()) {
                         categoryWallpapersRepository.setSelectedCategory(
-                            navigationEvent.categoryModel
+                            category = navigationEvent.categoryModel
                         )
                         switchFragment(CategoryWallpapersFragment())
                     } else {

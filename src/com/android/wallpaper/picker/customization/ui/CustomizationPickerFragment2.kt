@@ -284,6 +284,9 @@ class CustomizationPickerFragment2 :
             view.requireViewById(R.id.customization_option_container)
         val customizationFloatingSheetContainer: FrameLayout =
             view.requireViewById(R.id.customization_option_floating_sheet_container)
+        // Initialize the floating sheet to be hidden and not focusable
+        customizationFloatingSheetContainer.visibility = View.INVISIBLE
+
         // Listen to the window's bottom nav bar height and the top status bar height and update the
         // layout padding accordingly.
         ViewCompat.setOnApplyWindowInsetsListener(pickerMotionContainer) { _, windowInsets ->
@@ -634,9 +637,19 @@ class CustomizationPickerFragment2 :
                         // sheet content, which can possibly be interrupted by the floating sheet
                         // translating down.
                         customizationPickerViewModel.customizationOptionsViewModel.resetPreview()
+                        // Hide and block focus on the floating sheet when on primary screen
+                        val floatingSheetContainer: FrameLayout =
+                            view?.findViewById(R.id.customization_option_floating_sheet_container)
+                                ?: return
+                        floatingSheetContainer.visibility = View.INVISIBLE
                     } else if (currentId == R.id.secondary) {
                         customizationPickerViewModel.customizationOptionsViewModel
                             .onTransitionToSecondaryScreenComplete()
+                        // Show and allow focus on the floating sheet when on secondary screen
+                        val floatingSheetContainer: FrameLayout =
+                            view?.findViewById(R.id.customization_option_floating_sheet_container)
+                                ?: return
+                        floatingSheetContainer.visibility = View.VISIBLE
                     }
                 }
             }
@@ -927,6 +940,13 @@ class CustomizationPickerFragment2 :
         val homePreviewShade =
             layoutInflater.inflate(R.layout.preview_shade, homePreviewContainer, false)
         homePreviewContainer.addView(homePreviewShade)
+
+        // Disable accessibility hierarchy embedding for workspace preview surfaces to ensure
+        // services don't attempt to navigate or interact with purely decorative preview content.
+        val lockWorkspaceSurface: SurfaceView = lockPreview.requireViewById(R.id.workspace_surface)
+        val homeWorkspaceSurface: SurfaceView = homePreview.requireViewById(R.id.workspace_surface)
+        lockWorkspaceSurface.setAccessibilityHierarchyEmbeddingEnabled(false)
+        homeWorkspaceSurface.setAccessibilityHierarchyEmbeddingEnabled(false)
 
         // Sets up focus listeners for the lock preview and home preview to handle accessibility
         // focus events.

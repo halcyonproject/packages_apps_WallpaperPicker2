@@ -34,6 +34,7 @@ class WallpaperDescriptionUtils {
     companion object {
         private const val CONTENT_KEY_COLLECTION_ID = "picker_metadata_collection_id"
         private const val CONTENT_KEY_PLACEHOLDER_COLOR = "picker_metadata_placeholder_color"
+        private const val CONTENT_KEY_UNIQUE_ID = "picker_metadata_unique_id"
         private const val CONTENT_KEY_EFFECTS = "picker_metadata_effects"
 
         /**
@@ -45,10 +46,12 @@ class WallpaperDescriptionUtils {
             content: PersistableBundle,
             collectionId: String?,
             placeHolderColor: Int?,
+            uniqueId: String?,
             effects: String?,
         ): PersistableBundle {
             return content.apply {
                 putString(CONTENT_KEY_COLLECTION_ID, collectionId)
+                putString(CONTENT_KEY_UNIQUE_ID, uniqueId)
                 placeHolderColor?.let { putInt(CONTENT_KEY_PLACEHOLDER_COLOR, it) }
                 effects?.let { putString(CONTENT_KEY_EFFECTS, it) }
             }
@@ -56,6 +59,10 @@ class WallpaperDescriptionUtils {
 
         fun getCollectionId(content: PersistableBundle): String? {
             return content.getString(CONTENT_KEY_COLLECTION_ID)
+        }
+
+        fun getUniqueId(content: PersistableBundle): String? {
+            return content.getString(CONTENT_KEY_UNIQUE_ID)
         }
 
         fun getPlaceHolderColor(content: PersistableBundle): Int? {
@@ -76,6 +83,7 @@ fun LiveWallpaperModel.toDescription(): WallpaperDescription {
             liveWallpaperData.description.content,
             commonWallpaperData.id.collectionId,
             commonWallpaperData.placeholderColorInfo.placeholderColor,
+            commonWallpaperData.id.uniqueId,
             liveWallpaperData.effectNames,
         )
     val attribs = commonWallpaperData.attributions
@@ -101,6 +109,7 @@ fun StaticWallpaperModel.toDescription(
             PersistableBundle(),
             commonWallpaperData.id.collectionId,
             commonWallpaperData.placeholderColorInfo.placeholderColor,
+            commonWallpaperData.id.uniqueId,
             null,
         )
     val attribs = commonWallpaperData.attributions
