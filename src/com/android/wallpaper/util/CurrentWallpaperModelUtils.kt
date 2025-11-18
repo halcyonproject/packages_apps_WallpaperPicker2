@@ -54,6 +54,8 @@ object CurrentWallpaperModelUtils {
 
         val homeWallpaperInstance =
             wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM)
+        val lockWallpaperInstance =
+            wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_LOCK)
 
         // TODO(b/452460147): In fact homeWallpaperInstance should not be null
         if (homeWallpaperInstance == null) {
@@ -70,11 +72,28 @@ object CurrentWallpaperModelUtils {
                     WallpaperManager.FLAG_SYSTEM,
                 )
         } else {
-            // TODO(b/452460147): Handle LiveWallpaper
+            // TODO(b/452460147): Handle LiveWallpaper (Home)
             homeWallpaperModel = null
         }
-        // TODO(b/452460147): Handle lock wallpaper (static and Live)
-        lockWallpaperModel = homeWallpaperModel
+
+        if (lockWallpaperInstance == null) {
+            lockWallpaperModel = homeWallpaperModel
+            return Pair(homeWallpaperModel, lockWallpaperModel)
+        }
+
+        val isLockStatic = (lockWallpaperInstance.info == null)
+        val lockDescription = lockWallpaperInstance.description
+        if (isLockStatic) {
+            lockWallpaperModel =
+                createStaticWallpaperModelFromDescription(
+                    context,
+                    lockDescription,
+                    WallpaperManager.FLAG_LOCK,
+                )
+        } else {
+            // TODO(b/452460147): Handle LiveWallpaper (Lock)
+            lockWallpaperModel = null
+        }
         return Pair(homeWallpaperModel, lockWallpaperModel)
     }
 
