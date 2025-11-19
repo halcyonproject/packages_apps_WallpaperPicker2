@@ -55,7 +55,8 @@ object LiveWallpaperEngineCreator {
         windowToken: IBinder,
         displayId: Int,
         whichPreview: WhichPreview,
-        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+        onWallpaperColorsChanged:
+            (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): IWallpaperEngine {
         if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
@@ -94,8 +95,9 @@ object LiveWallpaperEngineCreator {
                     override fun onWallpaperColorsChanged(
                         colors: WallpaperColors?,
                         displayId: Int,
+                        persistedColors: WallpaperColors?,
                     ) {
-                        onWallpaperColorsChanged.invoke(colors, displayId)
+                        onWallpaperColorsChanged.invoke(colors, displayId, persistedColors)
                     }
 
                     override fun onLocalWallpaperColorsChanged(

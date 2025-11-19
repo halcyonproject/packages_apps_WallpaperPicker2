@@ -355,7 +355,8 @@ public class WallpaperConnection extends IWallpaperConnection.Stub implements Se
     }
 
     @Override
-    public void onWallpaperColorsChanged(WallpaperColors colors, int displayId) {
+    public void onWallpaperColorsChanged(WallpaperColors colors, int displayId,
+            WallpaperColors persistedColors) {
         if (mContainerView != null) {
             mContainerView.post(() -> {
                 if (mListener != null) {
