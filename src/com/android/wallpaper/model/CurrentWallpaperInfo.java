@@ -37,7 +37,10 @@ import java.util.List;
 
 /**
  * Represents the currently set wallpaper on N+ devices. Should not be used to set a new wallpaper.
+ *
+ * @deprecated See b/448461608
  */
+@Deprecated
 public class CurrentWallpaperInfo extends WallpaperInfo {
     public static final String UNKNOWN_CURRENT_WALLPAPER_ID = "unknown_current_wallpaper_id";
 
