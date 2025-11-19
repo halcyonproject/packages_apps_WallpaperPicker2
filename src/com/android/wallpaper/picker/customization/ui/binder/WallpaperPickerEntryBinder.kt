@@ -270,7 +270,12 @@ object WallpaperPickerEntryBinder {
                         }
 
                         wallpaperCarousel.swapAdapter(
-                            CuratedPhotosAdapter(it, curatedPhotosTimeUtil, userEventLogger),
+                            CuratedPhotosAdapter(
+                                items = it,
+                                curatedPhotosTimeUtil = curatedPhotosTimeUtil,
+                                userEventLogger = userEventLogger,
+                                onInvalidPhoto = { viewModel.refreshCuratedPhotos() },
+                            ),
                             /** removeAndRecycleExistingViews= */
                             false,
                         )

@@ -138,15 +138,18 @@ fun WallpaperItem(
             update = { imageView ->
                 item.thumbnailAsset?.let { asset ->
                     asset.loadDrawableWithTransition(
-                        context,
-                        imageView,
-                        context.resources.getInteger(android.R.integer.config_mediumAnimTime),
-                        {
+                        /* context= */ context,
+                        /* imageView= */ imageView,
+                        /* transitionDurationMillis= */ context.resources.getInteger(
+                            android.R.integer.config_mediumAnimTime
+                        ),
+                        /* drawableLoadedListener= */ {
                             val startTime = curatedPhotosTimeUtil.getStartTime()
                             val timeMilliseconds = System.currentTimeMillis() - startTime
                             userEventLogger.logCuratedPhotosRendered(timeMilliseconds, true)
                         },
-                        context.getColor(R.color.system_surface_bright),
+                        /* placeholderColor= */ context.getColor(R.color.system_surface_bright),
+                        /* permissionErrorListener= */ null,
                     )
                 }
                     ?: run {

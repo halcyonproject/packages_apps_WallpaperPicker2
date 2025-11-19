@@ -93,7 +93,7 @@ public class ResourceAsset extends StreamableAsset {
     public void loadDrawableWithTransition(Context context, ImageView imageView,
             final int transitionDurationMillis,
             @Nullable final DrawableLoadedListener drawableLoadedListener,
-            int placeholderColor) {
+            int placeholderColor, @Nullable PermissionErrorListener permissionErrorListener) {
         Glide.with(context)
                 .asDrawable()
                 .load(ResourceAsset.this)
