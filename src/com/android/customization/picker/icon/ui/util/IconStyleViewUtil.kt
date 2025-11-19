@@ -18,7 +18,11 @@ package com.android.customization.picker.icon.ui.util
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import com.android.customization.picker.icon.shared.model.IconStyle
+import com.android.customization.picker.icon.shared.model.IconStyleModel
+import com.android.wallpaper.picker.common.icon.ui.viewmodel.Icon
 
 interface IconStyleViewUtil : DefaultLifecycleObserver {
     fun getOnClick(iconStyle: IconStyle): (() -> Unit)?
+
+    fun getIcon(iconStyleModel: IconStyleModel): Icon?
 }
