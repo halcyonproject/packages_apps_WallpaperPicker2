@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  * turned on and should be gated with the flag.
  */
 data class LiveWallpaperConnections(
-    val context: Context,
     val wallpaperEngine: WeakReference<IWallpaperEngine>,
     val serviceConnection: WeakReference<ServiceConnection>,
     val wallpaperService: WeakReference<IWallpaperService>,
@@ -44,7 +43,7 @@ data class LiveWallpaperConnections(
     private val disconnected = AtomicBoolean(false)
 
     init {
-        if (!BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
+        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
                 "LiveWallpaperConnections can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."

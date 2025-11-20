@@ -122,8 +122,12 @@ object ExtendedWallpaperEffectsUtils {
         ) {}
     }
 
-    private fun isExtendedEffectWallpaperModel(model: WallpaperModel?, context: Context): Boolean =
-        BaseFlags.get(context).isExtendedWallpaperEnabled() &&
+    private fun isExtendedEffectWallpaperModel(
+        model: WallpaperModel?,
+        context: Context,
+        flags: BaseFlags,
+    ): Boolean =
+        flags.isExtendedWallpaperEnabled() &&
             model is LiveWallpaperModel &&
             model.liveWallpaperData.isEffectWallpaper &&
             isExtendedEffectWallpaper(
@@ -136,8 +140,9 @@ object ExtendedWallpaperEffectsUtils {
         launcher: ActivityResultLauncher<Intent>,
         context: Context,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
+        flags: BaseFlags,
     ) {
-        val isExtendedEffect = isExtendedEffectWallpaperModel(wallpaper, context)
+        val isExtendedEffect = isExtendedEffectWallpaperModel(wallpaper, context, flags)
         launchExtendedWallpaperEffects(wallpaper, launcher, isExtendedEffect, context)
         if (isExtendedEffect) {
             // Disconnect engine if it's live extended effect wallpaper

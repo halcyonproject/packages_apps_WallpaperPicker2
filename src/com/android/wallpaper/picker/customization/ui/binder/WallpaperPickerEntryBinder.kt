@@ -53,6 +53,7 @@ import com.google.android.material.carousel.CarouselSnapHelper
 import kotlinx.coroutines.launch
 
 object WallpaperPickerEntryBinder {
+    private const val DESKTOP_CAROUSEL_ITEMS_COUNT = 5
 
     private class CustomScrollableCarouselLayoutManager : CarouselLayoutManager() {
         private var isScrollable = false
@@ -98,7 +99,7 @@ object WallpaperPickerEntryBinder {
             navigateToExtendedWallpaperEffects = navigateToExtendedWallpaperEffects,
         )
 
-        val shouldShowDesktopUi = BaseFlags.get(view.context).shouldShowDesktopUi(view.context)
+        val shouldShowDesktopUi = BaseFlags.get().shouldShowDesktopUi(view.context)
 
         if (shouldShowDesktopUi) {
             bindWallpaperCarouselDesktop(

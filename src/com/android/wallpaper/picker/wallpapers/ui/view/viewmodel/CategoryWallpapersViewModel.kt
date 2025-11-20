@@ -250,8 +250,7 @@ constructor(
             }
 
             val isNewUIEnabled =
-                BaseFlags.get(context).isCollabsableSectionInAiEnabled() &&
-                    !templates.isNullOrEmpty()
+                BaseFlags.get().isCollabsableSectionInAiEnabled() && !templates.isNullOrEmpty()
 
             val wallpaperItem =
                 if (isNewUIEnabled) {

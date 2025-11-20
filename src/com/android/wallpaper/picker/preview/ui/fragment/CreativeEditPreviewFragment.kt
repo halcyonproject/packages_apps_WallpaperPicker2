@@ -55,6 +55,9 @@ import kotlinx.coroutines.CoroutineScope
 @AndroidEntryPoint(AppbarFragment::class)
 class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
 
+    private val isRefactorWallpaperPreviewScreenEnabled =
+        BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()
+
     @Inject @ApplicationContext lateinit var appContext: Context
     @Inject @MainDispatcher lateinit var mainScope: CoroutineScope
     @Inject lateinit var displayUtils: DisplayUtils
@@ -109,12 +112,7 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
                     // otherwise.
                     if (it.resultCode == RESULT_OK) {
                         updatePreview(it.resultCode, it.data)
-                        if (
-                            context?.let { unwrappedContext ->
-                                BaseFlags.get(unwrappedContext)
-                                    .isRefactorWallpaperPreviewScreenEnabled()
-                            } == true
-                        ) {
+                        if (isRefactorWallpaperPreviewScreenEnabled) {
                             // When clicking on the check button, navigate to the preview fragment.
                             findNavController()
                                 .navigate(

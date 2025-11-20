@@ -32,6 +32,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.app.ActivityOptionsCompat
 import androidx.test.core.app.ActivityScenario
 import com.android.systemui.shared.Flags.FLAG_PAN_AND_ZOOM_IN_EXTENDED_WALLPAPER_EFFECTS
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.preview.PreviewTestActivity
@@ -130,6 +131,7 @@ class ExtendedWallpaperEffectsUtilsTest {
                 launcher,
                 context,
                 wallpaperConnectionUtils,
+                BaseFlags.get(),
             )
 
             assertThat(launcher.lastIntent).isNotNull()
@@ -160,6 +162,7 @@ class ExtendedWallpaperEffectsUtilsTest {
                 launcher,
                 context,
                 wallpaperConnectionUtils,
+                BaseFlags.get(),
             )
 
             assertThat(launcher.lastIntent).isNotNull()
@@ -188,6 +191,7 @@ class ExtendedWallpaperEffectsUtilsTest {
                 launcher,
                 context,
                 wallpaperConnectionUtils,
+                BaseFlags.get(),
             )
 
             assertThat(launcher.lastIntent).isNotNull()
@@ -213,6 +217,7 @@ class ExtendedWallpaperEffectsUtilsTest {
                 launcher,
                 context,
                 wallpaperConnectionUtils,
+                BaseFlags.get(),
             )
 
             assertThat(launcher.lastIntent).isNotNull()
@@ -238,6 +243,7 @@ class ExtendedWallpaperEffectsUtilsTest {
                 launcher,
                 context,
                 wallpaperConnectionUtils,
+                BaseFlags.get(),
             )
 
             assertThat(launcher.lastIntent).isNotNull()
