@@ -28,6 +28,7 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import com.android.wallpaper.util.toDescription
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -40,7 +41,7 @@ import kotlinx.coroutines.sync.withLock
  * [LiveWallpaperConnectionUtils] can only be used by refactor_wallpaper_preview_screen_flag.
  */
 @ActivityRetainedScoped
-class LiveWallpaperConnectionUtils @Inject constructor() {
+class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext context: Context) {
 
     // Note that we only need to use mutex and cache the engine map when forceSingleEngine is true.
     // Otherwise, we always create a new engine when connect.
@@ -50,7 +51,7 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
     private val mutex = Mutex()
 
     init {
-        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+        if (!BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
                 "LiveWallpaperConnectionUtils can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."
@@ -135,6 +136,7 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
 
         val engine: IWallpaperEngine =
             LiveWallpaperEngineCreator.createEngine(
+                context = context,
                 wallpaperService = wallpaperService,
                 destinationFlag = destinationFlag,
                 description = wallpaperModel.toDescription(),
@@ -148,6 +150,7 @@ class LiveWallpaperConnectionUtils @Inject constructor() {
 
         val connection =
             LiveWallpaperConnections(
+                context = context,
                 wallpaperEngine = WeakReference(engine),
                 serviceConnection = WeakReference(serviceConnection),
                 wallpaperService = WeakReference(wallpaperService),
