@@ -164,7 +164,7 @@ class CustomizationPickerFragment2 :
             isInitialCreation = false
         }
 
-        if (!BaseFlags.get(requireContext()).isPhotoPickerEnabled()) {
+        if (!BaseFlags.get().isPhotoPickerEnabled()) {
             extendedWallpaperEffectsLauncher =
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result
                     ->
@@ -210,7 +210,7 @@ class CustomizationPickerFragment2 :
 
     override fun onStart() {
         super.onStart()
-        if (BaseFlags.get(requireContext()).isPackThemeEnabled()) {
+        if (BaseFlags.get().isPackThemeEnabled()) {
             customizationPickerViewModel.customizationOptionsViewModel.refetchThemeInfo()
         }
     }
@@ -236,7 +236,7 @@ class CustomizationPickerFragment2 :
                 /* def= */ 0,
             ) == 1
         val packThemeSuggestedChip: PackThemeSuggestedChip? =
-            if (BaseFlags.get(requireContext()).isPackThemeEnabled() && showSuggestedChip) {
+            if (BaseFlags.get().isPackThemeEnabled() && showSuggestedChip) {
                 val stubView: ViewStub = view.requireViewById(R.id.stub_pack_theme_suggested_chip)
                 stubView.inflate() as PackThemeSuggestedChip
             } else null
@@ -446,7 +446,7 @@ class CustomizationPickerFragment2 :
         }
 
         var previewPager: ClickableMotionLayout = view.requireViewById(R.id.preview_pager)
-        if (BaseFlags.get(view.context).shouldShowDesktopUi(view.context)) {
+        if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
             val previewPagerParent: ViewGroup = previewPager.parent as ViewGroup
             previewPagerParent.removeView(previewPager)
             previewPager =
@@ -793,7 +793,7 @@ class CustomizationPickerFragment2 :
                 )
             },
             navigateToExtendedWallpaperEffects = {
-                if (BaseFlags.get(pickerMotionContainer.context).isPhotoPickerEnabled()) {
+                if (BaseFlags.get().isPhotoPickerEnabled()) {
                     switchFragment(
                         PhotoPickerFragment.newInstance(
                             shouldNavigateToExtendedWallpaperEffects = true
@@ -950,7 +950,7 @@ class CustomizationPickerFragment2 :
 
         // Sets up focus listeners for the lock preview and home preview to handle accessibility
         // focus events.
-        if (BaseFlags.get(rootView.context).shouldShowDesktopUi(rootView.context)) {
+        if (BaseFlags.get().shouldShowDesktopUi(rootView.context)) {
             setUpPreviewCardFocusListener(
                 lockPreview.requireViewById<View>(R.id.preview_card),
                 previewPager,

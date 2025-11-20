@@ -82,6 +82,9 @@ class WallpaperPreviewActivity :
     private val wallpaperPreviewViewModel: WallpaperPreviewViewModel by viewModels()
     private val categoriesViewModel: CategoriesViewModel by viewModels()
 
+    private val isRefactorWallpaperPreviewScreenEnabled =
+        BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()
+
     private var isFirstRun = false
     private var navigateToExtendedWallpaperEffects: Boolean? = null
 
@@ -127,10 +130,9 @@ class WallpaperPreviewActivity :
             (supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
                     as NavHostFragment)
                 .navController
-
         val graph =
             navController.navInflater.inflate(
-                if (BaseFlags.get(this).isRefactorWallpaperPreviewScreenEnabled())
+                if (isRefactorWallpaperPreviewScreenEnabled)
                     R.navigation.wallpaper_preview_nav_graph_compose_refactor
                 else R.navigation.wallpaper_preview_nav_graph
             )
@@ -311,7 +313,7 @@ class WallpaperPreviewActivity :
         finishAfterTransition()
     }
 
-    private fun isFullscreenPreviewEnabled() = BaseFlags.get(this).isFullscreenPreviewEnabled(this)
+    private fun isFullscreenPreviewEnabled() = BaseFlags.get().isFullscreenPreviewEnabled(this)
 
     companion object {
         const val HIDE_SURFACES_FOR_ENTER_TRANSITION = "hide_surfaces_for_enter_transition"

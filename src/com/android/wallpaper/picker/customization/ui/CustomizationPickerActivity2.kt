@@ -192,7 +192,7 @@ class CustomizationPickerActivity2 :
     }
 
     override fun isUpArrowSupported(): Boolean {
-        return BaseFlags.get(baseContext).shouldShowDesktopUi(baseContext) ||
+        return BaseFlags.get().shouldShowDesktopUi(baseContext) ||
             !ActivityUtils.isSUWMode(baseContext)
     }
 

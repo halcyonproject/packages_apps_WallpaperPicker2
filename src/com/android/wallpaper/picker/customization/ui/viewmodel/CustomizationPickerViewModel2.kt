@@ -83,9 +83,7 @@ constructor(
     private val _selectedPreviewScreen =
         MutableStateFlow(
             initialPreviewScreen
-                ?: if (
-                    isLaunchedFromLauncher || BaseFlags.get(context).shouldShowDesktopUi(context)
-                )
+                ?: if (isLaunchedFromLauncher || BaseFlags.get().shouldShowDesktopUi(context))
                     HOME_SCREEN
                 else LOCK_SCREEN
         )

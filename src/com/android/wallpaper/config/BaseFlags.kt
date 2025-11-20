@@ -36,11 +36,8 @@ import com.android.wallpaper.Flags.refactorWallpaperInfoFlag
 import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
+import com.android.wallpaper.module.InjectorProvider
 import com.android.wm.shell.shared.desktopmode.DesktopState
-import dagger.hilt.EntryPoint
-import dagger.hilt.EntryPoints
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
@@ -153,20 +150,10 @@ abstract class BaseFlags {
 
     open fun isHideAppLabelEnabled(): Boolean = workspaceItemsLabelHidden()
 
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface BaseFlagsEntryPointInjector {
-        fun getBaseFlags(): BaseFlags
-    }
-
     companion object {
         @JvmStatic
-        fun get(context: Context): BaseFlags {
-            return EntryPoints.get(
-                    context.applicationContext,
-                    BaseFlagsEntryPointInjector::class.java,
-                )
-                .getBaseFlags()
+        fun get(): BaseFlags {
+            return InjectorProvider.getInjector().getFlags()
         }
     }
 }
