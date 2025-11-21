@@ -24,6 +24,8 @@ data class PreviewPagerViews(
     val previewPager: ClickableMotionLayout,
     val lockPreviewLabel: TextView,
     val homePreviewLabel: TextView,
+    val lockPreviewLabelContainer: View,
+    val homePreviewLabelContainer: View,
     val lockPreview: View,
     val homePreview: View,
     val lockPreviewShade: View,
