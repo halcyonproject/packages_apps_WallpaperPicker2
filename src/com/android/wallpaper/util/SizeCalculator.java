@@ -65,10 +65,9 @@ public class SizeCalculator {
     }
 
     private static int getNumCategoryColumns(Context context, int windowWidthPx) {
-        int minColumnCount = context.getResources().getInteger(R.integer.category_min_column_count);
-        int maxColumnCount = context.getResources().getInteger(R.integer.category_max_column_count);
-        return getNumColumns(context, windowWidthPx, minColumnCount,
-                maxColumnCount);
+        int columnCount = context.getResources().getInteger(R.integer.category_column_count);
+        return getNumColumns(context, windowWidthPx, columnCount,
+                columnCount);
     }
 
     private static int getNumFeaturedCategoryColumns() {
