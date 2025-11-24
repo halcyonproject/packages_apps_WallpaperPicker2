@@ -19,6 +19,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.Fragment
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.model.CategoryProvider
 import com.android.wallpaper.model.InlinePreviewIntentFactory
@@ -91,6 +92,8 @@ interface Injector {
     fun getWallpaperRefresher(context: Context): WallpaperRefresher
 
     fun getWallpaperStatusChecker(context: Context): WallpaperStatusChecker
+
+    fun getFlags(): BaseFlags
 
     fun getWallpaperInteractor(context: Context): WallpaperInteractor
 

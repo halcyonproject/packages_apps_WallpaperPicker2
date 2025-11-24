@@ -40,7 +40,7 @@ constructor(
 ) {
 
     /** Returns whether user created wallpapers are supported or not. */
-    open fun supportsUserCreatedWallpapers(context: Context): Boolean {
+    open fun supportsUserCreatedWallpapers(): Boolean {
         return false
     }
 
