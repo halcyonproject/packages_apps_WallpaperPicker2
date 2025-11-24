@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.module;
 
-import static com.android.wallpaper.module.NetworkStatusNotifier.NETWORK_NOT_INITIALIZED;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -41,7 +40,6 @@ import com.android.wallpaper.model.ThirdPartyAppCategory;
 import com.android.wallpaper.model.ThirdPartyLiveWallpaperCategory;
 import com.android.wallpaper.model.WallpaperCategory;
 import com.android.wallpaper.model.WallpaperInfo;
-import com.android.wallpaper.module.NetworkStatusNotifier.NetworkStatus;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -72,7 +70,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
     private static final int PRIORITY_ON_DEVICE = 200;
     private static final int PRIORITY_LIVE = 300;
     private static final int PRIORITY_THIRD_PARTY = 400;
-    public static final int CREATIVE_CATEGORY_PRIORITY = 1;
 
     protected static List<Category> sSystemCategories;
 
@@ -81,16 +78,11 @@ public class DefaultCategoryProvider implements CategoryProvider {
     protected boolean mFetchedCategories;
 
     private NetworkStatusNotifier mNetworkStatusNotifier;
-    // The network status of the last fetch from the server.
-    @NetworkStatus
-    private int mNetworkStatus;
-    private Locale mLocale;
 
     public DefaultCategoryProvider(Context context) {
         mAppContext = context.getApplicationContext();
         mCategories = new ArrayList<>();
         mNetworkStatusNotifier = InjectorProvider.getInjector().getNetworkStatusNotifier(context);
-        mNetworkStatus = NETWORK_NOT_INITIALIZED;
     }
 
     @Override
@@ -106,8 +98,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
             mFetchedCategories = false;
         }
 
-        mNetworkStatus = mNetworkStatusNotifier.getNetworkStatus();
-        mLocale = getLocale();
         doFetch(receiver, forceRefresh);
     }
 

@@ -497,7 +497,6 @@ constructor(
                                 launcher,
                                 context,
                                 wallpaperConnectionUtils,
-                                flags,
                             )
                         }
                     }

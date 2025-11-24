@@ -28,6 +28,8 @@ interface CategoryInteractor {
 
     val isNetworkCategoriesNotEmpty: Flow<Boolean>
 
+    val defaultRecentCategories: Flow<List<CategoryModel>>
+
     fun refreshDueToLocaleChange()
 
     fun refreshNetworkCategories()

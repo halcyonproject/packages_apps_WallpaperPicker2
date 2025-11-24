@@ -114,7 +114,7 @@ public final class TestAsset extends Asset {
             ImageView imageView,
             int transitionDurationMillis,
             @Nullable DrawableLoadedListener drawableLoadedListener,
-            int placeholderColor) {
+            int placeholderColor, @Nullable PermissionErrorListener permissionErrorListener) {
         if (drawableLoadedListener != null) {
             drawableLoadedListener.onDrawableLoaded();
         }

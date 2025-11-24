@@ -47,7 +47,6 @@ import androidx.transition.Transition
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
-import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
@@ -98,8 +97,6 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
     @Inject lateinit var packageStatusNotifier: PackageStatusNotifier
     @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
-
-    private val flags = InjectorProvider.getInjector().getFlags()
 
     private lateinit var currentView: View
     private lateinit var shareActivityResult: ActivityResultLauncher<Intent>
@@ -195,7 +192,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
 
             // Sets up focus listeners for the lock preview and home preview to handle accessibility
             // focus events.
-            if (BaseFlags.get().shouldShowDesktopUi(it.context)) {
+            if (BaseFlags.get(it.context).shouldShowDesktopUi(it.context)) {
                 val lockPreview = it.requireViewById<View>(R.id.lock_preview)
                 val homePreview = it.requireViewById<View>(R.id.home_preview)
                 setUpPreviewCardFocusListener(lockPreview, Screen.LOCK_SCREEN)
@@ -331,7 +328,6 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
                                         launcher,
                                         unwrappedContext,
                                         wallpaperConnectionUtils,
-                                        flags,
                                     )
                                 }
                             }

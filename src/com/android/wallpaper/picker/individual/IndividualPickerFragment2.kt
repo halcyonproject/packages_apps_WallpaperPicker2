@@ -788,7 +788,7 @@ class IndividualPickerFragment2 :
     private fun getNumColumns(): Int {
         val activity = this.activity ?: return 1
         return if (isFewerColumnLayout()) {
-            SizeCalculator.getNumFeaturedIndividualColumns(activity)
+            SizeCalculator.getNumFeaturedIndividualColumns()
         } else {
             SizeCalculator.getNumIndividualColumns(activity)
         }

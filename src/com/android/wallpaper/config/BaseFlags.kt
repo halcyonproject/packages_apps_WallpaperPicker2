@@ -36,8 +36,11 @@ import com.android.wallpaper.Flags.refactorWallpaperInfoFlag
 import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
-import com.android.wallpaper.module.InjectorProvider
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
@@ -88,6 +91,10 @@ abstract class BaseFlags {
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
     open fun isPhotoPickerEnabled() = false
+
+    // This flag is to gate the dependency of default recents on new categories
+    // fetching logic.
+    open fun isRefactorWallpaperDefaults() = false
 
     open fun isKeyguardQuickAffordanceEnabled(context: Context): Boolean {
         return getCachedFlags(context)
@@ -150,10 +157,20 @@ abstract class BaseFlags {
 
     open fun isHideAppLabelEnabled(): Boolean = workspaceItemsLabelHidden()
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface BaseFlagsEntryPointInjector {
+        fun getBaseFlags(): BaseFlags
+    }
+
     companion object {
         @JvmStatic
-        fun get(): BaseFlags {
-            return InjectorProvider.getInjector().getFlags()
+        fun get(context: Context): BaseFlags {
+            return EntryPoints.get(
+                    context.applicationContext,
+                    BaseFlagsEntryPointInjector::class.java,
+                )
+                .getBaseFlags()
         }
     }
 }

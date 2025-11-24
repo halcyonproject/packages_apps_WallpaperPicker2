@@ -74,6 +74,7 @@ object CategoriesBinder {
                             bannerProvider,
                             curatedPhotosTimeUtil,
                             userEventLogger,
+                            onInvalidPhoto = { viewModel.refreshCuratedPhotos() },
                         )
                     }
                 }

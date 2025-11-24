@@ -44,7 +44,10 @@ import java.util.Optional;
  * and actually setting the wallpaper on a given destination.
  * It is expected to be instantiated within a Fragment or Activity, and {@link #cleanUp()} should
  * be called from its owner's onDestroy method (or equivalent).
+ *
+ * @deprecated Use {@link com.android.wallpaper.picker.customization.data.content.WallpaperClient}
  */
+@Deprecated
 public class WallpaperSetter {
 
     private static final String TAG = "WallpaperSetter";

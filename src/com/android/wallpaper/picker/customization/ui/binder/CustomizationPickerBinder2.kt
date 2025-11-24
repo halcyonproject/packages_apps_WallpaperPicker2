@@ -134,7 +134,7 @@ object CustomizationPickerBinder2 {
             }
         }
 
-        if (BaseFlags.get().isPackThemeEnabled()) {
+        if (BaseFlags.get(view.context).isPackThemeEnabled()) {
             packThemeSuggestedChip?.let {
                 packThemeSuggestedEntryBinder.bind(
                     view = it,

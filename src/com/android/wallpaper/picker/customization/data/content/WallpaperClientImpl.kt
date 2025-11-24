@@ -606,11 +606,11 @@ constructor(
     override fun getCurrentCropHints(
         displaySizes: List<Point>,
         @SetWallpaperFlags which: Int,
-    ): Map<Point, Rect>? {
-        val cropHints: List<Rect>? =
+    ): Map<Point, Rect> {
+        val cropHints: List<Rect> =
             wallpaperManager.getBitmapCrops(displaySizes, which, /* originalBitmap= */ true)
 
-        return cropHints?.indices?.associate { displaySizes[it] to cropHints[it] }
+        return cropHints.indices.associate { displaySizes[it] to cropHints[it] }
     }
 
     override suspend fun getWallpaperColors(

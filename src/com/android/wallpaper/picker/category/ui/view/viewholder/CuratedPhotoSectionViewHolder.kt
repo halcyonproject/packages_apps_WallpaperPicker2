@@ -36,6 +36,7 @@ import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.category.ui.binder.BannerProvider
 import com.android.wallpaper.picker.category.ui.view.adapter.CuratedPhotosAdapter
 import com.android.wallpaper.picker.category.ui.viewmodel.PhotosViewModel
+import com.android.wallpaper.picker.category.ui.viewmodel.TileViewModel
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.view.listener.CarouselHorizontalScrollEnforcer
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -76,6 +77,7 @@ class CuratedPhotoSectionViewHolder(
         bannerProvider: BannerProvider?,
         isSignInBannerVisible: Boolean,
         onSignInBannerDismissed: (dismissed: Boolean) -> Unit? = {},
+        onInvalidPhoto: (TileViewModel) -> Unit,
     ) {
 
         // setting the color for section title
@@ -272,7 +274,12 @@ class CuratedPhotoSectionViewHolder(
         } else {
             morePhotosLabel.visibility = View.VISIBLE
             sectionTiles.adapter =
-                CuratedPhotosAdapter(item.tileViewModels, curatedPhotosTimeUtil, userEventLogger)
+                CuratedPhotosAdapter(
+                    item.tileViewModels,
+                    curatedPhotosTimeUtil,
+                    userEventLogger,
+                    onInvalidPhoto,
+                )
             val currentParams = sectionTiles.layoutParams
             currentParams.height =
                 sectionTiles.context.resources.getDimension(R.dimen.curated_photo_height).toInt()

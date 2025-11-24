@@ -48,15 +48,22 @@ class CuratedPhotoHolder(
 
     private val curatedPhotoTitle: TextView = itemView.requireViewById(R.id.carousel_text_view)
 
-    fun bind(item: TileViewModel, context: Context, isFirst: Boolean) {
+    fun bind(
+        item: TileViewModel,
+        context: Context,
+        isFirst: Boolean,
+        onInvalidPhoto: (TileViewModel) -> Unit,
+    ) {
         curatedPhotoImage.contentDescription = item.contentDescription
 
         item.thumbnailAsset?.let { asset ->
             asset.loadDrawableWithTransition(
-                context,
-                curatedPhotoImage,
-                context.resources.getInteger(android.R.integer.config_mediumAnimTime),
-                {
+                /* context= */ context,
+                /* imageView= */ curatedPhotoImage,
+                /* transitionDurationMillis= */ context.resources.getInteger(
+                    android.R.integer.config_mediumAnimTime
+                ),
+                /* drawableLoadedListener= */ {
                     val startTime = curatedPhotosTimeUtil.getStartTime()
                     val timeMilliseconds = System.currentTimeMillis() - startTime
                     userEventLogger.logCuratedPhotosRendered(timeMilliseconds, true)
@@ -66,7 +73,8 @@ class CuratedPhotoHolder(
                         backgroundColorBinding = null
                     }
                 },
-                context.getColor(R.color.system_surface_bright),
+                /* placeholderColor= */ context.getColor(R.color.system_surface_bright),
+                /* permissionErrorListener= */ { onInvalidPhoto },
             )
         }
             ?: run {

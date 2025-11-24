@@ -116,7 +116,8 @@ object PreviewBinder {
                                                 engine.trySetIsVisible(visibility == View.VISIBLE)
                                             }
                                     },
-                                    onWallpaperColorsChanged = { colors, displayId ->
+                                    onWallpaperColorsChanged = { colors, displayId, persistedColors
+                                        ->
                                         // TODO(b/423956081): Handle color updates.
                                     },
                                 )
@@ -210,7 +211,8 @@ object PreviewBinder {
         destinationFlag: Int,
         liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils,
         onEngineCreated: (engine: IWallpaperEngine) -> Unit,
-        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+        onWallpaperColorsChanged:
+            (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): WallpaperSurfaceControl.Live? {
         val engine =
             liveWallpaperConnectionUtils.connect(

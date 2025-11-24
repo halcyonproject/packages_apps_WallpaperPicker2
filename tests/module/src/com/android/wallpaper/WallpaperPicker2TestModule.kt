@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper
 
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.effects.FakeEffectsController
 import com.android.wallpaper.module.DefaultThirdPartyLiveWallpaperModelFactory
@@ -66,6 +67,7 @@ import com.android.wallpaper.util.converter.PhotosErrorConvertor
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
@@ -194,4 +196,13 @@ abstract class WallpaperPicker2TestModule {
     abstract fun bindThirdPartyLiveWallpaperModelFactory(
         impl: DefaultThirdPartyLiveWallpaperModelFactory
     ): ThirdPartyLiveWallpaperModelFactory
+
+    companion object {
+
+        @Provides
+        @Singleton
+        fun provideFlags(): BaseFlags {
+            return object : BaseFlags() {}
+        }
+    }
 }

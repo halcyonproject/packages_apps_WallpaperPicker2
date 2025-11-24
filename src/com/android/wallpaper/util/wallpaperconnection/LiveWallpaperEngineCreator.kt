@@ -18,6 +18,7 @@ package com.android.wallpaper.util.wallpaperconnection
 
 import android.app.WallpaperColors
 import android.app.wallpaper.WallpaperDescription
+import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
@@ -48,6 +49,7 @@ object LiveWallpaperEngineCreator {
     private const val WHICH_PREVIEW = "which_preview"
 
     suspend fun createEngine(
+        context: Context,
         wallpaperService: IWallpaperService,
         destinationFlag: Int,
         description: WallpaperDescription,
@@ -55,9 +57,10 @@ object LiveWallpaperEngineCreator {
         windowToken: IBinder,
         displayId: Int,
         whichPreview: WhichPreview,
-        onWallpaperColorsChanged: (colors: WallpaperColors?, displayId: Int) -> Unit,
+        onWallpaperColorsChanged:
+            (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): IWallpaperEngine {
-        if (!BaseFlags.get().isRefactorWallpaperPreviewScreenEnabled()) {
+        if (!BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
                 "LiveWallpaperEngineCreator can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."
@@ -94,8 +97,9 @@ object LiveWallpaperEngineCreator {
                     override fun onWallpaperColorsChanged(
                         colors: WallpaperColors?,
                         displayId: Int,
+                        persistedColors: WallpaperColors?,
                     ) {
-                        onWallpaperColorsChanged.invoke(colors, displayId)
+                        onWallpaperColorsChanged.invoke(colors, displayId, persistedColors)
                     }
 
                     override fun onLocalWallpaperColorsChanged(
@@ -108,6 +112,7 @@ object LiveWallpaperEngineCreator {
                 }
 
             LiveWallpaperServiceConnector.attachWallpaperConnection(
+                context = context,
                 wallpaperConnection = wallpaperConnection,
                 wallpaperService = wallpaperService,
                 destinationFlag = destinationFlag,

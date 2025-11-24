@@ -186,7 +186,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         ) { navigationEvent, callback ->
             when (navigationEvent) {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
-                    if (BaseFlags.get().isWallpapersFragmentEnabled()) {
+                    if (BaseFlags.get(requireContext()).isWallpapersFragmentEnabled()) {
                         categoryWallpapersRepository.setSelectedCategory(
                             category = navigationEvent.categoryModel
                         )
@@ -277,7 +277,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         shouldNavigateToExtendedWallpaperEffects: Boolean,
         callback: (() -> Unit)?,
     ) {
-        if (BaseFlags.get().isPhotoPickerEnabled()) {
+        if (BaseFlags.get(requireContext()).isPhotoPickerEnabled()) {
             parentFragmentManager.commit {
                 replace(
                     R.id.fragment_container,

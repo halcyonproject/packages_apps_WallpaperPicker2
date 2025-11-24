@@ -74,7 +74,7 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     private var state: State = State.EXPANDED
 
     init {
-        val shouldShowDesktopUi = BaseFlags.get().shouldShowDesktopUi(context)
+        val shouldShowDesktopUi = BaseFlags.get(context).shouldShowDesktopUi(context)
         val layoutResource =
             if (shouldShowDesktopUi) {
                 R.layout.wallpaper_picker_entry_desktop

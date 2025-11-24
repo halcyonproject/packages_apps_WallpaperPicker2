@@ -263,7 +263,7 @@ public abstract class Asset {
             final ImageView imageView,
             final int transitionDurationMillis,
             @Nullable final DrawableLoadedListener drawableLoadedListener,
-            int placeholderColor) {
+            int placeholderColor, @Nullable PermissionErrorListener permissionErrorListener) {
         Point imageViewDimensions = getViewDimensions(imageView);
 
         // Transition from a placeholder ColorDrawable to the decoded bitmap when the ImageView in
@@ -433,6 +433,16 @@ public abstract class Asset {
          * Called with a decoded Bitmap object or null if there was an error decoding the bitmap.
          */
         void onBitmapDecoded(@Nullable Bitmap bitmap);
+    }
+
+    /**
+     * Interface for permissions errors from google photos.
+     */
+    public interface PermissionErrorListener {
+        /**
+         * Called when a permission issue happens in photos app.
+         */
+        void onPermissionError();
     }
 
     /**
