@@ -31,10 +31,12 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.wallpaper.asset.CreativeWallpaperThumbAsset;
-import com.android.wallpaper.module.InjectorProvider;
+import com.android.wallpaper.config.BaseFlags;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 /** The {@link WallpaperCategory} implements category for user created wallpapers. */
 public class CreativeCategory extends WallpaperCategory {
@@ -59,8 +61,8 @@ public class CreativeCategory extends WallpaperCategory {
 
     /** Return true for CreativeCategories since we support user generated wallpapers here. */
     @Override
-    public boolean supportsUserCreatedWallpapers() {
-        if (InjectorProvider.getInjector().getFlags().isCreativeWallpaperCollectionFieldEnabled()) {
+    public boolean supportsUserCreatedWallpapers(@Nonnull Context context) {
+        if (BaseFlags.get(context).isCreativeWallpaperCollectionFieldEnabled()) {
             return !mIsCollectionWallpaper;
         } else {
             return true;
@@ -96,8 +98,8 @@ public class CreativeCategory extends WallpaperCategory {
                 if (cursor == null || !cursor.moveToFirst()) {
                     return null;
                 }
-                return CreativeWallpaperInfo.buildFromCursor(wallpaper.getWallpaperComponent(),
-                        cursor);
+                return CreativeWallpaperInfo.buildFromCursor(context,
+                        wallpaper.getWallpaperComponent(), cursor);
             } catch (Throwable e) {
                 Log.e(TAG, "Couldn't read creative category.", e);
             }
@@ -181,7 +183,7 @@ public class CreativeCategory extends WallpaperCategory {
                         continue;
                     }
                     CreativeWallpaperInfo creativeWallpaperInfo =
-                            CreativeWallpaperInfo.buildFromCursor(wallpaperInfo, cursor);
+                            CreativeWallpaperInfo.buildFromCursor(context, wallpaperInfo, cursor);
                     // If the meta data for wallpaper actions exists, only then can we query the
                     // action fields and action table.
                     if (metaData.get(KEY_WALLPAPER_CREATIVE_WALLPAPER_EFFECTS) != null) {

@@ -24,9 +24,6 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.view.Display;
 
-import com.android.wallpaper.config.BaseFlags;
-import com.android.wallpaper.module.InjectorProvider;
-
 /**
  * Static utility methods for wallpaper cropping operations.
  */
@@ -194,7 +191,6 @@ public final class WallpaperCropUtils {
     public static Rect calculateCropRect(Context context, float wallpaperZoom, Point wallpaperSize,
             Point defaultCropSurfaceSize, Point targetHostSize, int scrollX, int scrollY,
             boolean cropExtraWidth) {
-        BaseFlags flags = InjectorProvider.getInjector().getFlags();
         // Calculate Rect of wallpaper in physical pixel terms (i.e., scaled to current zoom).
         int scaledWallpaperWidth = Math.round(wallpaperSize.x * wallpaperZoom);
         int scaledWallpaperHeight = Math.round(wallpaperSize.y * wallpaperZoom);
