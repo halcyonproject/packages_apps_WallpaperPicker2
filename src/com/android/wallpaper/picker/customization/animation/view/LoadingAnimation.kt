@@ -24,7 +24,7 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.view.View
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseShader
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseShader
 import com.android.wallpaper.picker.customization.animation.Interpolators
 import com.android.wallpaper.picker.customization.animation.shader.CircularRevealShader
 import com.android.wallpaper.picker.customization.animation.shader.CompositeLoadingShader
@@ -32,7 +32,7 @@ import com.android.wallpaper.picker.customization.animation.shader.SparkleShader
 import kotlin.math.max
 
 /** Renders loading and reveal animation. */
-// TODO (b/281878827): remove this and use loading animation in SystemUIShaderLib when available
+// TODO (b/281878827): remove this and use loading animation in SurfaceEffectsViewLib when available
 class LoadingAnimation(
     /** The view used to play the loading and reveal animation */
     private val revealOverlay: View,

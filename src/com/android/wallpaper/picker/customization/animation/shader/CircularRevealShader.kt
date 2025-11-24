@@ -16,13 +16,13 @@
 package com.android.wallpaper.picker.customization.animation.shader
 
 import android.graphics.RuntimeShader
-import com.android.systemui.surfaceeffects.shaderutil.SdfShaderLibrary
+import com.android.systemui.surfaceeffects.core.shaderutil.SdfShaderLibrary
 
 /**
  * Reveals whatever is behind the given image in a circular fashion. Imagine a hole in the given
  * image that grows until it's invisible.
  */
-// TODO (b/281878827): remove this and use loading animation in SystemUIShaderLib when available
+// TODO (b/281878827): remove this and use loading animation in SurfaceEffectsViewLib when available
 class CircularRevealShader : RuntimeShader(REVEAL_SHADER) {
     // language=AGSL
     companion object {

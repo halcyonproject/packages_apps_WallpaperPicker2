@@ -16,10 +16,10 @@
 package com.android.wallpaper.picker.customization.animation.shader
 
 import android.graphics.RuntimeShader
-import com.android.systemui.surfaceeffects.shaderutil.ShaderUtilLibrary
+import com.android.systemui.surfaceeffects.core.shaderutil.ShaderUtilLibrary
 
 /** Shader that renders sparkles in [CompositeLoadingShader]. */
-// TODO (b/281878827): remove this and use loading animation in SystemUIShaderLib when available
+// TODO (b/281878827): remove this and use loading animation in SurfaceEffectsViewLib when available
 class SparkleShader : RuntimeShader(SPARKLE_SHADER) {
     // language=AGSL
     companion object {

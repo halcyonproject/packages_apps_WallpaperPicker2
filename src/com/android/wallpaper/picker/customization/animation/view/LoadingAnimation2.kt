@@ -24,7 +24,7 @@ import android.graphics.RenderEffect
 import android.view.View
 import androidx.core.graphics.ColorUtils
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.surfaceeffects.turbulencenoise.TurbulenceNoiseShader
+import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseShader
 import com.android.wallpaper.picker.customization.animation.Interpolators
 import com.android.wallpaper.picker.customization.animation.shader.CompositeLoadingShader
 
