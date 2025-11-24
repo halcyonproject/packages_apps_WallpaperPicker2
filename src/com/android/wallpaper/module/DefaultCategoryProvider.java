@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -77,12 +76,9 @@ public class DefaultCategoryProvider implements CategoryProvider {
     protected ArrayList<Category> mCategories;
     protected boolean mFetchedCategories;
 
-    private NetworkStatusNotifier mNetworkStatusNotifier;
-
     public DefaultCategoryProvider(Context context) {
         mAppContext = context.getApplicationContext();
         mCategories = new ArrayList<>();
-        mNetworkStatusNotifier = InjectorProvider.getInjector().getNetworkStatusNotifier(context);
     }
 
     @Override
@@ -99,11 +95,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
         }
 
         doFetch(receiver, forceRefresh);
-    }
-
-    @Override
-    public int getSize() {
-        return mFetchedCategories ? mCategories.size() : 0;
     }
 
     @Override
@@ -129,16 +120,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
                 R.drawable.wallpaperpicker_emptystate /* overlayIconResId */);
     }
 
-    @Override
-    public boolean isFeaturedCollectionAvailable() {
-        return false;
-    }
-
-    @Override
-    public boolean isCreativeCategoryAvailable() {
-        return false;
-    }
-
     protected void doFetch(final CategoryReceiver receiver, boolean forceRefresh) {
         CategoryReceiver delegatingReceiver = new CategoryReceiver() {
             @Override
@@ -155,10 +136,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
         };
 
         new FetchCategoriesTask(delegatingReceiver, mAppContext).execute();
-    }
-
-    private Locale getLocale() {
-        return mAppContext.getResources().getConfiguration().getLocales().get(0);
     }
 
     /**
