@@ -190,7 +190,6 @@ constructor(
                     if (cursor == null || !cursor.moveToFirst()) return null
                     val info =
                         CreativeWallpaperInfo.buildFromCursor(
-                            context,
                             wallpaperModel.liveWallpaperData.systemWallpaperInfo,
                             cursor,
                         )

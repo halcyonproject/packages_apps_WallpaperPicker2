@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import com.android.wallpaper.asset.Asset;
 import com.android.wallpaper.asset.BuiltInWallpaperAsset;
 import com.android.wallpaper.asset.CurrentWallpaperAsset;
+import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.module.InjectorProvider;
 
 import java.util.ArrayList;
@@ -148,6 +149,7 @@ public class CurrentWallpaperInfo extends WallpaperInfo {
         boolean isSystemBuiltIn = mWallpaperManagerFlag == WallpaperManager.FLAG_SYSTEM
                 && !InjectorProvider.getInjector().getWallpaperStatusChecker(context)
                 .isHomeStaticWallpaperSet();
+        BaseFlags flags = InjectorProvider.getInjector().getFlags();
         // Only get the full wallpaper asset when previewing a multi-crop wallpaper, otherwise get
         // the cropped asset.
         boolean getFullAsset = !mCropHints.isEmpty();
