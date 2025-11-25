@@ -32,8 +32,6 @@ public interface CategoryProvider {
      */
     void fetchCategories(CategoryReceiver receiver, boolean forceRefresh);
 
-    int getSize();
-
     /**
      * Returns the Category having the given collection ID. If not found, returns null.
      * <p>
@@ -42,14 +40,4 @@ public interface CategoryProvider {
      */
     @Nullable
     Category getCategory(String collectionId);
-
-    /**
-     * Checks if creative category collection is available or not.
-     */
-    boolean isCreativeCategoryAvailable();
-
-    /**
-     * Checks if featured collection available.
-     */
-    boolean isFeaturedCollectionAvailable();
 }
