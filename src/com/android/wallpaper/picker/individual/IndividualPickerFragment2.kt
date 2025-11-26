@@ -772,22 +772,28 @@ class IndividualPickerFragment2 :
     }
 
     private fun showStartRotationErrorDialog(@NetworkPreference networkPreference: Int) {
-        val activity = activity as FragmentTransactionChecker?
-        if (activity != null) {
-            val startRotationErrorDialogFragment =
-                StartRotationErrorDialogFragment.newInstance(networkPreference)
-            startRotationErrorDialogFragment.setTargetFragment(
-                this@IndividualPickerFragment2,
-                UNUSED_REQUEST_CODE,
+        val activity = activity as? FragmentTransactionChecker
+        if (activity == null) {
+            Log.e(
+                TAG,
+                "Activity does not implement FragmentTransactionChecker, can't show error dialog",
             )
-            if (activity.isSafeToCommitFragmentTransaction) {
-                startRotationErrorDialogFragment.show(
-                    parentFragmentManager,
-                    TAG_START_ROTATION_ERROR_DIALOG,
-                )
-            } else {
-                stagedStartRotationErrorDialogFragment = startRotationErrorDialogFragment
-            }
+            return
+        }
+
+        val startRotationErrorDialogFragment =
+            StartRotationErrorDialogFragment.newInstance(networkPreference)
+        startRotationErrorDialogFragment.setTargetFragment(
+            this@IndividualPickerFragment2,
+            UNUSED_REQUEST_CODE,
+        )
+        if (activity.isSafeToCommitFragmentTransaction) {
+            startRotationErrorDialogFragment.show(
+                parentFragmentManager,
+                TAG_START_ROTATION_ERROR_DIALOG,
+            )
+        } else {
+            stagedStartRotationErrorDialogFragment = startRotationErrorDialogFragment
         }
     }
 
