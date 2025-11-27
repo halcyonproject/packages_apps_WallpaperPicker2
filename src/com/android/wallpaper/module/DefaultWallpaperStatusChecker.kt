@@ -16,13 +16,20 @@
 package com.android.wallpaper.module
 
 import android.app.WallpaperManager
+import android.content.Context
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** Default implementation of [WallpaperStatusChecker]. */
-class DefaultWallpaperStatusChecker(
-    private val wallpaperManager: WallpaperManager,
-) : WallpaperStatusChecker {
+@Singleton
+class DefaultWallpaperStatusChecker
+@Inject
+constructor(@ApplicationContext private val context: Context) : WallpaperStatusChecker {
+    private val wallpaperManager = WallpaperManager.getInstance(context)
+
     override fun isHomeStaticWallpaperSet(): Boolean {
         val systemWallpaperFile = wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)
         return if (systemWallpaperFile != null) {
