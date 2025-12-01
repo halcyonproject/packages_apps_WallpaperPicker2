@@ -38,7 +38,7 @@ import androidx.annotation.NonNull;
 
 import com.android.wallpaper.asset.Asset;
 import com.android.wallpaper.asset.CreativeWallpaperThumbAsset;
-import com.android.wallpaper.module.InjectorProvider;
+import com.android.wallpaper.config.BaseFlags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -421,8 +421,8 @@ public class CreativeWallpaperInfo extends LiveWallpaperInfo {
      * @return an object of type CreativeWallpaperInfo
      */
     @NonNull
-    public static CreativeWallpaperInfo buildFromCursor(WallpaperInfo wallpaperInfo,
-            Cursor cursor) {
+    public static CreativeWallpaperInfo buildFromCursor(Context context,
+            WallpaperInfo wallpaperInfo, Cursor cursor) {
         String wallpaperTitle = cursor.getString(
                 cursor.getColumnIndex(WallpaperInfoContract.WALLPAPER_TITLE));
         String wallpaperAuthor = null;
@@ -471,7 +471,7 @@ public class CreativeWallpaperInfo extends LiveWallpaperInfo {
             }
         }
         Boolean isNewCreativeWallpaper;
-        if (InjectorProvider.getInjector().getFlags().isNewCreativeWallpaperCategoryEnabled()) {
+        if (BaseFlags.get(context).isNewCreativeWallpaperCategoryEnabled()) {
             int isNewCreativeWallpaperIndex = cursor.getColumnIndex(
                     WallpaperInfoContract.WALLPAPER_IS_NEW_CREATIVE_WALLPAPER);
             if (isNewCreativeWallpaperIndex >= 0) {

@@ -208,7 +208,7 @@ constructor(
             if (oldList.size != newList.size) {
                 false
             } else {
-                !oldList.containsAll(newList)
+                oldList.containsAll(newList)
             }
         }
 

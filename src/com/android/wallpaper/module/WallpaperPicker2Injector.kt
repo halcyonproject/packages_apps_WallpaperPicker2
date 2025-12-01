@@ -75,7 +75,6 @@ constructor(
     private var systemFeatureChecker: SystemFeatureChecker? = null
     private var wallpaperPersister: WallpaperPersister? = null
     private var wallpaperStatusChecker: WallpaperStatusChecker? = null
-    private var flags: BaseFlags? = null
     private var wallpaperInteractor: WallpaperInteractor? = null
     private var wallpaperClient: WallpaperClient? = null
 
@@ -212,7 +211,7 @@ constructor(
                     getBitmapCropper(),
                     getWallpaperStatusChecker(context),
                     getCurrentWallpaperInfoFactory(context),
-                    getFlags().isRefactorSettingWallpaper(),
+                    BaseFlags.get(context).isRefactorSettingWallpaper(),
                 )
                 .also { wallpaperPersister = it }
     }
@@ -233,10 +232,6 @@ constructor(
                     wallpaperManager = WallpaperManager.getInstance(context.applicationContext)
                 )
                 .also { wallpaperStatusChecker = it }
-    }
-
-    override fun getFlags(): BaseFlags {
-        return flags ?: object : BaseFlags() {}.also { flags = it }
     }
 
     override fun getWallpaperInteractor(context: Context): WallpaperInteractor {
