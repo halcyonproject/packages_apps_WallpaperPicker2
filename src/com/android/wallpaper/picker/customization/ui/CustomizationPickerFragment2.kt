@@ -54,6 +54,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.transition.Transition
 import com.android.customization.picker.clock.ui.view.ClockViewFactory
 import com.android.customization.picker.icon.ui.util.IconStyleViewUtil
+import com.android.systemui.customization.clocks.utils.ViewUtils.animateToAlpha
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.ImageWallpaperInfo
@@ -150,9 +151,15 @@ class CustomizationPickerFragment2 :
 
     // This boolean is to determine that when onCreateView, if it is a fragment reenter after the
     // last fragment exit.
-    private var isReenterAfterExit = false
-
-    private var isInitialCreation = true // Flag to track initial creation
+    private var isFragmentReenterAfterExit = false
+    // This boolean indicates if fragment reenter transition has ended after reentering the
+    // fragment.
+    private var isFragmentReenterEnded = false
+    // This boolean indicates if the motion container's dimensions are calculated.
+    private var isMotionContainerInitialized = false
+    // This boolean indicates if it is an initial Activity creation and will turn from true to false
+    // after the enter animation completes.
+    private var isInitialCreation = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -220,6 +227,7 @@ class CustomizationPickerFragment2 :
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        isMotionContainerInitialized = false
         val view = inflater.inflate(R.layout.fragment_customization_picker2, container, false)
 
         val toolbar: Toolbar = view.requireViewById(R.id.toolbar)
@@ -245,6 +253,10 @@ class CustomizationPickerFragment2 :
         val pickerMotionContainer: MotionLayout = view.requireViewById(R.id.picker_motion_layout)
 
         val bottomScrollView: NestedScrollView = view.requireViewById(R.id.bottom_scroll_view)
+        // bottomScrollView should hide until we customizationOptionsData and call
+        // updateHeaderHeightConstraints to make sure of the screen dimensions.
+        bottomScrollView.alpha = 0f
+
         // Override bottom scroll view's accessibility delegate to enable collapse and expand of
         // the preview and the wallpaper entry.
         ViewCompat.setAccessibilityDelegate(
@@ -279,7 +291,6 @@ class CustomizationPickerFragment2 :
             },
         )
 
-        var isMotionContainerInitialized = false
         val optionContainer: ConstraintLayout =
             view.requireViewById(R.id.customization_option_container)
         val customizationFloatingSheetContainer: FrameLayout =
@@ -327,6 +338,42 @@ class CustomizationPickerFragment2 :
                 setAlpha(R.id.customization_option_floating_sheet_container, 0.0f)
             }
         }
+
+        // Preview pager
+        val previewViewModel = customizationPickerViewModel.basePreviewViewModel
+        previewViewModel.setWhichPreview(WallpaperConnection.WhichPreview.PREVIEW_CURRENT)
+        // TODO (b/348462236): adjust flow so this is always false when previewing current wallpaper
+        previewViewModel.setIsWallpaperColorPreviewEnabled(false)
+        activity?.let {
+            val size = displayUtils.getActiveDisplaySize(it)
+            previewViewModel.updateDisplayConfiguration(size)
+        }
+        val previewPager: ClickableMotionLayout =
+            if (BaseFlags.get(view.context).shouldShowDesktopUi(view.context)) {
+                // Replace the view pager with the one for desktop UI
+                val originalPreviewPager: ClickableMotionLayout =
+                    view.requireViewById(R.id.preview_pager)
+                val previewPagerParent: ViewGroup = originalPreviewPager.parent as ViewGroup
+                previewPagerParent.removeView(originalPreviewPager)
+                (inflater.inflate(R.layout.preview_pager2_desktop, previewPagerParent, false)
+                        as ClickableMotionLayout)
+                    .also { previewPagerParent.addView(it) }
+            } else {
+                view.requireViewById(R.id.preview_pager)
+            }
+        // Initially set the preview pager invisible. We will only show the preview pager in the
+        // following conditions:
+        // 1 customizationOptionsData is ready and emits data.
+        // 2a When it is a Fragment reenter, after Fragment reenter transition ends.
+        // 2b When it is an Activity fresh start, after the enter animation ends.
+        setPreviewPagerVisible(previewPager = previewPager, isVisible = false)
+        val previewPagerViews: PreviewPagerViews =
+            initPreviewPager(rootView = view, previewPager = previewPager)
+        bindPreviewPager(
+            rootView = view,
+            previewPagerViews = previewPagerViews,
+            isFirstBinding = savedInstanceState == null,
+        )
 
         // Inflate the views of customization options only when options data is ready.
         viewLifecycleOwner.lifecycleScope.launch {
@@ -432,66 +479,34 @@ class CustomizationPickerFragment2 :
                         packThemeSuggestedChip,
                     )
                 }
+
+                // Animate to show the bottomScrollView after we obtain customizationOptionsData and
+                // call updateHeaderHeightConstraints
+                // If initialSelectedOption is nonnull, it means that we will deep dive to show only
+                // the secondary screen. We should avoid showing the primary screen content.
+                if (initialSelectedOption == null) {
+                    bottomScrollView.animateToAlpha(1f)
+                    pickerMotionContainer.getConstraintSet(R.id.collapsed_header_primary)?.apply {
+                        setAlpha(R.id.bottom_scroll_view, 1.0f)
+                    }
+                    pickerMotionContainer.getConstraintSet(R.id.expanded_header_primary)?.apply {
+                        setAlpha(R.id.bottom_scroll_view, 1.0f)
+                    }
+                }
+
+                // Only show the preview pager after we obtain customizationOptionsData and call
+                // updateHeaderHeightConstraints
+                // In the case when it is a fragment reenter and fragment reenter has not ended,
+                // do not show the pager until onTransitionEnd is called.
+                // In the case of the initial start of the Activity and the enter animation has not
+                // completed, do not show the preview pager until
+                // onEnterAnimationCompleteAfterActivityCreated is called.
+                if ((!isFragmentReenterAfterExit || isFragmentReenterEnded) && !isInitialCreation) {
+                    showPreviewPagerAndBindAlphaAnimation(previewPager)
+                }
+
                 isMotionContainerInitialized = true
             }
-        }
-
-        val previewViewModel = customizationPickerViewModel.basePreviewViewModel
-        previewViewModel.setWhichPreview(WallpaperConnection.WhichPreview.PREVIEW_CURRENT)
-        // TODO (b/348462236): adjust flow so this is always false when previewing current wallpaper
-        previewViewModel.setIsWallpaperColorPreviewEnabled(false)
-        activity?.let {
-            val size = displayUtils.getActiveDisplaySize(it)
-            previewViewModel.updateDisplayConfiguration(size)
-        }
-
-        var previewPager: ClickableMotionLayout = view.requireViewById(R.id.preview_pager)
-        if (BaseFlags.get(view.context).shouldShowDesktopUi(view.context)) {
-            val previewPagerParent: ViewGroup = previewPager.parent as ViewGroup
-            previewPagerParent.removeView(previewPager)
-            previewPager =
-                inflater.inflate(R.layout.preview_pager2_desktop, previewPagerParent, false)
-                    as ClickableMotionLayout
-            previewPagerParent.addView(previewPager)
-        }
-        val previewPagerViews: PreviewPagerViews =
-            initPreviewPager(rootView = view, previewPager = previewPager)
-        bindPreviewPager(
-            rootView = view,
-            previewPagerViews = previewPagerViews,
-            isFirstBinding = savedInstanceState == null,
-        )
-        if (initialSelectedOption != null) {
-            val initialState =
-                when (customizationOptionUtil.getScreenFromOption(initialSelectedOption)) {
-                    HOME_SCREEN -> R.id.home_preview_selected
-                    LOCK_SCREEN -> R.id.lock_preview_selected
-                    else -> null
-                }
-            initialState?.let { previewPager.transitionToState(it) }
-        }
-
-        if (isInitialCreation || isReenterAfterExit) {
-            // 1. If the fragment is created the first time, hide the preview pager. This is to
-            // prevent preview surface views from triggering surfaceCreated too early and binding
-            // the wallpaper and workspace surface. This can potentially block the initiation of the
-            // app start, e.g. Activity's enter animation. We need to hide the preview pager and
-            // delay PreviewAlphaAnimationBinder.bind() until the callback
-            // onEnterAnimationCompleteAfterActivityCreated().
-            //
-            // 2. If isReenterAfterExit true, it means that it is a fragment reenter after a
-            // fragment exit. To avoid unnecessary flashes, we need to hide the preview pager and
-            // delay PreviewAlphaAnimationBinder.bind() until the reenter onTransitionEnd() is
-            // called.
-            setPreviewPagerVisible(previewPager = previewPager, isVisible = false)
-            isReenterAfterExit = false
-        } else {
-            // In general cases, we bind the animation when onViewCreated()
-            PreviewAlphaAnimationBinder.bind(
-                previewPager = previewPager,
-                viewModel = customizationPickerViewModel,
-                lifecycleOwner = viewLifecycleOwner,
-            )
         }
 
         customizationOptionsBinder.bindDiscardChangesDialog(
@@ -836,20 +851,18 @@ class CustomizationPickerFragment2 :
     }
 
     override fun onEnterAnimationCompleteAfterActivityCreated() {
-        if (isInitialCreation) {
+        if (isInitialCreation && isMotionContainerInitialized) {
+            // Only show the preview pager when the motion container's dimensions are calculated;
+            // otherwise, we should wait until customizationOptionsData is ready and the dimensions
+            // are calculated.
             val previewPager: ClickableMotionLayout =
                 view?.findViewById(R.id.preview_pager) ?: return
             // Show the preview pager only after enter animation completes. If the preview pager was
             // invisible, making it visible will trigger the surface view's surfaceCreated callback,
             // as well as the binding of the wallpaper preview and workspace preview.
-            setPreviewPagerVisible(previewPager = previewPager, isVisible = true)
-            PreviewAlphaAnimationBinder.bind(
-                previewPager = previewPager,
-                viewModel = customizationPickerViewModel,
-                lifecycleOwner = viewLifecycleOwner,
-            )
-            isInitialCreation = false
+            showPreviewPagerAndBindAlphaAnimation(previewPager)
         }
+        isInitialCreation = false
     }
 
     override fun onDestroyView() {
@@ -954,12 +967,12 @@ class CustomizationPickerFragment2 :
             setUpPreviewCardFocusListener(
                 lockPreview.requireViewById<View>(R.id.preview_card),
                 previewPager,
-                Screen.LOCK_SCREEN,
+                LOCK_SCREEN,
             )
             setUpPreviewCardFocusListener(
                 homePreview.requireViewById<View>(R.id.preview_card),
                 previewPager,
-                Screen.HOME_SCREEN,
+                HOME_SCREEN,
             )
         }
 
@@ -1084,7 +1097,7 @@ class CustomizationPickerFragment2 :
                         .build()
                 )
             },
-            onTransitionToScreen = { screen -> previewPager.transitionToScreen(screen) },
+            onTransitionToScreen = { toScreen -> previewPager.transitionToScreen(toScreen) },
             onPreviewReady = { previewScreen ->
                 customizationPickerViewModel.setPreviewReady(previewScreen, true)
             },
@@ -1237,7 +1250,6 @@ class CustomizationPickerFragment2 :
     }
 
     companion object {
-        private const val WALLPAPER_ENTRY_EARLY_COLLAPSE_PROGRESS_THRESHOLD = 0.25f
         private const val ANIMATION_DURATION = 200
     }
 
@@ -1248,18 +1260,15 @@ class CustomizationPickerFragment2 :
                 override fun onTransitionStart(transition: Transition) {
                     val previewPager: View = view?.findViewById(R.id.preview_pager) ?: return
                     setPreviewPagerVisible(previewPager = previewPager, isVisible = false)
-                    isReenterAfterExit = true
+                    isFragmentReenterAfterExit = true
                 }
 
-                override fun onTransitionEnd(transition: Transition) {
-                    val previewPager: View = view?.findViewById(R.id.preview_pager) ?: return
-                    setPreviewPagerVisible(previewPager = previewPager, isVisible = true)
-                }
+                override fun onTransitionEnd(transition: Transition) {}
 
                 override fun onTransitionCancel(transition: Transition) {
                     val previewPager: View = view?.findViewById(R.id.preview_pager) ?: return
                     setPreviewPagerVisible(previewPager = previewPager, isVisible = true)
-                    isReenterAfterExit = false
+                    isFragmentReenterAfterExit = false
                 }
 
                 override fun onTransitionPause(transition: Transition) {}
@@ -1273,18 +1282,21 @@ class CustomizationPickerFragment2 :
         val transition = (reenterTransition as? Transition) ?: return
         transition.addListener(
             object : Transition.TransitionListener {
-                override fun onTransitionStart(transition: Transition) {}
+                override fun onTransitionStart(transition: Transition) {
+                    isFragmentReenterEnded = false
+                }
 
                 override fun onTransitionEnd(transition: Transition) {
-                    val rootView = view ?: return
-                    val previewPager: ClickableMotionLayout =
-                        rootView.requireViewById(R.id.preview_pager)
-                    setPreviewPagerVisible(previewPager = previewPager, isVisible = true)
-                    PreviewAlphaAnimationBinder.bind(
-                        previewPager = previewPager,
-                        viewModel = customizationPickerViewModel,
-                        lifecycleOwner = viewLifecycleOwner,
-                    )
+                    if (isMotionContainerInitialized) {
+                        // Only show the preview pager when the motion container's dimensions are
+                        // calculated; otherwise, we should wait until customizationOptionsData
+                        // is ready and the dimensions are calculated.
+                        val rootView = view ?: return
+                        val previewPager: ClickableMotionLayout =
+                            rootView.requireViewById(R.id.preview_pager)
+                        showPreviewPagerAndBindAlphaAnimation(previewPager)
+                    }
+                    isFragmentReenterEnded = true
                 }
 
                 override fun onTransitionCancel(transition: Transition) {}
@@ -1293,6 +1305,15 @@ class CustomizationPickerFragment2 :
 
                 override fun onTransitionResume(transition: Transition) {}
             }
+        )
+    }
+
+    private fun showPreviewPagerAndBindAlphaAnimation(previewPager: ClickableMotionLayout) {
+        setPreviewPagerVisible(previewPager = previewPager, isVisible = true)
+        PreviewAlphaAnimationBinder.bind(
+            previewPager = previewPager,
+            viewModel = customizationPickerViewModel,
+            lifecycleOwner = viewLifecycleOwner,
         )
     }
 
