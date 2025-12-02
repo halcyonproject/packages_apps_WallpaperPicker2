@@ -369,7 +369,7 @@ object FullWallpaperPreviewBinder {
                                                 event,
                                             )
                                         }
-                                        false
+                                        true
                                     }
                                 }
                             } else if (wallpaper is WallpaperModel.StaticWallpaperModel) {
