@@ -20,7 +20,7 @@ import android.app.wallpaper.WallpaperDescription
 import android.content.Intent
 import android.net.Uri
 
-class DeleteConfirmationDialogViewModel(
+data class DeleteConfirmationDialogViewModel(
     val onDismiss: () -> Unit,
     // Delete intent for general live wallpapers. It is null for creative wallpapers.
     val liveWallpaperDeleteIntent: Intent?,
@@ -30,4 +30,6 @@ class DeleteConfirmationDialogViewModel(
     val wallpaperComponent: String,
     // Wallpaper description for the wallpaper
     val description: WallpaperDescription?,
+    // When the delete button in the confirmation dialog is clicked
+    val onDelete: (suspend () -> Unit)? = null,
 )

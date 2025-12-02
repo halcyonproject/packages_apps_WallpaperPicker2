@@ -33,9 +33,9 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -171,24 +171,25 @@ object PreviewBinder {
                             ::Pair,
                         )
                         .collect { (wallpaperSurfaceControl, workspaceSurfaceControl) ->
-                            fun reparent() {
-                                preview.reparentWallpaper(wallpaperSurfaceControl)
-                                preview.reparentWorkspace(workspaceSurfaceControl)
-                            }
-
                             surfaceViewCallback?.let { preview.holder.removeCallback(it) }
                             preview.holder.addCallback(
                                 object : SurfaceViewUtils.SurfaceCallback {
                                         override fun surfaceCreated(holder: SurfaceHolder) {
-                                            reparent()
+                                            preview.reparentWallpaper(wallpaperSurfaceControl)
+                                            preview.reparentWorkspace(workspaceSurfaceControl)
                                         }
                                     }
                                     .also { surfaceViewCallback = it }
                             )
-                            // Note that the surface view's visibility should be GONE before setting
-                            // VISIBLE here. By setting VISIBLE here, we can trigger surfaceCreated
-                            // and thus reparent the surface controls.
-                            preview.isVisible = true
+
+                            // This is a workaround to force trigger a surfaceCreated from the
+                            // SurfaceView, where the reparent transactions can work the most
+                            // reliably.
+                            val parentView: ViewGroup? = preview.parent as? ViewGroup
+                            parentView?.let {
+                                it.removeView(preview)
+                                it.addView(preview)
+                            }
                         }
                 }
             }

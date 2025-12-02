@@ -16,6 +16,8 @@
 
 package com.android.wallpaper.picker.preview.data.repository
 
+import android.content.Context
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.preview.data.util.LiveWallpaperDownloader
 import com.android.wallpaper.picker.preview.shared.model.DownloadStatus.DOWNLOADED
@@ -23,6 +25,8 @@ import com.android.wallpaper.picker.preview.shared.model.DownloadStatus.DOWNLOAD
 import com.android.wallpaper.picker.preview.shared.model.DownloadStatus.DOWNLOAD_NOT_AVAILABLE
 import com.android.wallpaper.picker.preview.shared.model.DownloadStatus.READY_TO_DOWNLOAD
 import com.android.wallpaper.picker.preview.shared.model.DownloadableWallpaperModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -34,15 +38,16 @@ import kotlinx.coroutines.flow.combine
 class DownloadableWallpaperRepository
 @Inject
 constructor(
+    @ApplicationContext private val context: Context,
     private val liveWallpaperDownloader: LiveWallpaperDownloader,
+    private val categoryWallpapersRepository: CategoryWallpapersRepository,
 ) {
-
     private val _downloadableWallpaperModel =
         MutableStateFlow(DownloadableWallpaperModel(READY_TO_DOWNLOAD, null))
     val downloadableWallpaperModel: Flow<DownloadableWallpaperModel> =
         combine(
             _downloadableWallpaperModel.asStateFlow(),
-            liveWallpaperDownloader.isDownloaderReady
+            liveWallpaperDownloader.isDownloaderReady,
         ) { model, isReady ->
             if (isReady) {
                 model
@@ -56,7 +61,14 @@ constructor(
         liveWallpaperDownloader.downloadWallpaper(
             object : LiveWallpaperDownloader.LiveWallpaperDownloadListener {
                 override fun onDownloadSuccess(wallpaperModel: LiveWallpaperModel) {
-                    onDownloaded(wallpaperModel)
+                    onDownloaded.invoke(wallpaperModel)
+                    if (BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
+                        // Refresh the category wallpapers
+                        categoryWallpapersRepository.invalidateCache(
+                            wallpaperModel.commonWallpaperData.id.collectionId
+                        )
+                        categoryWallpapersRepository.refreshWallpapers()
+                    }
                     _downloadableWallpaperModel.value =
                         DownloadableWallpaperModel(DOWNLOADED, wallpaperModel)
                 }
