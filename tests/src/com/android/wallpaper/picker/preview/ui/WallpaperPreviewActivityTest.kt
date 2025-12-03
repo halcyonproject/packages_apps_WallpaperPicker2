@@ -16,55 +16,56 @@
 package com.android.wallpaper.picker.preview.ui
 
 import android.content.Context
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
+import android.content.Intent
 import androidx.navigation.fragment.NavHostFragment
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.MediumTest
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestStaticWallpaperInfo
-import com.android.window.flags.Flags.FLAG_MULTI_CROP
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @HiltAndroidTest
-@MediumTest
 @RunWith(AndroidJUnit4::class)
+/**
+ * Tests for [WallpaperPreviewActivity].
+ *
+ * As of ag/37291715 this test is known to fail in Android Studio for AOSP variants because the
+ * DisplayInfo constructor is not visible (it's marked @UnsupportedAppUsage). Not sure why this only
+ * affects Studio, but it's probably the "platform_apis: true" directive in tests/Android.bp and/or
+ * differences in APK signing between Soong, Studio AOSP, and Studio Google.
+ */
 class WallpaperPreviewActivityTest {
     @get:Rule var hiltRule = HiltAndroidRule(this)
-
-    @get:Rule val setFlagsRule = SetFlagsRule()
 
     @Inject @ApplicationContext lateinit var context: Context
     @Inject lateinit var testInjector: TestInjector
 
-    private val testStaticWallpaper =
+    private val testStaticWallpaperInfo =
         TestStaticWallpaperInfo(TestStaticWallpaperInfo.COLOR_DEFAULT).setWallpaperAttributions()
-    private val activityStartIntent =
-        WallpaperPreviewActivity.intentBuilder(context, false)
-            .wallpaperInfo(testStaticWallpaper)
-            .build()
+    private lateinit var activityStartIntent: Intent
 
     @Before
     fun setUp() {
         hiltRule.inject()
         InjectorProvider.setInjector(testInjector)
+
+        activityStartIntent =
+            WallpaperPreviewActivity.intentBuilder(context, false)
+                .wallpaperInfo(testStaticWallpaperInfo)
+                .build()
     }
 
     @Test
-    @Ignore("b/327241549")
-    @EnableFlags(FLAG_MULTI_CROP)
     fun showsNavHostFragment() {
         val scenario: ActivityScenario<WallpaperPreviewActivity> =
             ActivityScenario.launch(activityStartIntent)

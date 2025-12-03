@@ -33,7 +33,7 @@ class FakeImageEffectsRepository @Inject constructor() : ImageEffectsRepository 
     override var wallpaperEffect: MutableStateFlow<Effect?> = MutableStateFlow(null)
 
     override fun areEffectsAvailable(): Boolean {
-        TODO("Not yet implemented")
+        return false
     }
 
     override suspend fun initializeEffect(
@@ -65,7 +65,7 @@ class FakeImageEffectsRepository @Inject constructor() : ImageEffectsRepository 
             "sample failed title",
             "sample subtitle",
             "sample retry instructions",
-            "sample no effect instruction"
+            "sample no effect instruction",
         )
     }
 

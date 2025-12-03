@@ -218,7 +218,8 @@ class WallpaperPreviewActivity :
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
-        (navHostFragment?.getChildFragmentManager()?.fragments?.get(0) as? SmallPreviewFragment)
+        (navHostFragment?.getChildFragmentManager()?.fragments?.firstOrNull()
+                as? SmallPreviewFragment)
             ?.onEnterAnimationComplete()
     }
 
