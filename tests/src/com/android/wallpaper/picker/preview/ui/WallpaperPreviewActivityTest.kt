@@ -17,13 +17,16 @@ package com.android.wallpaper.picker.preview.ui
 
 import android.content.Context
 import android.content.Intent
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestStaticWallpaperInfo
+import com.android.wallpaper.testing.WallpaperModelUtils
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -48,6 +51,7 @@ class WallpaperPreviewActivityTest {
     @get:Rule var hiltRule = HiltAndroidRule(this)
 
     @Inject @ApplicationContext lateinit var context: Context
+    @Inject lateinit var persistentRepository: PersistentWallpaperModelRepository
     @Inject lateinit var testInjector: TestInjector
 
     private val testStaticWallpaperInfo =
@@ -75,6 +79,32 @@ class WallpaperPreviewActivityTest {
                 activity.supportFragmentManager.fragments.filterIsInstance<NavHostFragment>()
             assertThat(previews).hasSize(1)
         }
+    }
+
+    @Test
+    fun showToastWhenMissingWallpaper() {
+        val model =
+            WallpaperModelUtils.getStaticWallpaperModel(
+                wallpaperId = "wallpaperId",
+                collectionId = "collectionId",
+            )
+        // The first Activity launch will succeed because it reads the model value from the
+        // persistent repository
+        persistentRepository.setWallpaperModel(model)
+        val scenario: ActivityScenario<WallpaperPreviewActivity> =
+            ActivityScenario.launch(activityStartIntent)
+
+        scenario.onActivity { activity ->
+            val previews =
+                activity.supportFragmentManager.fragments.filterIsInstance<NavHostFragment>()
+            assertThat(previews).hasSize(1)
+        }
+
+        // The second Activity launch will fail because the first launch clears the persistent
+        // repository. We can't test for the presence of the toast message, but we can be sure the
+        // Activity finishes without raising an error.
+        val scenario2 = ActivityScenario.launch(WallpaperPreviewActivity::class.java)
+        assertThat(scenario2.state).isEqualTo(Lifecycle.State.DESTROYED)
     }
 
     private fun TestStaticWallpaperInfo.setWallpaperAttributions(): WallpaperInfo {

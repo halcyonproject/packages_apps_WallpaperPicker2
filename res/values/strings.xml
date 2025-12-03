@@ -442,6 +442,9 @@
     <!-- Error message advising user to exit our of split screen in order to see preview. [CHAR_LIMIT=NONE] -->
     <string name="wallpaper_exit_split_screen">Please exit split screen mode and try again</string>
 
+    <!-- Error message advising user that an unexpected error occurred when trying to display a wallpaper preview. [CHAR_LIMIT=NONE] -->
+    <string name="wallpaper_preview_error">Unable to display wallpaper preview</string>
+
     <!-- Label for set wallpaper dialog positive button to set new wallpaper. [CHAR LIMIT=30] -->
     <string name="set_wallpaper_dialog_set_button">Set</string>
 
