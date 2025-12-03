@@ -27,7 +27,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
-import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
 import com.android.wallpaper.picker.data.ColorInfo
 import com.android.wallpaper.picker.data.CommonWallpaperData
@@ -176,12 +176,10 @@ object CurrentWallpaperModelUtils {
         cropHints: Map<Point, Rect>,
     ): Asset {
         // Whether the wallpaper this object represents is the default built-in wallpaper.
-        // TODO(b/452460147): Remove the usage of Injector here
+        val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
         val isSystemBuiltIn =
             flag == WallpaperManager.FLAG_SYSTEM &&
-                !InjectorProvider.getInjector()
-                    .getWallpaperStatusChecker(context)
-                    .isHomeStaticWallpaperSet()
+                entryPoint.getWallpaperStatusChecker().isHomeStaticWallpaperSet()
         // Only get the full wallpaper asset when previewing a multi-crop wallpaper, otherwise get
         // the cropped asset.
         val getFullAsset: Boolean = cropHints.isNotEmpty()
@@ -196,5 +194,7 @@ object CurrentWallpaperModelUtils {
         fun getDisplayUtils(): DisplayUtils
 
         fun getWallpaperClient(): WallpaperClient
+
+        fun getWallpaperStatusChecker(): WallpaperStatusChecker
     }
 }

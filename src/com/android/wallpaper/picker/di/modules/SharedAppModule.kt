@@ -30,11 +30,13 @@ import com.android.wallpaper.module.DefaultCreativeHelper
 import com.android.wallpaper.module.DefaultNetworkStatusNotifier
 import com.android.wallpaper.module.DefaultPackageStatusNotifier
 import com.android.wallpaper.module.DefaultWallpaperRefresher
+import com.android.wallpaper.module.DefaultWallpaperStatusChecker
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.NetworkStatusNotifier
 import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.WallpaperRefresher
+import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.network.Requester
 import com.android.wallpaper.network.WallpaperRequester
 import com.android.wallpaper.picker.MyPhotosStarter
@@ -157,6 +159,12 @@ abstract class SharedAppModule {
     @Binds
     @Singleton
     abstract fun bindWallpaperRefresher(impl: DefaultWallpaperRefresher): WallpaperRefresher
+
+    @Binds
+    @Singleton
+    abstract fun bindWallpaperStatusChecker(
+        impl: DefaultWallpaperStatusChecker
+    ): WallpaperStatusChecker
 
     @Binds
     @Singleton

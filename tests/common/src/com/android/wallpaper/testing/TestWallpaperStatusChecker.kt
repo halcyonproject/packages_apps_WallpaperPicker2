@@ -16,8 +16,11 @@
 package com.android.wallpaper.testing
 
 import com.android.wallpaper.module.WallpaperStatusChecker
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TestWallpaperStatusChecker : WallpaperStatusChecker {
+@Singleton
+class TestWallpaperStatusChecker @Inject constructor() : WallpaperStatusChecker {
     private var _isHomeStaticWallpaperSet: Boolean = true
     private var _isLockWallpaperSet = true
 
