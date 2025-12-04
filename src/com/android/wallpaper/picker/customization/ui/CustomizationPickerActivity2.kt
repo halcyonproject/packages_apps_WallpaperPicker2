@@ -202,12 +202,8 @@ class CustomizationPickerActivity2 :
         super.onConfigurationChanged(newConfig)
         configuration?.let {
             val diff = it.diff(newConfig)
-            val isScreenSizeChange = diff and ActivityInfo.CONFIG_SCREEN_SIZE != 0
             val isAssetsPathsChange = diff and ActivityInfo.CONFIG_ASSETS_PATHS != 0
             val isUiModeChange = diff and ActivityInfo.CONFIG_UI_MODE != 0
-            if (isScreenSizeChange) {
-                recreate()
-            }
             if (isAssetsPathsChange) {
                 colorUpdateViewModel.updateColors()
             }
