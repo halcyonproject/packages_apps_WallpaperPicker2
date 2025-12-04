@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.theming.ThemeStyle
 import com.android.customization.picker.mode.data.repository.DarkModeStateRepository
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.monet.CustomDynamicColors
 import com.android.wallpaper.R
 import com.google.ux.material.libmonet.dynamiccolor.DynamicColor
 import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme
@@ -86,14 +85,14 @@ constructor(
     private val previewingColorScheme: MutableStateFlow<DynamicScheme?> = MutableStateFlow(null)
     private val colors: MutableList<Color> = mutableListOf()
 
-    private inner class Color(private val colorResId: Int, dynamicColor: DynamicColor) {
+    private inner class Color(private val colorResId: Int, dynamicColor: DynamicColor?) {
         private val color = MutableStateFlow(context.getColor(colorResId))
         val colorFlow =
             combine(color, previewingColorScheme, isPreviewEnabled) {
                 systemColor,
                 previewScheme,
                 isEnabled ->
-                if (previewScheme != null && isEnabled) {
+                if (previewScheme != null && isEnabled && dynamicColor != null) {
                     previewScheme.getArgb(dynamicColor)
                 } else systemColor
             }
@@ -103,7 +102,7 @@ constructor(
         }
     }
 
-    private fun createColorFlow(colorResId: Int, dynamicColor: DynamicColor): Flow<Int> {
+    private fun createColorFlow(colorResId: Int, dynamicColor: DynamicColor?): Flow<Int> {
         val color = Color(colorResId, dynamicColor)
         colors.add(color)
         return color.colorFlow
@@ -181,10 +180,8 @@ constructor(
         )
 
     // Custom colors
-    val themedIconColor =
-        createColorFlow(R.color.themed_icon_color, CustomDynamicColors().onThemeApp())
-    val themedIconBackgroundColor =
-        createColorFlow(R.color.themed_icon_background_color, CustomDynamicColors().themeApp())
+    val themedIconColor = createColorFlow(R.color.themed_icon_color, null)
+    val themedIconBackgroundColor = createColorFlow(R.color.themed_icon_background_color, null)
 
     fun previewColors(@ColorInt colorSeed: Int, @ThemeStyle.Type style: Int, isDarkMode: Boolean) {
         previewingColorScheme.value = ColorScheme(colorSeed, isDarkMode, style).materialScheme

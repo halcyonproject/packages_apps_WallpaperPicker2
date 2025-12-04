@@ -57,6 +57,13 @@ interface IconStyleViewUtil : DefaultLifecycleObserver {
         lifecycleOwner: LifecycleOwner,
     ): DisposableHandle?
 
-    /** Gets an icon without any color binding */
-    fun getIcon(iconStyleModel: IconStyleModel): Icon?
+    /**
+     * Gets an icon with the input icon style and cropped to the input shape path, without any color
+     * binding.
+     *
+     * @param iconStyleModel information about the icon style, shows the default un-styled icon if
+     *   null
+     * @param shapePath the shape path to crop the icon, crops to the default circle shape if null
+     */
+    fun getIcon(iconStyleModel: IconStyleModel?, shapePath: String? = null): Icon?
 }

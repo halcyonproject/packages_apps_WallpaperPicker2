@@ -204,11 +204,10 @@ class CustomizationPickerActivity2 :
             val diff = it.diff(newConfig)
             val isAssetsPathsChange = diff and ActivityInfo.CONFIG_ASSETS_PATHS != 0
             val isUiModeChange = diff and ActivityInfo.CONFIG_UI_MODE != 0
-            if (isAssetsPathsChange) {
-                colorUpdateViewModel.updateColors()
-            }
             if (isUiModeChange) {
                 colorUpdateViewModel.updateDarkModeAndColors()
+            } else if (isAssetsPathsChange) {
+                colorUpdateViewModel.updateColors()
             }
         }
         configuration?.setTo(newConfig)
