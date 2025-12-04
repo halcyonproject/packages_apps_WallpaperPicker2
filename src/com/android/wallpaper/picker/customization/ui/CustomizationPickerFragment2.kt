@@ -331,7 +331,7 @@ class CustomizationPickerFragment2 :
         val initialSelectedOption: CustomizationOption? =
             initialDestination?.let {
                 customizationOptionUtil.getCustomizationOptionFromDestination(it)
-            }
+            } ?: customizationPickerViewModel.screen.value.second
         if (initialSelectedOption != null) {
             bottomScrollView.alpha = 0.0f
             pickerMotionContainer.getConstraintSet(R.id.secondary)?.apply {
