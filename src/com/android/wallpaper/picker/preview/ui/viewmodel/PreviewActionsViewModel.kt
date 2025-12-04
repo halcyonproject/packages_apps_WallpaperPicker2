@@ -233,15 +233,13 @@ constructor(
             previewActionsInteractor.wallpaperModel,
         ) { isChecked, intent, uri, wallpaperModel ->
             if (isChecked && (intent != null || uri != null)) {
+                val liveWallpaperData = (wallpaperModel as? LiveWallpaperModel)?.liveWallpaperData
                 DeleteConfirmationDialogViewModel(
                     onDismiss = { _isDeleteChecked.value = false },
                     liveWallpaperDeleteIntent = intent,
                     creativeWallpaperDeleteUri = uri,
-                    wallpaperComponent =
-                        (wallpaperModel as? LiveWallpaperModel)
-                            ?.liveWallpaperData
-                            ?.systemWallpaperInfo
-                            ?.packageName ?: "",
+                    wallpaperComponent = liveWallpaperData?.systemWallpaperInfo?.packageName ?: "",
+                    description = liveWallpaperData?.description,
                 )
             } else {
                 null
