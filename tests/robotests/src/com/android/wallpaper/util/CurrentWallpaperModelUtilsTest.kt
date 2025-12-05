@@ -25,10 +25,14 @@ import android.content.Context
 import android.net.Uri
 import android.os.PersistableBundle
 import androidx.test.core.app.ApplicationProvider
+import com.android.wallpaper.asset.BuiltInWallpaperAsset
+import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.testing.TestInjector
+import com.android.wallpaper.testing.TestWallpaperStatusChecker
+import com.android.wallpaper.module.WallpaperStatusChecker
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -51,6 +55,7 @@ class CurrentWallpaperModelUtilsTest {
     @get:Rule(order = 1) val mockitoRule: MockitoRule = MockitoJUnit.rule()
 
     @Inject lateinit var testInjector: TestInjector
+    @Inject lateinit var wallpaperStatusChecker: WallpaperStatusChecker
 
     @Mock lateinit var wallpaperManager: WallpaperManager
 
@@ -179,10 +184,54 @@ class CurrentWallpaperModelUtilsTest {
             .isEqualTo(250)
         assertThat(wallpaperModel.commonWallpaperData.destination)
             .isEqualTo(Destination.APPLIED_TO_SYSTEM)
+        assertThat(wallpaperModel.commonWallpaperData.thumbAsset)
+            .isInstanceOf(CurrentWallpaperAsset::class.java)
+        assertThat(wallpaperModel.commonWallpaperData.thumbAsset)
+            .isNotInstanceOf(BuiltInWallpaperAsset::class.java)
+        assertThat(wallpaperModel.staticWallpaperData.asset)
+            .isInstanceOf(CurrentWallpaperAsset::class.java)
+        assertThat(wallpaperModel.staticWallpaperData.asset)
+            .isNotInstanceOf(BuiltInWallpaperAsset::class.java)
         assertThat(wallpaperModel.staticWallpaperData.cropHints).isEmpty()
         assertThat(wallpaperModel.downloadableWallpaperData).isNull()
         assertThat(wallpaperModel.networkWallpaperData).isNull()
         assertThat(wallpaperModel.imageWallpaperData).isNull()
+    }
+
+    @Test
+    fun createStaticWallpaperModelFromWallpaperDescription_builtInAsset() {
+        (wallpaperStatusChecker as TestWallpaperStatusChecker).setHomeStaticWallpaperSet(false)
+        val sourceDescription =
+            WallpaperDescription.Builder()
+                .setId("id")
+                .setTitle("title")
+                .setDescription(listOf("line1", "line2"))
+                .setContextUri(Uri.parse("uri://context"))
+                .setContent(
+                    PersistableBundle().apply {
+                        putString("picker_metadata_unique_id", "uniqueId")
+                        putString("picker_metadata_collection_id", "collectionId")
+                        putInt("picker_metadata_placeholder_color", 250)
+                        putString("picker_metadata_effects", "someEffect")
+                    }
+                )
+                .build()
+
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createStaticWallpaperModelFromDescription(
+                context,
+                sourceDescription,
+                WallpaperManager.FLAG_SYSTEM,
+            ) as WallpaperModel.StaticWallpaperModel
+
+        assertThat(wallpaperModel.commonWallpaperData.thumbAsset)
+            .isInstanceOf(BuiltInWallpaperAsset::class.java)
+        assertThat(wallpaperModel.commonWallpaperData.thumbAsset)
+            .isNotInstanceOf(CurrentWallpaperAsset::class.java)
+        assertThat(wallpaperModel.staticWallpaperData.asset)
+            .isInstanceOf(BuiltInWallpaperAsset::class.java)
+        assertThat(wallpaperModel.staticWallpaperData.asset)
+            .isNotInstanceOf(CurrentWallpaperAsset::class.java)
     }
 
     @Test
