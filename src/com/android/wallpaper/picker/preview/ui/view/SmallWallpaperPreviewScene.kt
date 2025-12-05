@@ -64,11 +64,13 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
+import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.PreviewFloatingSheetViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -83,6 +85,7 @@ fun ContentScope.SmallWallpaperPreviewScene(
     pagerState: PagerState,
     lockScreenPreview: View,
     homeScreenPreview: View,
+    logger: UserEventLogger,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
@@ -120,6 +123,15 @@ fun ContentScope.SmallWallpaperPreviewScene(
         0 -> viewModel.setSmallPreviewSelectedTab(Screen.LOCK_SCREEN)
         1 -> viewModel.setSmallPreviewSelectedTab(Screen.HOME_SCREEN)
     }
+
+    val isInformationButtonVisible: Boolean by
+        viewModel.previewActionsViewModel.isInformationVisible.collectAsStateWithLifecycle(false)
+    val onInformationClicked: (() -> Unit)? by
+        viewModel.previewActionsViewModel.onInformationClicked.collectAsStateWithLifecycle(null)
+    val previewFloatingSheetViewModel: PreviewFloatingSheetViewModel? by
+        viewModel.previewActionsViewModel.previewFloatingSheetViewModel.collectAsStateWithLifecycle(
+            null
+        )
 
     Column {
         // Status bar space to avoid the top toolbar overlapping with the status bar.
@@ -166,31 +178,38 @@ fun ContentScope.SmallWallpaperPreviewScene(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier =
-                    Modifier.clickable { /* Open info bottom sheet */ }
-                        .padding(vertical = 4.dp)
-                        .padding(end = 16.dp)
-            ) {
-                IconButton(
-                    modifier = Modifier.size(56.dp),
-                    onClick = {},
-                    colors =
-                        IconButtonDefaults.iconButtonColors()
-                            .copy(containerColor = colorScheme.surfaceContainerHighest),
-                    shape = CircleShape,
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_info_filled),
-                        contentDescription = stringResource(R.string.tab_info),
-                        tint = colorScheme.primary,
-                    )
+            if (isInformationButtonVisible) {
+                Box(modifier = Modifier.padding(vertical = 4.dp).padding(end = 16.dp)) {
+                    IconButton(
+                        modifier = Modifier.size(56.dp),
+                        onClick = { onInformationClicked?.invoke() },
+                        colors =
+                            IconButtonDefaults.iconButtonColors()
+                                .copy(containerColor = colorScheme.surfaceContainerHighest),
+                        shape = CircleShape,
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.ic_info_filled),
+                            contentDescription = stringResource(R.string.tab_info),
+                            tint = colorScheme.primary,
+                        )
+                    }
                 }
             }
         }
 
         // Bottom handle bar space to avoid the bottom icon overlapping with the handle bar.
         Spacer(modifier = Modifier.height(systemBarPadding.calculateBottomPadding()))
+
+        previewFloatingSheetViewModel?.let {
+            PreviewBottomSheet(
+                previewFloatingSheetViewModel = it,
+                logger = logger,
+                onBottomSheetCollapsed = {
+                    viewModel.previewActionsViewModel.onFloatingSheetCollapsed()
+                },
+            )
+        }
     }
 }
 
