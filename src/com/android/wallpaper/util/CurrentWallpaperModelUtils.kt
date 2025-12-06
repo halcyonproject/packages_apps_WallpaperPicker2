@@ -179,7 +179,7 @@ object CurrentWallpaperModelUtils {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
         val isSystemBuiltIn =
             flag == WallpaperManager.FLAG_SYSTEM &&
-                entryPoint.getWallpaperStatusChecker().isHomeStaticWallpaperSet()
+                !entryPoint.getWallpaperStatusChecker().isHomeStaticWallpaperSet()
         // Only get the full wallpaper asset when previewing a multi-crop wallpaper, otherwise get
         // the cropped asset.
         val getFullAsset: Boolean = cropHints.isNotEmpty()
