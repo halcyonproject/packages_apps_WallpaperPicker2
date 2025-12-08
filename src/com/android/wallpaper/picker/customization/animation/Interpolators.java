@@ -27,7 +27,7 @@ import android.view.animation.PathInterpolator;
  * Make sure that changes made to this class are also reflected in {@link InterpolatorsAndroidX}.
  * Please consider using the androidx dependencies featuring better testability altogether.
  */
-// TODO (b/281878827): remove this and use loading animation in SystemUIShaderLib when available
+// TODO (b/281878827): remove this and use loading animation in SurfaceEffectsViewLib when available
 public class Interpolators {
     /*
      * ============================================================================================

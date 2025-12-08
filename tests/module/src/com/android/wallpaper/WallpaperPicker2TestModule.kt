@@ -15,6 +15,9 @@
  */
 package com.android.wallpaper
 
+import android.content.Context
+import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
+import com.android.systemui.shared.customization.data.content.FakeCustomizationProviderClient
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.effects.FakeEffectsController
@@ -71,6 +74,7 @@ import dagger.Provides
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
+import kotlinx.coroutines.runBlocking
 
 @Module
 @TestInstallIn(
@@ -202,7 +206,14 @@ abstract class WallpaperPicker2TestModule {
         @Provides
         @Singleton
         fun provideFlags(): BaseFlags {
-            return object : BaseFlags() {}
+            return object : BaseFlags() {
+                override fun getCachedFlags(
+                    context: Context
+                ): List<CustomizationProviderClient.Flag> {
+                    // TODO (b/465812777) Properly inject FakeCustomizationProviderClient
+                    return runBlocking { FakeCustomizationProviderClient().queryFlags() }
+                }
+            }
         }
     }
 }

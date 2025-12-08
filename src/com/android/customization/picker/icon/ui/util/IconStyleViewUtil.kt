@@ -16,13 +16,54 @@
 
 package com.android.customization.picker.icon.ui.util
 
+import android.view.View
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.android.customization.picker.icon.shared.model.IconStyle
 import com.android.customization.picker.icon.shared.model.IconStyleModel
+import com.android.customization.picker.icon.ui.viewmodel.ShapeIconViewModel
 import com.android.wallpaper.picker.common.icon.ui.viewmodel.Icon
+import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
+import kotlinx.coroutines.DisposableHandle
 
 interface IconStyleViewUtil : DefaultLifecycleObserver {
     fun getOnClick(iconStyle: IconStyle): (() -> Unit)?
 
-    fun getIcon(iconStyleModel: IconStyleModel): Icon?
+    /** Binds an icon style option view for a specific icon style */
+    fun bindIconOptionView(
+        view: View,
+        iconStyleModel: IconStyleModel,
+        colorUpdateViewModel: ColorUpdateViewModel,
+        shouldAnimateColor: () -> Boolean,
+        lifecycleOwner: LifecycleOwner,
+    ): DisposableHandle?
+
+    /** Binds a icon preview thumbnail with the selected icon style and shape */
+    fun bindShapeIconPreview(
+        view: View,
+        iconStyleModel: IconStyleModel?,
+        shapeIcon: ShapeIconViewModel? = null,
+        colorUpdateViewModel: ColorUpdateViewModel,
+        shouldAnimateColor: () -> Boolean,
+        lifecycleOwner: LifecycleOwner,
+    ): DisposableHandle?
+
+    /** Binds the color of an icon based on the current UI colors, if needed */
+    fun bindIconColors(
+        iconStyleModel: IconStyleModel,
+        icon: Icon,
+        colorUpdateViewModel: ColorUpdateViewModel,
+        shouldAnimateColor: () -> Boolean,
+        lifecycleOwner: LifecycleOwner,
+    ): DisposableHandle?
+
+    /**
+     * Gets an icon with the input icon style and cropped to the input shape path, without any color
+     * binding.
+     *
+     * @param iconStyleModel information about the icon style, shows the default un-styled icon if
+     *   null
+     * @param shapePath the shape path to crop the icon, crops to the default circle shape if null
+     */
+    fun getIcon(iconStyleModel: IconStyleModel?, shapePath: String? = null): Icon?
 }

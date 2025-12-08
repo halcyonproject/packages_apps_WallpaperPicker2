@@ -16,6 +16,7 @@
 package com.android.wallpaper.config
 
 import android.content.Context
+import android.server.Flags.enableThemeService
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
 import com.android.systemui.shared.Flags.workspaceItemsLabelHidden
@@ -81,6 +82,8 @@ abstract class BaseFlags {
 
     // Local flag to gate Compose UI under the colorPickerUpdateFlag
     open fun isColorPickerComposeEnabled() = true
+
+    open fun isThemeServiceEnabled() = enableThemeService()
 
     open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
 

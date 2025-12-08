@@ -45,9 +45,13 @@ object PreviewAlphaAnimationBinder {
     ) {
         val lockPreview: View = previewPager.requireViewById(R.id.lock_preview)
         val lockPreviewLabel: TextView = previewPager.requireViewById(R.id.lock_preview_label)
+        val lockPreviewLabelContainer: View =
+            previewPager.requireViewById(R.id.lock_preview_label_container)
         val lockPreviewShade: View = lockPreview.requireViewById(R.id.preview_shade)
         val homePreview: View = previewPager.requireViewById(R.id.home_preview)
         val homePreviewLabel: TextView = previewPager.requireViewById(R.id.home_preview_label)
+        val homePreviewLabelContainer: View =
+            previewPager.requireViewById(R.id.home_preview_label_container)
         val homePreviewShade: View = homePreview.requireViewById(R.id.preview_shade)
         val showDesktopUi =
             BaseFlags.get(previewPager.context).shouldShowDesktopUi(previewPager.context)
@@ -61,13 +65,15 @@ object PreviewAlphaAnimationBinder {
                         val labelVisibility = if (showLabel) View.VISIBLE else View.GONE
                         if (showDesktopUi) {
                             if (showLabel) {
-                                previewPager.addClickableViewId(R.id.lock_preview_label)
-                                lockPreviewLabel.setOnClickListener {
+                                previewPager.addClickableViewId(R.id.lock_preview_label_container)
+                                lockPreviewLabelContainer.setOnClickListener {
                                     viewModel.selectPreviewScreen(LOCK_SCREEN)
                                 }
                             } else {
-                                previewPager.removeClickableViewId(R.id.lock_preview_label)
-                                lockPreviewLabel.setOnClickListener(null)
+                                previewPager.removeClickableViewId(
+                                    R.id.lock_preview_label_container
+                                )
+                                lockPreviewLabelContainer.setOnClickListener(null)
                             }
                         }
                         if (shouldAnimate) {
@@ -91,13 +97,15 @@ object PreviewAlphaAnimationBinder {
                         val labelVisibility = if (showLabel) View.VISIBLE else View.GONE
                         if (showDesktopUi) {
                             if (showLabel) {
-                                previewPager.addClickableViewId(R.id.home_preview_label)
-                                homePreviewLabel.setOnClickListener {
+                                previewPager.addClickableViewId(R.id.home_preview_label_container)
+                                homePreviewLabelContainer.setOnClickListener {
                                     viewModel.selectPreviewScreen(HOME_SCREEN)
                                 }
                             } else {
-                                previewPager.removeClickableViewId(R.id.home_preview_label)
-                                homePreviewLabel.setOnClickListener(null)
+                                previewPager.removeClickableViewId(
+                                    R.id.home_preview_label_container
+                                )
+                                homePreviewLabelContainer.setOnClickListener(null)
                             }
                         }
                         if (shouldAnimate) {

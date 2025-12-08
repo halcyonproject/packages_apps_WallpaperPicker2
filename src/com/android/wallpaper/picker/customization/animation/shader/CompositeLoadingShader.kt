@@ -16,7 +16,7 @@
 package com.android.wallpaper.picker.customization.animation.shader
 
 import android.graphics.RuntimeShader
-import com.android.systemui.surfaceeffects.shaderutil.ShaderUtilLibrary
+import com.android.systemui.surfaceeffects.core.shaderutil.ShaderUtilLibrary
 
 /**
  * Shader rendered when images are loading. Contains:

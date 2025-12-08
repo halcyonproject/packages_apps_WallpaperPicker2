@@ -14,22 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.picker.customization.ui.view
+package com.android.customization.picker.icon.ui.viewmodel
 
-import android.view.View
-import android.widget.TextView
-import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
-
-data class PreviewPagerViews(
-    val previewPager: ClickableMotionLayout,
-    val lockPreviewLabel: TextView,
-    val homePreviewLabel: TextView,
-    val lockPreviewLabelContainer: View,
-    val homePreviewLabelContainer: View,
-    val lockPreview: View,
-    val homePreview: View,
-    val lockPreviewShade: View,
-    val homePreviewShade: View,
-    val clockHostView: View?,
-    val clockFaceClickDelegateView: View?,
-)
+data class ShapeIconViewModel(val key: String, val path: String)

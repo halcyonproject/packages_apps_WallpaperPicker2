@@ -107,17 +107,28 @@ class WallpaperPreviewActivity :
 
         refreshCreativeCategories = intent.getBooleanExtra(SHOULD_CATEGORY_REFRESH, false)
 
-        val wallpaper: WallpaperModel =
-            if (!isFirstRun) {
-                    wallpaperPreviewViewModel.wallpaper.value
-                } else {
-                    persistentWallpaperModelRepository.wallpaperModel.value
-                        ?: intent
+        val (wallpaper, source) =
+            when {
+                !isFirstRun -> Pair(wallpaperPreviewViewModel.wallpaper.value, "previewViewModel")
+                persistentWallpaperModelRepository.wallpaperModel.value != null ->
+                    Pair(
+                        persistentWallpaperModelRepository.wallpaperModel.value,
+                        "persistentWallpaperModelRepository",
+                    )
+                else -> {
+                    Pair(
+                        intent
                             .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
-                            ?.convertToWallpaperModel()
+                            ?.convertToWallpaperModel(),
+                        "intent",
+                    )
                 }
-                .also { persistentWallpaperModelRepository.cleanup() }
-                ?: throw IllegalStateException("No wallpaper for previewing")
+            }.also { persistentWallpaperModelRepository.cleanup() }
+        if (wallpaper == null) {
+            Log.e(TAG, "No wallpaper for previewing, source: $source")
+            showToastAndFinish(R.string.wallpaper_preview_error)
+            return
+        }
 
         if (isFirstRun) {
             wallpaperPreviewRepository.setWallpaperModel(wallpaper)
@@ -218,7 +229,8 @@ class WallpaperPreviewActivity :
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)
-        (navHostFragment?.getChildFragmentManager()?.fragments?.get(0) as? SmallPreviewFragment)
+        (navHostFragment?.getChildFragmentManager()?.fragments?.firstOrNull()
+                as? SmallPreviewFragment)
             ?.onEnterAnimationComplete()
     }
 
@@ -305,9 +317,9 @@ class WallpaperPreviewActivity :
         return wallpaperModelFactory.getWallpaperModel(appContext, this)
     }
 
-    private fun showToastAndFinish() {
+    private fun showToastAndFinish(messageResId: Int = R.string.wallpaper_exit_split_screen) {
         // TODO(b/409622144) re-evaluate this string for freeform mode.
-        Toast.makeText(this, R.string.wallpaper_exit_split_screen, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
         finishAfterTransition()
     }
 
