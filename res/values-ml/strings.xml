@@ -120,6 +120,8 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"ഹോം സ്‌ക്രീൻ വാൾപേപ്പർ പ്രിവ്യൂ"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"ശേഖരം നിലവിലില്ല"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"സ്പ്ലിറ്റ് സ്ക്രീൻ മോഡിൽ നിന്ന് പുറത്ത് കടന്ന് വീണ്ടും ശ്രമിക്കുക"</string>
+    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
+    <skip />
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"സജ്ജീകരിക്കുക"</string>
     <string name="cancel" msgid="4970902691067201584">"റദ്ദാക്കുക"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"UI പ്രിവ്യൂ മറയ്‌ക്കുക"</string>
