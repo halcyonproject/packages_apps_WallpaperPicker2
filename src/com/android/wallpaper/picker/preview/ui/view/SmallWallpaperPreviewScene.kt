@@ -260,7 +260,7 @@ private fun ContentScope.PreviewPager(
                             PreviewScreen(
                                 preview = lockScreenPreview,
                                 modifier =
-                                    Modifier.fillMaxSize().clickable() {
+                                    Modifier.fillMaxSize().clickable {
                                         onPreviewClick.invoke(Screen.LOCK_SCREEN)
                                     },
                             )
@@ -276,7 +276,7 @@ private fun ContentScope.PreviewPager(
                             PreviewScreen(
                                 preview = homeScreenPreview,
                                 modifier =
-                                    Modifier.fillMaxSize().clickable() {
+                                    Modifier.fillMaxSize().clickable {
                                         onPreviewClick.invoke(Screen.HOME_SCREEN)
                                     },
                             )

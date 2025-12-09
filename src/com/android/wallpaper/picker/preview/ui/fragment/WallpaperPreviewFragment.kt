@@ -102,7 +102,6 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                             setOf(
                                 Scenes.SmallPreview,
                                 Scenes.FullLockPreview,
-                                Scenes.FullHomePreview,
                                 Scenes.ApplyWallpaper,
                             )
                     ),
@@ -115,7 +114,6 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                         contents =
                             setOf(
                                 Scenes.SmallPreview,
-                                Scenes.FullLockPreview,
                                 Scenes.FullHomePreview,
                                 Scenes.ApplyWallpaper,
                             )
