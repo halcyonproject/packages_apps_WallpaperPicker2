@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.wallpaper.WallpaperDescription
 import android.content.Intent
 import android.net.Uri
 
@@ -27,4 +28,6 @@ class DeleteConfirmationDialogViewModel(
     val creativeWallpaperDeleteUri: Uri?,
     // the package name for the wallpaper
     val wallpaperComponent: String,
+    // Wallpaper description for the wallpaper
+    val description: WallpaperDescription?,
 )

@@ -97,3 +97,13 @@ flag {
     description: "Flag for enabling the new AI wallpapers layout with collapsable sections and reordered templates"
     bug: "457835470"
 }
+
+flag {
+    name: "enable_recent_wallpaper_deletion"
+    namespace: "customization_picker"
+    description: "Enables deletion of recent wallpaper entries for creative wallpapers when their assets are deleted"
+    bug: "464098463"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -48,6 +48,7 @@ import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.module.PackageStatusNotifier
+import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.TrampolinePickerActivity
@@ -97,6 +98,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
     @Inject lateinit var packageStatusNotifier: PackageStatusNotifier
     @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
+    @Inject lateinit var wallpaperPreferences: WallpaperPreferences
 
     private lateinit var currentView: View
     private lateinit var shareActivityResult: ActivityResultLauncher<Intent>
@@ -517,6 +519,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
             imageEffectDialogUtil = imageEffectDialogUtil,
             packageStatusNotifier = packageStatusNotifier,
             categoryWallpapersRepository = categoryWallpapersRepository,
+            wallpaperPreferences = wallpaperPreferences,
             onNavigateToEditScreen = { navigateToEditScreen(it) },
             onStartShareActivity = { shareActivityResult.launch(it) },
         )
