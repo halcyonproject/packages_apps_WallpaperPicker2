@@ -16,7 +16,6 @@
 package com.android.wallpaper.picker.preview.ui
 
 import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.test.core.app.ActivityScenario
@@ -24,10 +23,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
+import com.android.wallpaper.picker.preview.data.repository.WallpaperPreviewRepository
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestStaticWallpaperInfo
 import com.android.wallpaper.testing.WallpaperModelUtils
 import com.google.common.truth.Truth.assertThat
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -56,23 +60,21 @@ class WallpaperPreviewActivityTest {
 
     private val testStaticWallpaperInfo =
         TestStaticWallpaperInfo(TestStaticWallpaperInfo.COLOR_DEFAULT).setWallpaperAttributions()
-    private lateinit var activityStartIntent: Intent
 
     @Before
     fun setUp() {
         hiltRule.inject()
         InjectorProvider.setInjector(testInjector)
-
-        activityStartIntent =
-            WallpaperPreviewActivity.intentBuilder(context, false)
-                .wallpaperInfo(testStaticWallpaperInfo)
-                .build()
     }
 
     @Test
     fun showsNavHostFragment() {
+        val startIntent =
+            WallpaperPreviewActivity.intentBuilder(context, false)
+                .wallpaperInfo(testStaticWallpaperInfo)
+                .build()
         val scenario: ActivityScenario<WallpaperPreviewActivity> =
-            ActivityScenario.launch(activityStartIntent)
+            ActivityScenario.launch(startIntent)
 
         scenario.onActivity { activity ->
             val previews =
@@ -82,7 +84,63 @@ class WallpaperPreviewActivityTest {
     }
 
     @Test
-    fun showToastWhenMissingWallpaper() {
+    fun modelFromIntentInfo_isCorrect() {
+        val startIntent =
+            WallpaperPreviewActivity.intentBuilder(context, false)
+                .wallpaperInfo(testStaticWallpaperInfo)
+                .build()
+        val scenario: ActivityScenario<WallpaperPreviewActivity> =
+            ActivityScenario.launch(startIntent)
+
+        scenario.onActivity { activity ->
+            val activityScopeEntryPoint =
+                EntryPointAccessors.fromActivity(
+                    activity,
+                    WallpaperPreviewTestActivityScopeEntryPoint::class.java,
+                )
+            val wallpaperPreviewRepository = activityScopeEntryPoint.wallpaperPreviewRepository()
+            val model = wallpaperPreviewRepository.wallpaperModel.value
+            assertThat(model).isNotNull()
+            model ?: return@onActivity
+            assertThat(model.commonWallpaperData.attributions).isNotNull()
+            assertThat(model.commonWallpaperData.attributions).isNotEmpty()
+            // We don't need to check all the fields (for now), just confirm conversion happened
+            assertThat(model.commonWallpaperData.attributions!![0]).isEqualTo("Title")
+
+            val previews =
+                activity.supportFragmentManager.fragments.filterIsInstance<NavHostFragment>()
+            assertThat(previews).hasSize(1)
+        }
+    }
+
+    @Test
+    fun modelFromPersistentRepository_isCorrect() {
+        val requestedModel =
+            WallpaperModelUtils.getStaticWallpaperModel(
+                wallpaperId = "wallpaperId",
+                collectionId = "collectionId",
+            )
+        persistentRepository.setWallpaperModel(requestedModel)
+        val scenario: ActivityScenario<WallpaperPreviewActivity> =
+            ActivityScenario.launch(WallpaperPreviewActivity::class.java)
+
+        scenario.onActivity { activity ->
+            val activityScopeEntryPoint =
+                EntryPointAccessors.fromActivity(
+                    activity,
+                    WallpaperPreviewTestActivityScopeEntryPoint::class.java,
+                )
+            val wallpaperPreviewRepository = activityScopeEntryPoint.wallpaperPreviewRepository()
+            val actualModel = wallpaperPreviewRepository.wallpaperModel.value
+            assertThat(actualModel).isNotNull()
+            actualModel ?: return@onActivity
+            assertThat(actualModel.commonWallpaperData.id.wallpaperId)
+                .isEqualTo(requestedModel.commonWallpaperData.id.wallpaperId)
+        }
+    }
+
+    @Test
+    fun showsToastWhenMissingWallpaper() {
         val model =
             WallpaperModelUtils.getStaticWallpaperModel(
                 wallpaperId = "wallpaperId",
@@ -92,7 +150,7 @@ class WallpaperPreviewActivityTest {
         // persistent repository
         persistentRepository.setWallpaperModel(model)
         val scenario: ActivityScenario<WallpaperPreviewActivity> =
-            ActivityScenario.launch(activityStartIntent)
+            ActivityScenario.launch(WallpaperPreviewActivity::class.java)
 
         scenario.onActivity { activity ->
             val previews =
@@ -113,5 +171,11 @@ class WallpaperPreviewActivityTest {
         setWallpaperId("wallpaperStatic")
         setActionUrl("http://google.com")
         return this
+    }
+
+    @EntryPoint
+    @InstallIn(ActivityComponent::class)
+    interface WallpaperPreviewTestActivityScopeEntryPoint {
+        fun wallpaperPreviewRepository(): WallpaperPreviewRepository
     }
 }
