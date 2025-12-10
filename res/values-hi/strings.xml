@@ -120,6 +120,8 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"होम स्क्रीन पर दिखने वाले वॉलपेपर की झलक"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"वॉलपेपर का संग्रह मौजूद नहीं है"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"स्प्लिट स्क्रीन मोड बंद करके, दोबारा कोशिश करें"</string>
+    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
+    <skip />
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"सेट करें"</string>
     <string name="cancel" msgid="4970902691067201584">"रद्द करें"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"यूज़र इंटरफ़ेस की झलक छिपाएं"</string>

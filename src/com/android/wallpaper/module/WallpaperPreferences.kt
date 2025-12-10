@@ -17,6 +17,7 @@ package com.android.wallpaper.module
 
 import android.app.WallpaperColors
 import android.app.WallpaperManager.SetWallpaperFlags
+import android.app.wallpaper.WallpaperDescription
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
@@ -415,6 +416,9 @@ interface WallpaperPreferences {
         destination: WallpaperDestination,
         wallpaperModel: LiveWallpaperModel,
     )
+
+    /** Removes any recent live wallpaper entries matching the given description. */
+    fun removeRecentWallpaper(description: WallpaperDescription) {}
 
     /** Sets whether the preview tooltip should be shown. */
     fun setHasSmallPreviewTooltipBeenShown(hasTooltipBeenShown: Boolean)

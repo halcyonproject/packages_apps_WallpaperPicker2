@@ -120,6 +120,8 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Xem trước hình nền trên màn hình chính"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Bộ sưu tập không tồn tại"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Vui lòng thoát chế độ chia đôi màn hình rồi thử lại"</string>
+    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
+    <skip />
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Đặt"</string>
     <string name="cancel" msgid="4970902691067201584">"Huỷ"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Ẩn giao diện người dùng xem trước"</string>

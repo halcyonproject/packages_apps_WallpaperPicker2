@@ -28,8 +28,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.module.PackageStatusNotifier
+import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.view.ImageEffectDialog
@@ -67,6 +69,7 @@ object PreviewActionsBinder {
         imageEffectDialogUtil: ImageEffectDialogUtil,
         packageStatusNotifier: PackageStatusNotifier,
         categoryWallpapersRepository: CategoryWallpapersRepository,
+        wallpaperPreferences: WallpaperPreferences,
         onNavigateToEditScreen: (intent: Intent) -> Unit,
         onStartShareActivity: (intent: Intent) -> Unit,
     ) {
@@ -196,6 +199,13 @@ object PreviewActionsBinder {
                                         null,
                                         null,
                                     )
+                                    if (
+                                        BaseFlags.get(appContext).isEnableRecentWallpaperDeletion()
+                                    ) {
+                                        viewModel.description?.let { description ->
+                                            wallpaperPreferences.removeRecentWallpaper(description)
+                                        }
+                                    }
                                     activity.finish()
                                     refreshWallpapers(
                                         previewViewModel,
