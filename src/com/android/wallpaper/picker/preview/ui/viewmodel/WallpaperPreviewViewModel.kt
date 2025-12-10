@@ -146,8 +146,9 @@ constructor(
 
     val smallPreviewTabs = Screen.entries.toList()
 
-    private val _smallPreviewSelectedTab = MutableStateFlow(getWallpaperPreviewSource())
-    val smallPreviewSelectedTab = _smallPreviewSelectedTab.asStateFlow()
+    private val _smallPreviewSelectedTab: MutableStateFlow<Screen> =
+        MutableStateFlow(getWallpaperPreviewSource())
+    val smallPreviewSelectedTab: StateFlow<Screen> = _smallPreviewSelectedTab.asStateFlow()
 
     private val _shouldUpdateSelectedPreviewTab = MutableStateFlow(false)
     val shouldUpdateSelectedPreviewTab = _shouldUpdateSelectedPreviewTab.asStateFlow()
