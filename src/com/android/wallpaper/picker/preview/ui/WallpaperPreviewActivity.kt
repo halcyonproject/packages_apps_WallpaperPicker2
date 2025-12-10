@@ -175,11 +175,12 @@ class WallpaperPreviewActivity :
         WindowCompat.setDecorFitsSystemWindows(window, ActivityUtils.isSUWMode(this))
         val isAssetIdPresent = intent.getBooleanExtra(IS_ASSET_ID_PRESENT, false)
         wallpaperPreviewViewModel.isNewTask = intent.getBooleanExtra(IS_NEW_TASK, false)
-        wallpaperPreviewViewModel.wallpaperEntryPoint =
+        wallpaperPreviewViewModel.setWallpaperEntryPointValue(
             intent.getIntExtra(
                 WALLPAPER_ENTRYPOINT,
                 StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
             )
+        )
         val whichPreview =
             if (isAssetIdPresent) WallpaperConnection.WhichPreview.EDIT_NON_CURRENT
             else WallpaperConnection.WhichPreview.EDIT_CURRENT
