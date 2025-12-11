@@ -75,7 +75,7 @@ open class TestUserEventLogger @Inject constructor() : UserEventLogger {
     }
 
     override fun logCuratedPhotosRendered(timeElapsedMillis: Long, userPhoto: Boolean) {
-        TODO("Not yet implemented")
+        // intentional no-op
     }
 
     override fun logCuratedPhotosFetched(timeElapsedMillis: Long, status: Status) {
