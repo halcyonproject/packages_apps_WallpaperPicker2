@@ -94,7 +94,7 @@
     <string name="center_crop_wallpaper_position" msgid="1681980019815343348">"Centrer og beskær"</string>
     <string name="stretch_wallpaper_position" msgid="5002680983147456935">"Stræk"</string>
     <string name="preview" msgid="1774602101743861071">"Forhåndsvisning"</string>
-    <string name="tab_info" msgid="818614080690111416">"Oplysninger"</string>
+    <string name="tab_info" msgid="818614080690111416">"Info"</string>
     <string name="tab_customize" msgid="2533745409174959960">"Tilpas"</string>
     <string name="tab_effects" msgid="3213606157589233901">"Effekter"</string>
     <string name="tab_share" msgid="6676269624804601227">"Del"</string>
@@ -120,8 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Forhåndsvisning af startskærmens baggrund"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Samlingen eksisterer ikke"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Afslut opdelt skærm, og prøv igen"</string>
-    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
-    <skip />
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Forhåndsvisning af baggrunden mislykkedes"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Angiv"</string>
     <string name="cancel" msgid="4970902691067201584">"Annuller"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Skjul forhåndsvisning af brugerflade"</string>
