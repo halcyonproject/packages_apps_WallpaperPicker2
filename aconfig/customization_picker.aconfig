@@ -107,3 +107,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_recents_deletion_via_provider"
+    namespace: "customization_picker"
+    description: "Enables deletion of recent wallpaper entries via the content provider"
+    bug: "465589212"
+}
