@@ -46,7 +46,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -149,6 +148,12 @@ class CustomizationPickerFragment2 :
     private val startForResult =
         this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
+    private val isDesktopUi by lazy {
+        context?.applicationContext?.let { appContext ->
+            BaseFlags.get(appContext).shouldShowDesktopUi(appContext)
+        } ?: false
+    }
+
     // This boolean is to determine that when onCreateView, if it is a fragment reenter after the
     // last fragment exit.
     private var isFragmentReenterAfterExit = false
@@ -228,7 +233,19 @@ class CustomizationPickerFragment2 :
         savedInstanceState: Bundle?,
     ): View {
         isMotionContainerInitialized = false
-        val view = inflater.inflate(R.layout.fragment_customization_picker2, container, false)
+
+        // For desktop UI, use fragment_customization_picker2_desktop layout to make the whole page
+        // scrollable, unlike mobile devices where only the bottom area scroll.
+        // *** IMPORTANT: The view IDs are shared between fragment_customization_picker2 and
+        // fragment_customization_picker2_desktop. Be cautious when modifying these ids as the
+        // changes can affect both desktop and mobile UIs.
+        val layoutResId =
+            if (isDesktopUi) {
+                R.layout.fragment_customization_picker2_desktop
+            } else {
+                R.layout.fragment_customization_picker2
+            }
+        val view = inflater.inflate(layoutResId, container, false)
 
         val toolbar: Toolbar = view.requireViewById(R.id.toolbar)
         setupToolbar(
@@ -251,8 +268,7 @@ class CustomizationPickerFragment2 :
         packThemeSuggestedChip?.visibility = View.INVISIBLE
 
         val pickerMotionContainer: MotionLayout = view.requireViewById(R.id.picker_motion_layout)
-
-        val bottomScrollView: NestedScrollView = view.requireViewById(R.id.bottom_scroll_view)
+        val bottomScrollView: View = view.requireViewById(R.id.bottom_scroll_view)
         // bottomScrollView should hide until we customizationOptionsData and call
         // updateHeaderHeightConstraints to make sure of the screen dimensions.
         bottomScrollView.alpha = 0f
@@ -310,7 +326,7 @@ class CustomizationPickerFragment2 :
                 navBarHeight = insets.bottom,
             )
 
-            if (isMotionContainerInitialized) {
+            if (isMotionContainerInitialized && !isDesktopUi) {
                 // Reconfigure motion container constraints if already initialized, to adjust
                 // for new insets (doing it only after it's initialized to avoid jumping if
                 // insets first arrive before the first initialization)
@@ -349,7 +365,7 @@ class CustomizationPickerFragment2 :
             previewViewModel.updateDisplayConfiguration(size)
         }
         val previewPager: ClickableMotionLayout =
-            if (BaseFlags.get(view.context).shouldShowDesktopUi(view.context)) {
+            if (isDesktopUi) {
                 // Replace the view pager with the one for desktop UI
                 val originalPreviewPager: ClickableMotionLayout =
                     view.requireViewById(R.id.preview_pager)
@@ -404,14 +420,17 @@ class CustomizationPickerFragment2 :
             view.post {
                 // Post to wait for the essential view dimensions to be obtained, to further
                 // calculate the motion scene dimensions.
-                updateHeaderHeightConstraints(
-                    pickerMotionContainer = pickerMotionContainer,
-                    wallpaperPickerEntry = view.requireViewById(R.id.wallpaper_picker_entry),
-                    previewLabelHeight = view.requireViewById<View>(R.id.label_placeholder).height,
-                    optionContainerHeight = optionContainer.height,
-                    packThemeSuggestedChip = packThemeSuggestedChip,
-                    bottomInset = optionContainer.paddingBottom,
-                )
+                if (!isDesktopUi) {
+                    updateHeaderHeightConstraints(
+                        pickerMotionContainer = pickerMotionContainer,
+                        wallpaperPickerEntry = view.requireViewById(R.id.wallpaper_picker_entry),
+                        previewLabelHeight =
+                            view.requireViewById<View>(R.id.label_placeholder).height,
+                        optionContainerHeight = optionContainer.height,
+                        packThemeSuggestedChip = packThemeSuggestedChip,
+                        bottomInset = optionContainer.paddingBottom,
+                    )
+                }
                 if (initialSelectedOption != null) {
                     // If initially on secondary screen, initiate the secondary screen and bind the
                     // picker content after.
@@ -963,7 +982,7 @@ class CustomizationPickerFragment2 :
 
         // Sets up focus listeners for the lock preview and home preview to handle accessibility
         // focus events.
-        if (BaseFlags.get(rootView.context).shouldShowDesktopUi(rootView.context)) {
+        if (isDesktopUi) {
             setUpPreviewCardFocusListener(
                 lockPreview.requireViewById<View>(R.id.preview_card),
                 previewPager,
@@ -1247,6 +1266,14 @@ class CustomizationPickerFragment2 :
                     R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT,
                 )
+                if (isDesktopUi) {
+                    constrainHeight(
+                        R.id.preview_header,
+                        resources.getDimensionPixelSize(
+                            R.dimen.customization_picker_preview_header_expanded_height
+                        ),
+                    )
+                }
             }
             // Wait until motion container's constraints are updated
             motionContainer.post { onSetComplete() }
