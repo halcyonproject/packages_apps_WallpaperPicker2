@@ -51,6 +51,16 @@ flag {
 }
 
 flag {
+    name: "fullscreen_preview_flow_fix"
+    namespace: "customization_picker"
+    description: "Changes the flow of wallpaper preview fullscreen"
+    bug: "442337477"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "desktop_ui_flag"
     namespace: "desktop_personalization"
     description: "Mouse, keyboard, large screen improvements for customization picker"
@@ -106,4 +116,11 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "enable_recents_deletion_via_provider"
+    namespace: "customization_picker"
+    description: "Enables deletion of recent wallpaper entries via the content provider"
+    bug: "465589212"
 }

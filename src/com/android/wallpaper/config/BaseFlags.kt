@@ -31,7 +31,9 @@ import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
 import com.android.wallpaper.Flags.desktopUiFlag
 import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.enableRecentWallpaperDeletion
+import com.android.wallpaper.Flags.enableRecentsDeletionViaProvider
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
+import com.android.wallpaper.Flags.fullscreenPreviewFlowFix
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
 import com.android.wallpaper.Flags.refactorIndividualPickerFlag
 import com.android.wallpaper.Flags.refactorWallpaperInfoFlag
@@ -64,6 +66,8 @@ abstract class BaseFlags {
     open fun isCollabsableSectionInAiEnabled() = collapsableReorderedAiWallpapersScreen()
 
     open fun isEnableRecentWallpaperDeletion() = enableRecentWallpaperDeletion()
+
+    open fun isEnableRecentsDeletionViaProvider() = enableRecentsDeletionViaProvider()
 
     // local flag to enable the refactored version of IPF2
     open fun isWallpapersFragmentEnabled() = refactorIndividualPickerFlag()
@@ -154,6 +158,10 @@ abstract class BaseFlags {
 
     open fun isFullscreenPreviewEnabled(context: Context): Boolean {
         return fullscreenPreviewFlag() && DesktopState.fromContext(context).canEnterDesktopMode
+    }
+
+    open fun isFullscreenPreviewFlowFixEnabled(context: Context): Boolean {
+        return fullscreenPreviewFlowFix() && isFullscreenPreviewEnabled(context)
     }
 
     open fun shouldShowDesktopUi(context: Context): Boolean {

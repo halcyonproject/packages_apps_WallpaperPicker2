@@ -123,6 +123,7 @@ object ActivityUtils {
                 .newTask(isMultiPanesEnabled)
                 .refreshCategory(isCreativeCategories)
                 .navigateToExtendedEffects(shouldNavigateToExtendedWallpaperEffects)
+                .entryPoint(setWallpaperEntryPoint)
                 .build()
 
         startActivityForResultSafely(activity, previewIntent, requestCode)

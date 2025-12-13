@@ -51,6 +51,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.SmallPreviewFragment
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.getEditActivityIntent
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel.Companion.isNewCreativeWallpaper
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.Companion.PreviewScreen
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.WallpaperConnection
@@ -175,11 +176,12 @@ class WallpaperPreviewActivity :
         WindowCompat.setDecorFitsSystemWindows(window, ActivityUtils.isSUWMode(this))
         val isAssetIdPresent = intent.getBooleanExtra(IS_ASSET_ID_PRESENT, false)
         wallpaperPreviewViewModel.isNewTask = intent.getBooleanExtra(IS_NEW_TASK, false)
-        wallpaperPreviewViewModel.wallpaperEntryPoint =
+        wallpaperPreviewViewModel.setWallpaperEntryPointValue(
             intent.getIntExtra(
                 WALLPAPER_ENTRYPOINT,
                 StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
             )
+        )
         val whichPreview =
             if (isAssetIdPresent) WallpaperConnection.WhichPreview.EDIT_NON_CURRENT
             else WallpaperConnection.WhichPreview.EDIT_CURRENT
@@ -222,6 +224,66 @@ class WallpaperPreviewActivity :
                 )
             }
         }
+
+        if (BaseFlags.get(this).isFullscreenPreviewFlowFixEnabled(this)) {
+            lifecycleScope.launch {
+                wallpaperPreviewViewModel.previousAndCurrentPreviewScreen.collect { screens ->
+                    when (screens.first to screens.second) {
+                        null to PreviewScreen.FULL_PREVIEW -> {
+                            if (isInMultiWindowMode) {
+                                // Wallpaper preview was dragged from fullscreen FULL_PREVIEW back
+                                // to desktop. Go back to SMALL_PREVIEW.
+                                wallpaperPreviewViewModel.handleBackPressed()
+                                navController.popBackStack()
+                            }
+                        }
+                        PreviewScreen.SMALL_PREVIEW to PreviewScreen.FULL_PREVIEW -> {
+                            if (isInMultiWindowMode) {
+                                // User started FULL_PREVIEW while in desktop windowing.
+                                requestFullscreenMode(
+                                    FULLSCREEN_MODE_REQUEST_ENTER,
+                                    object : OutcomeReceiver<Void, Throwable> {
+                                        override fun onResult(result: Void) {
+                                            Log.v(
+                                                TAG,
+                                                "requestFullscreenMode for FULL_PREVIEW" +
+                                                    " success",
+                                            )
+                                        }
+
+                                        override fun onError(t: Throwable) {
+                                            Log.e(
+                                                TAG,
+                                                "Error requesting FULL_PREVIEW fullscreen" +
+                                                    " mode",
+                                                t,
+                                            )
+                                        }
+                                    },
+                                )
+                            }
+                        }
+                        PreviewScreen.FULL_PREVIEW to PreviewScreen.SMALL_PREVIEW -> {
+                            if (!isInMultiWindowMode) {
+                                // User finished FULL_PREVIEW and should go back to desktop.
+                                requestFullscreenMode(
+                                    FULLSCREEN_MODE_REQUEST_EXIT,
+                                    object : OutcomeReceiver<Void, Throwable> {
+                                        override fun onResult(result: Void) {
+                                            Log.v(TAG, "requestFullscreenMode exit success")
+                                        }
+
+                                        override fun onError(t: Throwable) {
+                                            Log.e(TAG, "Error exiting fullscreen mode", t)
+                                        }
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onEnterAnimationComplete() {
@@ -244,6 +306,9 @@ class WallpaperPreviewActivity :
 
     override fun onResume() {
         super.onResume()
+        if (BaseFlags.get(this).isFullscreenPreviewFlowFixEnabled(this)) {
+            return
+        }
         if (isInMultiWindowMode) {
             val isWindowingModeFreeform =
                 resources.configuration.windowConfiguration.windowingMode == WINDOWING_MODE_FREEFORM
