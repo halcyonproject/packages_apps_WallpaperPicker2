@@ -20,47 +20,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/nav_button"
-        android:layout_width="@dimen/nav_button_width"
-        android:layout_height="@dimen/nav_button_height"
-        android:layout_marginStart="@dimen/nav_button_start_margin"
-        android:contentDescription="@string/bottom_action_bar_back"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar">
-        <View
-            android:id="@+id/nav_button_icon"
-            android:layout_height="@dimen/nav_button_background_size"
-            android:layout_width="@dimen/nav_button_background_size"
-            android:layout_gravity="center"
-            android:paddingEnd="@dimen/nav_button_end_padding"
-            android:paddingVertical="@dimen/nav_button_vertical_padding"
-            android:background="@drawable/nav_button_background"
-            android:foregroundGravity="center"
-            android:foreground="@drawable/ic_close_24dp"/>
-    </FrameLayout>
-
-    <Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="?android:attr/actionBarSize"
-        style="@style/ToolbarTheme"
-        android:importantForAccessibility="yes"
-        android:layout_gravity="top"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/nav_button"
-        app:layout_constraintEnd_toStartOf="@+id/apply_button" />
-
-    <com.android.wallpaper.picker.customization.ui.view.ApplyButton
-        android:id="@+id/apply_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/touch_target_min_height"
-        android:layout_marginEnd="@dimen/apply_button_end_margin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar" />
+    <include layout="@layout/customization_picker2_toolbar"/>
 
     <androidx.constraintlayout.motion.widget.MotionLayout
         android:id="@+id/picker_motion_layout"
@@ -73,92 +33,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layoutDescription="@xml/customization_picker_layout_scene">
 
-        <FrameLayout
-            android:id="@+id/preview_header"
+        <include layout="@layout/customization_picker2_preview_header"
             android:layout_width="0dp"
             android:layout_height="@dimen/customization_picker_preview_header_expanded_height"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:paddingBottom="@dimen/customization_picker_preview_bottom_padding">
-
-            <com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
-                android:id="@+id/preview_pager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layoutDescription="@xml/preview_pager_motion_scene">
-
-                <TextView
-                    android:id="@+id/label_placeholder"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
-                    android:visibility="invisible"
-                    android:text="Placeholder for the previews to position below it"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:ignore="HardcodedText" />
-
-                <FrameLayout
-                    android:id="@+id/lock_preview_label_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom">
-
-                    <TextView
-                        android:id="@+id/lock_preview_label"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
-                        android:gravity="center"
-                        android:layout_gravity="center"
-                        android:textColor="@color/system_on_surface"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        android:text="@string/lock_screen_tab"
-                        android:importantForAccessibility="no"/>
-                </FrameLayout>
-
-                <include layout="@layout/wallpaper_preview_card2"
-                    android:id="@+id/lock_preview" />
-
-                <FrameLayout
-                    android:id="@+id/home_preview_label_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom">
-
-                    <TextView
-                        android:id="@+id/home_preview_label"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:layout_gravity="center"
-                        android:textColor="@color/system_on_surface"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        android:text="@string/home_screen_tab"
-                        android:importantForAccessibility="no"/>
-                </FrameLayout>
-
-
-                <include layout="@layout/wallpaper_preview_card2"
-                    android:id="@+id/home_preview" />
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guideline_center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.5" />
-            </com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout>
-
-            <View
-                android:id="@+id/clock_face_click_delegate"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone" />
-        </FrameLayout>
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/bottom_scroll_view"
@@ -169,60 +49,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/customization_option_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="@dimen/customization_option_container_horizontal_padding">
-
-                <ViewStub
-                    android:id="@+id/stub_pack_theme_suggested_chip"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:inflatedId="@+id/stub_pack_theme_suggested_chip"
-                    android:layout="@layout/stub_pack_theme_suggested_chip"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
-                    android:id="@+id/wallpaper_picker_entry"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@+id/stub_pack_theme_suggested_chip"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
-
-                <View
-                    android:id="@+id/wallpaper_picker_entry_bottom_space"
-                    android:layout_width="0dp"
-                    android:layout_height="@dimen/wallpaper_picker_entry_bottom_space"
-                    app:layout_constraintTop_toBottomOf="@+id/wallpaper_picker_entry"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
-
-                <LinearLayout
-                    android:id="@+id/lock_customization_option_container"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:showDividers="middle"
-                    android:divider="@drawable/customization_option_entry_divider"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/wallpaper_picker_entry_bottom_space" />
-
-                <LinearLayout
-                    android:id="@+id/home_customization_option_container"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:showDividers="middle"
-                    android:divider="@drawable/customization_option_entry_divider"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/wallpaper_picker_entry_bottom_space" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            <include layout="@layout/customization_picker2_options"/>
         </androidx.core.widget.NestedScrollView>
 
         <FrameLayout
@@ -234,4 +61,3 @@
             app:layout_constraintTop_toBottomOf="parent" />
     </androidx.constraintlayout.motion.widget.MotionLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
-
