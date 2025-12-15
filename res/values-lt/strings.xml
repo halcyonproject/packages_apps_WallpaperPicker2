@@ -120,8 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Pagrindinio ekrano fono peržiūra"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Rinkinio nėra"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Išeikite iš išskaidyto ekrano režimo ir bandykite dar kartą"</string>
-    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
-    <skip />
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Nepavyko pateikti ekrano fono peržiūros"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Nustatyti"</string>
     <string name="cancel" msgid="4970902691067201584">"Atšaukti"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Slėpti NS peržiūrą"</string>
