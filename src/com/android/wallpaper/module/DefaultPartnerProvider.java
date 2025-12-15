@@ -69,7 +69,9 @@ public class DefaultPartnerProvider implements PartnerProvider {
     @Nullable
     protected Pair<String, Resources> findSystemApk(PackageManager pm) {
         final Intent intent = new Intent(PartnerProvider.ACTION_PARTNER_CUSTOMIZATION);
-        for (ResolveInfo info : pm.queryBroadcastReceivers(intent, 0)) {
+        for (ResolveInfo info : pm.queryBroadcastReceivers(intent, 
+                PackageManager.MATCH_SYSTEM_ONLY | PackageManager.MATCH_DIRECT_BOOT_AWARE 
+                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE)) {
             if (info.activityInfo != null
                     && (info.activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
                 final String packageName = info.activityInfo.packageName;
