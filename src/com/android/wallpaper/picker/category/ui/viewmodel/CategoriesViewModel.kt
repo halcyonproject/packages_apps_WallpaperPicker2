@@ -82,6 +82,8 @@ constructor(
     // enters the picker main page.
     fun initialize() {
         Log.i(TAG, "Initializing Categories!")
+        // Fetch delayed categories
+        bgScope.launch { singleCategoryInteractor.fetchDelayedCategories() }
     }
 
     init {

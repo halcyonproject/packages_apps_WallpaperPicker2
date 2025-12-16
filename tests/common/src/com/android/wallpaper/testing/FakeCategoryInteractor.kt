@@ -39,6 +39,10 @@ class FakeCategoryInteractor @Inject constructor() : CategoryInteractor {
         emit(categoryModels)
     }
 
+    override fun fetchDelayedCategories() {
+        // Do nothing
+    }
+
     override fun refreshDueToLocaleChange() {
         // Do nothing
     }
