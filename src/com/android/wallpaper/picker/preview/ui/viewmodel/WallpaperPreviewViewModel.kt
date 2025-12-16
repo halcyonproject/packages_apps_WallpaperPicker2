@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
@@ -551,12 +552,26 @@ constructor(
     val isSetWallpaperProgressBarVisible: Flow<Boolean> =
         _isSetWallpaperProgressBarVisible.asStateFlow()
 
+    private val _onApplyLiveWallpaper:
+        MutableStateFlow<((destination: WallpaperDestination) -> WallpaperDescription?)?> =
+        MutableStateFlow(null)
+    private val onApplyLiveWallpaper:
+        StateFlow<((destination: WallpaperDestination) -> WallpaperDescription?)?> =
+        _onApplyLiveWallpaper.asStateFlow()
+
+    fun setOnApplyLiveWallpaper(
+        listener: (destination: WallpaperDestination) -> WallpaperDescription?
+    ) {
+        _onApplyLiveWallpaper.value = listener
+    }
+
     val setWallpaperDialogOnConfirmButtonClicked: Flow<suspend () -> Unit> =
         combine(
             wallpaper.filterNotNull(),
             staticWallpaperPreviewViewModel.fullResWallpaperViewModel,
             setWallpaperDialogSelectedScreens,
-        ) { wallpaper, fullResWallpaperViewModel, selectedScreens ->
+            onApplyLiveWallpaper,
+        ) { wallpaper, fullResWallpaperViewModel, selectedScreens, onApplyLiveWallpaper ->
             {
                 _isSetWallpaperProgressBarVisible.value = true
                 val destination = selectedScreens.getDestination()
@@ -584,6 +599,7 @@ constructor(
                             setWallpaperEntryPoint = wallpaperEntryPoint,
                             destination = destination,
                             wallpaperModel = wallpaper,
+                            onApplyLiveWallpaper = onApplyLiveWallpaper,
                         )
                     }
                 }
