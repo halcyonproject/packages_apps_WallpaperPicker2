@@ -120,8 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Voorbeeld achtergrond startscherm"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"De collectie bestaat niet"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Sluit de modus voor gesplitst scherm af en probeer het opnieuw"</string>
-    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
-    <skip />
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Kan geen voorbeeld van de achtergrond tonen"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Instellen"</string>
     <string name="cancel" msgid="4970902691067201584">"Annuleren"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Voorbeeld van UI verbergen"</string>

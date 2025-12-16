@@ -120,8 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"ការមើល​ផ្ទាំងរូបភាព​អេក្រង់ដើម​សាកល្បង"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"បណ្ដុំមិនមានទេ"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"សូមចាកចេញពីមុខងារបំបែកអេក្រង់ រួចព្យាយាមម្ដងទៀត"</string>
-    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
-    <skip />
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"មិនអាចបង្ហាញការមើលផ្ទាំង​រូបភាពសាកល្បងបានទេ"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"កំណត់"</string>
     <string name="cancel" msgid="4970902691067201584">"បោះបង់"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"លាក់ការមើល UI សាកល្បង"</string>

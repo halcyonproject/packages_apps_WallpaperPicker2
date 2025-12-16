@@ -120,8 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Əsas ekranda divar kağızı önizləməsi"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Kolleksiya mövcud deyil"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Bölünmüş ekran rejimindən çıxıb, yenidən cəhd edin"</string>
-    <!-- no translation found for wallpaper_preview_error (8230796042388952229) -->
-    <skip />
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Divar kağızının önizləməsini göstərmək olmur"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Ayarlayın"</string>
     <string name="cancel" msgid="4970902691067201584">"Ləğv edin"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"UI Önizləməsini gizlədin"</string>
