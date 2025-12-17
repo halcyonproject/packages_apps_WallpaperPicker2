@@ -16,4 +16,9 @@
 
 package com.android.customization.picker.icon.shared.model
 
-open class IconStyleModel(val iconStyle: IconStyle, val isExternalLink: Boolean)
+/** Represents the data needed to display an icon style option. */
+open class IconStyleModel(
+    val iconStyle: IconStyle,
+    val isExternalLink: Boolean,
+    val isEnabled: Boolean = true,
+)
