@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.DefaultElementContentPicker
 import com.android.compose.animation.scene.ElementKey
@@ -249,6 +250,15 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     homeScreenPreview = homeScreenPreview,
                     logger = logger,
                     onFinishActivity = { activity?.finish() },
+                    onNavigateToEditScreen = { intent ->
+                        findNavController()
+                            .navigate(
+                                resId =
+                                    R.id
+                                        .action_wallpaperPreviewFragment_to_creativeEditPreviewFragment,
+                                args = Bundle().apply { putParcelable(ARG_EDIT_INTENT, intent) },
+                            )
+                    },
                 )
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
@@ -328,5 +338,9 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                 timestampRange(startMillis = 200) { fade(Elements.FullPreviewTopToolbar) }
             }
         }
+    }
+
+    companion object {
+        const val ARG_EDIT_INTENT = "arg_edit_intent"
     }
 }
