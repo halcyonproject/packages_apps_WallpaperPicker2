@@ -79,6 +79,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DOWNLOAD
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.EDIT
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
+import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.DeleteConfirmationDialogViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
@@ -100,6 +101,7 @@ fun ContentScope.SmallWallpaperPreviewScene(
     logger: UserEventLogger,
     onFinishActivity: () -> Unit,
     onNavigateToEditScreen: (Intent) -> Unit,
+    onStartShareActivity: (Intent) -> Unit,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
@@ -155,6 +157,10 @@ fun ContentScope.SmallWallpaperPreviewScene(
     val isEditButtonVisible: Boolean by
         actionsViewModel.isEditVisible.collectAsStateWithLifecycle(false)
     val editButtonIntent: Intent? by actionsViewModel.editIntent.collectAsStateWithLifecycle(null)
+    /** [SHARE] */
+    val isShareButtonVisible: Boolean by
+        actionsViewModel.isShareVisible.collectAsStateWithLifecycle(false)
+    val shareButtonIntent: Intent? by actionsViewModel.shareIntent.collectAsStateWithLifecycle(null)
     /** [DELETE] */
     val isDeleteButtonVisible: Boolean by
         actionsViewModel.isDeleteVisible.collectAsStateWithLifecycle(false)
@@ -232,6 +238,14 @@ fun ContentScope.SmallWallpaperPreviewScene(
                     iconDrawableRes = R.drawable.ic_edit_filled,
                     contentDescriptionRes = R.string.edit_live_wallpaper,
                     onClick = { editButtonIntent?.let { onNavigateToEditScreen.invoke(it) } },
+                )
+            }
+
+            if (isShareButtonVisible) {
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_share_filled,
+                    contentDescriptionRes = R.string.tab_share,
+                    onClick = { shareButtonIntent?.let { onStartShareActivity.invoke(it) } },
                 )
             }
 

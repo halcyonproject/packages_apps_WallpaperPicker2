@@ -24,6 +24,8 @@ import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -126,6 +128,9 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     @Inject lateinit var logger: UserEventLogger
 
     private val wallpaperPreviewViewModel by activityViewModels<WallpaperPreviewViewModel>()
+
+    private val shareActivityResultLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -259,6 +264,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                                 args = Bundle().apply { putParcelable(ARG_EDIT_INTENT, intent) },
                             )
                     },
+                    onStartShareActivity = { intent -> shareActivityResultLauncher.launch(intent) },
                 )
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
