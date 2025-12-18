@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.DefaultElementContentPicker
@@ -58,6 +59,7 @@ import com.android.wallpaper.picker.preview.ui.view.FullWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
 import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
@@ -169,6 +171,14 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             )
         }
 
+        val extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent> =
+            ExtendedWallpaperEffectsUtils.registerExtendedWallpaperEffectsActivityLauncher(
+                requireActivity(),
+                viewLifecycleOwner,
+                wallpaperPreviewViewModel,
+                requireContext(),
+            )
+
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
@@ -176,6 +186,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     WallpaperPreviewRootContent(
                         lockScreenPreview = lockScreenPreview,
                         homeScreenPreview = homeScreenPreview,
+                        extendedWallpaperEffectActivityLauncher =
+                            extendedWallpaperEffectActivityLauncher,
                     )
                 }
             }
@@ -228,6 +240,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     fun WallpaperPreviewRootContent(
         lockScreenPreview: SurfaceView,
         homeScreenPreview: SurfaceView,
+        extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent>,
         modifier: Modifier = Modifier,
     ) {
         val sceneState =
@@ -265,6 +278,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                             )
                     },
                     onStartShareActivity = { intent -> shareActivityResultLauncher.launch(intent) },
+                    extendedWallpaperEffectActivityLauncher =
+                        extendedWallpaperEffectActivityLauncher,
                 )
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
