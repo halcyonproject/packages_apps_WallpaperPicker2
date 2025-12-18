@@ -94,16 +94,16 @@ class WallpaperCarouselViewModelTest {
     }
 
     @Test
-    fun wallpaperCarousel_showCreativesWhenMinimumAndCuratedLessThanMinimum() = runTest {
+    fun wallpaperCarousel_showCreativesWhenMinimumAndCuratedNonNullLessThanMinimum() = runTest {
         creativeCategoryInteractor.setCreativeCategories(
-            FakeCreativeWallpaperInteractor.dataListMinumumOrMore
+            FakeCreativeWallpaperInteractor.dataListMinimumOrMore
         )
         curatedPhotosInteractor.setCategory(FakeCuratedPhotosInteractorImpl.twoCuratedPhotos)
         val tileViewModels =
             collectLastValue<List<TileViewModel>>(underTest.wallpaperCarouselItems).invoke()
         assertThat(tileViewModels?.get(0)?.text)
             .isEqualTo(
-                FakeCreativeWallpaperInteractor.dataListMinumumOrMore
+                FakeCreativeWallpaperInteractor.dataListMinimumOrMore
                     .get(0)
                     .commonCategoryData
                     .title
@@ -123,6 +123,23 @@ class WallpaperCarouselViewModelTest {
                 FakeOnDeviceWallpapersInteractor.fakeOnDeviceWallpapers
                     .get(0)
                     .commonWallpaperData
+                    .title
+            )
+    }
+
+    @Test
+    fun wallpaperCarousel_whenCuratedPhotosAreNull_returnsValidValue() = runTest {
+        curatedPhotosInteractor.setCategory(null)
+        creativeCategoryInteractor.setCreativeCategories(
+            FakeCreativeWallpaperInteractor.dataListMinimumOrMore
+        )
+        val tileViewModels =
+            collectLastValue<List<TileViewModel>>(underTest.wallpaperCarouselItems).invoke()
+        assertThat(tileViewModels?.get(0)?.text)
+            .isEqualTo(
+                FakeCreativeWallpaperInteractor.dataListMinimumOrMore
+                    .get(0)
+                    .commonCategoryData
                     .title
             )
     }

@@ -55,7 +55,7 @@ class FakeCreativeWallpaperInteractor @Inject constructor() : CreativeCategoryIn
                 )
                 .map { commonCategoryData -> CategoryModel(commonCategoryData, null, null, null) }
 
-        val dataListMinumumOrMore =
+        val dataListMinimumOrMore =
             listOf(
                     CommonCategoryData("Emoji", "emoji_wallpapers", 1),
                     CommonCategoryData("A.I.", "ai_wallpapers", 2),

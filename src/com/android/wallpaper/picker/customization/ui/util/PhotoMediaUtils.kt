@@ -47,29 +47,33 @@ object PhotoMediaUtils {
      * @return a lambda that returns true if the old and new models have the same set of media keys,
      *   false otherwise.
      */
-    fun distinctMediaKeyChanged(): (PhotoCategoryModel, PhotoCategoryModel) -> Boolean {
+    fun distinctMediaKeyChanged(): (PhotoCategoryModel?, PhotoCategoryModel?) -> Boolean {
         return { old, new ->
-            val oldKeys =
-                old.categoryModel.collectionCategoryData
-                    ?.wallpaperModels
-                    ?.mapNotNull {
-                        val static = it as? WallpaperModel.StaticWallpaperModel
-                        static?.imageWallpaperData?.uri?.let { uri -> extractMediaKey(uri) }
-                    }
-                    ?.toSet()
-                    .orEmpty()
+            if (old == null && new == null) true
+            else if (old == null || new == null) false
+            else {
+                val oldKeys =
+                    old.categoryModel.collectionCategoryData
+                        ?.wallpaperModels
+                        ?.mapNotNull {
+                            val static = it as? WallpaperModel.StaticWallpaperModel
+                            static?.imageWallpaperData?.uri?.let { uri -> extractMediaKey(uri) }
+                        }
+                        ?.toSet()
+                        .orEmpty()
 
-            val newKeys =
-                new.categoryModel.collectionCategoryData
-                    ?.wallpaperModels
-                    ?.mapNotNull {
-                        val static = it as? WallpaperModel.StaticWallpaperModel
-                        static?.imageWallpaperData?.uri?.let { uri -> extractMediaKey(uri) }
-                    }
-                    ?.toSet()
-                    .orEmpty()
+                val newKeys =
+                    new.categoryModel.collectionCategoryData
+                        ?.wallpaperModels
+                        ?.mapNotNull {
+                            val static = it as? WallpaperModel.StaticWallpaperModel
+                            static?.imageWallpaperData?.uri?.let { uri -> extractMediaKey(uri) }
+                        }
+                        ?.toSet()
+                        .orEmpty()
 
-            oldKeys == newKeys
+                oldKeys == newKeys
+            }
         }
     }
 }
