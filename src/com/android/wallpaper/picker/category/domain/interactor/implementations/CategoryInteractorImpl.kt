@@ -62,6 +62,10 @@ constructor(
 
     override val isNetworkCategoriesNotEmpty: Flow<Boolean> = emptyFlow()
 
+    override fun fetchDelayedCategories() {
+        // No-op in AOSP
+    }
+
     override fun refreshDueToLocaleChange() {
         defaultWallpaperCategoryRepository.refreshDueToLocaleChange()
     }
