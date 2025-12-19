@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.wallpaper.WallpaperDescription
 import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
@@ -30,6 +31,9 @@ import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.Effect
 import com.android.wallpaper.effects.EffectsController.EffectEnumInterface
 import com.android.wallpaper.module.ExtendedEffectsHelper
+import com.android.wallpaper.module.PackageStatusNotifier
+import com.android.wallpaper.module.PackageStatusNotifier.PackageStatus.CHANGED
+import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.data.LiveWallpaperData
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -61,6 +65,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.Customize
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.ImageEffectFloatingSheetViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.InformationFloatingSheetViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.PreviewFloatingSheetViewModel
+import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperEffectsView2.EffectDownloadClickListener
@@ -77,6 +82,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -84,6 +90,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** View model for the preview action buttons */
 @ViewModelScoped
@@ -92,7 +99,10 @@ class PreviewActionsViewModel
 constructor(
     private val previewActionsInteractor: PreviewActionsInteractor,
     private val wallpaperConnectionUtils: WallpaperConnectionUtils,
-    wallpaperPreviewInteractor: WallpaperPreviewInteractor,
+    private val wallpaperPreferences: WallpaperPreferences,
+    private val packageStatusNotifier: PackageStatusNotifier,
+    private val wallpaperPreviewInteractor: WallpaperPreviewInteractor,
+    private val categoryWallpapersInteractor: CategoryWallpapersInteractor,
     liveWallpaperDeleteUtil: LiveWallpaperDeleteUtil,
     extendedEffectsHelper: ExtendedEffectsHelper,
     @ApplicationContext private val context: Context,
@@ -178,6 +188,14 @@ constructor(
         previewActionsInteractor.downloadableWallpaperModel.map {
             it.status == DownloadStatus.READY_TO_DOWNLOAD
         }
+    val onDownloadButtonClicked: Flow<(() -> Unit)?> =
+        isDownloadButtonEnabled.map {
+            if (it) {
+                { downloadWallpaper() }
+            } else {
+                null
+            }
+        }
 
     val isDownloadComplete: Flow<Boolean> =
         previewActionsInteractor.downloadableWallpaperModel
@@ -223,6 +241,9 @@ constructor(
     private val _isDeleteChecked: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isDeleteChecked: Flow<Boolean> = _isDeleteChecked.asStateFlow()
 
+    private val _isDeleting: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isDeleting: StateFlow<Boolean> = _isDeleting.asStateFlow()
+
     // View model for delete confirmation dialog. Note that null means the dialog should show;
     // otherwise, the dialog should hide.
     val deleteConfirmationDialogViewModel: Flow<DeleteConfirmationDialogViewModel?> =
@@ -233,17 +254,73 @@ constructor(
             previewActionsInteractor.wallpaperModel,
         ) { isChecked, intent, uri, wallpaperModel ->
             if (isChecked && (intent != null || uri != null)) {
-                val liveWallpaperData = (wallpaperModel as? LiveWallpaperModel)?.liveWallpaperData
+                val liveWallpaperData: LiveWallpaperData? =
+                    (wallpaperModel as? LiveWallpaperModel)?.liveWallpaperData
+                val description: WallpaperDescription? = liveWallpaperData?.description
+                val wallpaperComponent: String =
+                    liveWallpaperData?.systemWallpaperInfo?.packageName ?: ""
                 DeleteConfirmationDialogViewModel(
                     onDismiss = { _isDeleteChecked.value = false },
                     liveWallpaperDeleteIntent = intent,
                     creativeWallpaperDeleteUri = uri,
-                    wallpaperComponent = liveWallpaperData?.systemWallpaperInfo?.packageName ?: "",
-                    description = liveWallpaperData?.description,
+                    wallpaperComponent = wallpaperComponent,
+                    description = description,
+                    onDelete =
+                        if (BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
+                            {
+                                _isDeleting.value = true
+                                if (uri != null) {
+                                    deleteWithUri(uri, description)
+                                } else if (intent != null) {
+                                    deleteWithIntent(intent, wallpaperComponent)
+                                }
+                                wallpaperPreviewInteractor.wallpaperModel.value
+                                    ?.commonWallpaperData
+                                    ?.id
+                                    ?.collectionId
+                                    ?.let {
+                                        categoryWallpapersInteractor.refreshCategoryWallpapers(it)
+                                    }
+                                _isDeleting.value = false
+                            }
+                        } else {
+                            null
+                        },
                 )
             } else {
                 null
             }
+        }
+
+    private fun deleteWithUri(uri: Uri, description: WallpaperDescription?) {
+        context.contentResolver.delete(uri, null, null)
+        if (BaseFlags.get(context).isEnableRecentWallpaperDeletion()) {
+            description?.let { wallpaperPreferences.removeRecentWallpaper(it) }
+        }
+    }
+
+    private suspend fun deleteWithIntent(intent: Intent, wallpaperComponent: String) =
+        suspendCancellableCoroutine<Unit> { continuation ->
+            val deletePackageListener =
+                object : PackageStatusNotifier.Listener {
+                    override fun onPackageChanged(packageName: String?, status: Int) {
+                        if (status == CHANGED && packageName == wallpaperComponent) {
+                            // Remove listener once condition is met
+                            packageStatusNotifier.removeListener(this)
+                            if (continuation.isActive) {
+                                continuation.resume(Unit) { _, _, _ -> }
+                            }
+                        }
+                    }
+                }
+
+            packageStatusNotifier.addListener(deletePackageListener, intent.action)
+            continuation.invokeOnCancellation {
+                // This is to prevent memory leak when the user navigates away while the deletion is
+                // still in progress.
+                packageStatusNotifier.removeListener(deletePackageListener)
+            }
+            context.startService(intent)
         }
 
     val onDeleteClicked: Flow<(() -> Unit)?> =

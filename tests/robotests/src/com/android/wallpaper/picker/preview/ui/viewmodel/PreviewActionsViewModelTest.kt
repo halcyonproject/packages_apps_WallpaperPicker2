@@ -40,11 +40,14 @@ import com.android.wallpaper.picker.preview.domain.interactor.PreviewActionsInte
 import com.android.wallpaper.picker.preview.domain.interactor.WallpaperPreviewInteractor
 import com.android.wallpaper.picker.preview.shared.model.ImageEffectsModel
 import com.android.wallpaper.picker.preview.ui.util.LiveWallpaperDeleteUtil
+import com.android.wallpaper.testing.FakeCategoryWallpapersInteractor
+import com.android.wallpaper.testing.FakeCategoryWallpapersRepository
 import com.android.wallpaper.testing.FakeExtendedEffectsHelper
 import com.android.wallpaper.testing.FakeImageEffectsRepository
 import com.android.wallpaper.testing.FakeLiveWallpaperDownloader
 import com.android.wallpaper.testing.ShadowWallpaperInfo
 import com.android.wallpaper.testing.TestInjector
+import com.android.wallpaper.testing.TestPackageStatusNotifier
 import com.android.wallpaper.testing.TestWallpaperPreferences
 import com.android.wallpaper.testing.WallpaperModelUtils
 import com.android.wallpaper.testing.collectLastValue
@@ -92,6 +95,9 @@ class PreviewActionsViewModelTest {
     @Inject lateinit var liveWallpaperDownloader: FakeLiveWallpaperDownloader
     @Inject lateinit var liveWallpaperDeleteUtil: LiveWallpaperDeleteUtil
     @Inject lateinit var testInjector: TestInjector
+    @Inject lateinit var packageStatusNotifier: TestPackageStatusNotifier
+    @Inject lateinit var categoryWallpapersInteractor: FakeCategoryWallpapersInteractor
+    @Inject lateinit var categoryWallpapersRepository: FakeCategoryWallpapersRepository
 
     @Before
     fun setUp() {
@@ -128,18 +134,26 @@ class PreviewActionsViewModelTest {
         wallpaperPreviewRepository = WallpaperPreviewRepository(wallpaperPreferences)
         underTest =
             PreviewActionsViewModel(
-                PreviewActionsInteractor(
-                    wallpaperPreviewRepository,
-                    imageEffectsRepository,
-                    CreativeEffectsRepository(appContext, testDispatcher),
-                    DownloadableWallpaperRepository(liveWallpaperDownloader),
-                ),
-                activityScopeEntryPoint.wallpaperConnectionUtils(),
-                activityScopeEntryPoint.interactor(),
-                liveWallpaperDeleteUtil,
-                FakeExtendedEffectsHelper(),
-                appContext,
-                TestScope(testDispatcher),
+                previewActionsInteractor =
+                    PreviewActionsInteractor(
+                        wallpaperPreviewRepository,
+                        imageEffectsRepository,
+                        CreativeEffectsRepository(appContext, testDispatcher),
+                        DownloadableWallpaperRepository(
+                            context = appContext,
+                            liveWallpaperDownloader = liveWallpaperDownloader,
+                            categoryWallpapersRepository = categoryWallpapersRepository,
+                        ),
+                    ),
+                wallpaperConnectionUtils = activityScopeEntryPoint.wallpaperConnectionUtils(),
+                wallpaperPreferences = wallpaperPreferences,
+                packageStatusNotifier = packageStatusNotifier,
+                wallpaperPreviewInteractor = activityScopeEntryPoint.interactor(),
+                categoryWallpapersInteractor = categoryWallpapersInteractor,
+                liveWallpaperDeleteUtil = liveWallpaperDeleteUtil,
+                extendedEffectsHelper = FakeExtendedEffectsHelper(),
+                context = appContext,
+                mainScope = TestScope(testDispatcher),
             )
     }
 

@@ -172,5 +172,7 @@ class FakeCategoryWallpapersInteractor @Inject constructor() : CategoryWallpaper
 
     override fun clearSelectedCategory() {}
 
+    override fun refreshCategoryWallpapers(collectionId: String) {}
+
     override suspend fun startRotation(networkPreference: Int) {}
 }

@@ -27,6 +27,7 @@ import com.android.wallpaper.picker.preview.data.repository.DownloadableWallpape
 import com.android.wallpaper.picker.preview.data.repository.WallpaperPreviewRepository
 import com.android.wallpaper.picker.preview.shared.model.DownloadStatus
 import com.android.wallpaper.picker.preview.shared.model.DownloadableWallpaperModel
+import com.android.wallpaper.testing.FakeCategoryWallpapersRepository
 import com.android.wallpaper.testing.FakeImageEffectsRepository
 import com.android.wallpaper.testing.FakeLiveWallpaperDownloader
 import com.android.wallpaper.testing.ShadowWallpaperInfo
@@ -69,6 +70,7 @@ class PreviewActionsInteractorTest {
     @Inject lateinit var liveWallpaperDownloader: FakeLiveWallpaperDownloader
     @Inject lateinit var wallpaperPreferences: TestWallpaperPreferences
     @Inject lateinit var imageEffectsRepository: FakeImageEffectsRepository
+    @Inject lateinit var categoryWallpapersRepository: FakeCategoryWallpapersRepository
 
     @Before
     fun setUp() {
@@ -79,7 +81,12 @@ class PreviewActionsInteractorTest {
         resultWallpaper = getTestLiveWallpaperModel()
 
         wallpaperPreviewRepository = WallpaperPreviewRepository(wallpaperPreferences)
-        downloadableWallpaperRepository = DownloadableWallpaperRepository(liveWallpaperDownloader)
+        downloadableWallpaperRepository =
+            DownloadableWallpaperRepository(
+                context = appContext,
+                liveWallpaperDownloader = liveWallpaperDownloader,
+                categoryWallpapersRepository = categoryWallpapersRepository,
+            )
         creativeEffectsRepository = CreativeEffectsRepository(appContext, testDispatcher)
         underTest =
             PreviewActionsInteractor(
@@ -164,12 +171,12 @@ class PreviewActionsInteractorTest {
                     serviceInfo.splitName = "wallpaper_cities_ny"
                     serviceInfo.name = "NewYorkWallpaper"
                     serviceInfo.flags = PackageManager.GET_META_DATA
-                }
+                },
             )
         return WallpaperModelUtils.getLiveWallpaperModel(
             wallpaperId = "uniqueId",
             collectionId = "collectionId",
-            systemWallpaperInfo = wallpaperInfo
+            systemWallpaperInfo = wallpaperInfo,
         )
     }
 }

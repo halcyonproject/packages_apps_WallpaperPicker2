@@ -50,6 +50,13 @@ interface CategoryWallpapersInteractor {
     /** Clears the selected category and wallpapers for the category */
     fun clearSelectedCategory()
 
+    /**
+     * Refresh wallpapers in a specific category. Note that not only the wallpapers in the specified
+     * category will be refreshed, but possibly other live wallpaper categories will also be
+     * refreshed.
+     */
+    fun refreshCategoryWallpapers(collectionId: String)
+
     /** This starts the wallpaper rotation process for the current category */
     suspend fun startRotation(networkPreference: Int)
 }
