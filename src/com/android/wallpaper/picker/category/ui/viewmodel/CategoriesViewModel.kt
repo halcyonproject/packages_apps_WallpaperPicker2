@@ -357,7 +357,9 @@ constructor(
             .distinctUntilChanged(PhotoMediaUtils.distinctMediaKeyChanged())
             .map { category ->
                 val tileViewModels =
-                    category.categoryModel.collectionCategoryData
+                    category
+                        ?.categoryModel
+                        ?.collectionCategoryData
                         ?.wallpaperModels
                         ?.withIndex()
                         ?.map { wallpaperModel ->
@@ -397,9 +399,9 @@ constructor(
                     columnCount = context.resources.getInteger(R.integer.category_span_count),
                     sectionTitle = context.getString(R.string.choose_a_curated_photo_section_title),
                     displayType = DisplayType.Carousel,
-                    status = category.status,
+                    status = category?.status,
                     isDismissed = curatedPhotosInteractor.dismissBanner.value,
-                    pendingIntent = category.pendingIntent,
+                    pendingIntent = category?.pendingIntent,
                     isSuggestedPhotoCarouselVisible = isSuggestedPhotoCarouselVisible,
                 ) {
                     navigateToPhotosPicker(null)

@@ -67,33 +67,41 @@ constructor(
         curatedPhotosInteractor.category
             .distinctUntilChanged(PhotoMediaUtils.distinctMediaKeyChanged())
             .map { category ->
-                category.categoryModel.collectionCategoryData?.wallpaperModels?.withIndex()?.map {
-                    wallpaperModelWithIndex ->
-                    val staticWallpaperModel =
-                        wallpaperModelWithIndex.value as? WallpaperModel.StaticWallpaperModel
-                    val total = category.categoryModel.collectionCategoryData.wallpaperModels.size
+                category
+                    ?.categoryModel
+                    ?.collectionCategoryData
+                    ?.wallpaperModels
+                    ?.withIndex()
+                    ?.map { wallpaperModelWithIndex ->
+                        val staticWallpaperModel =
+                            wallpaperModelWithIndex.value as? WallpaperModel.StaticWallpaperModel
+                        val total =
+                            category.categoryModel.collectionCategoryData.wallpaperModels.size
 
-                    TileViewModel(
-                        defaultDrawable = null,
-                        thumbnailAsset =
-                            ContentUriAsset(context, staticWallpaperModel?.imageWallpaperData?.uri),
-                        text = category.categoryModel.commonCategoryData.title,
-                        showTitle = false,
-                        maxCategoriesInRow = SectionCardinality.Single,
-                        contentDescription =
-                            context.getString(
-                                R.string.carousel_content_description_photos,
-                                wallpaperModelWithIndex.index + 1,
-                                total,
-                            ),
-                    ) {
-                        navigateToPreviewScreen(
-                            wallpaperModelWithIndex.value,
-                            CategoryType.CuratedPhotos,
-                            SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
-                        )
-                    }
-                } ?: emptyList()
+                        TileViewModel(
+                            defaultDrawable = null,
+                            thumbnailAsset =
+                                ContentUriAsset(
+                                    context,
+                                    staticWallpaperModel?.imageWallpaperData?.uri,
+                                ),
+                            text = category.categoryModel.commonCategoryData.title,
+                            showTitle = false,
+                            maxCategoriesInRow = SectionCardinality.Single,
+                            contentDescription =
+                                context.getString(
+                                    R.string.carousel_content_description_photos,
+                                    wallpaperModelWithIndex.index + 1,
+                                    total,
+                                ),
+                        ) {
+                            navigateToPreviewScreen(
+                                wallpaperModelWithIndex.value,
+                                CategoryType.CuratedPhotos,
+                                SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
+                            )
+                        }
+                    } ?: emptyList()
             }
 
     /**

@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
  * category model
  */
 interface CuratedPhotosInteractor {
-    val category: Flow<PhotoCategoryModel>
+    val category: Flow<PhotoCategoryModel?>
     val dismissBanner: StateFlow<Boolean>
 
     /**
