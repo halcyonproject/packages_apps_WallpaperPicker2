@@ -18,6 +18,7 @@ package com.android.wallpaper.picker.customization.ui.binder
 
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Toolbar
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.DrawableCompat
@@ -26,7 +27,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
-import com.android.wallpaper.picker.customization.ui.view.ApplyButton
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationOptionsViewModel
 import javax.inject.Inject
@@ -37,15 +37,15 @@ import kotlinx.coroutines.launch
 class DefaultToolbarBinder @Inject constructor() : ToolbarBinder {
 
     override fun bind(
-        navButton: FrameLayout,
-        toolbar: Toolbar,
-        applyButton: ApplyButton,
+        toolbarContainer: LinearLayout,
         viewModel: CustomizationOptionsViewModel,
         colorUpdateViewModel: ColorUpdateViewModel,
         lifecycleOwner: LifecycleOwner,
         onNavBack: () -> Unit,
     ) {
-        val appContext = navButton.context.applicationContext
+        val appContext = toolbarContainer.context.applicationContext
+        val toolbar: Toolbar = toolbarContainer.requireViewById(R.id.toolbar)
+        val navButton: FrameLayout = toolbarContainer.requireViewById(R.id.nav_button)
         val navButtonIcon = navButton.requireViewById<View>(R.id.nav_button_icon)
 
         navButton.setOnClickListener { onNavBack.invoke() }

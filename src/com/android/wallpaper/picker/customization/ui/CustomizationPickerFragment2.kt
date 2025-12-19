@@ -85,7 +85,6 @@ import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUti
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionViewUtil
 import com.android.wallpaper.picker.customization.ui.util.EmptyTransitionListener
-import com.android.wallpaper.picker.customization.ui.view.ApplyButton
 import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
 import com.android.wallpaper.picker.customization.ui.view.PreviewPagerViews
 import com.android.wallpaper.picker.customization.ui.view.WallpaperPickerEntry
@@ -247,12 +246,8 @@ class CustomizationPickerFragment2 :
             }
         val view = inflater.inflate(layoutResId, container, false)
 
-        val toolbar: Toolbar = view.requireViewById(R.id.toolbar)
-        setupToolbar(
-            view.requireViewById(R.id.nav_button),
-            toolbar,
-            view.requireViewById(R.id.apply_button),
-        )
+        val toolbarContainer: LinearLayout = view.requireViewById(R.id.toolbar_container)
+        setupToolbar(toolbarContainer)
 
         val showSuggestedChip =
             Settings.Secure.getInt(
@@ -319,7 +314,7 @@ class CustomizationPickerFragment2 :
         ViewCompat.setOnApplyWindowInsetsListener(pickerMotionContainer) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             applySystemBarInsets(
-                toolbar = toolbar,
+                toolbarContainer = toolbarContainer,
                 optionContainer = optionContainer,
                 customizationFloatingSheetContainer = customizationFloatingSheetContainer,
                 statusBarHeight = insets.top,
@@ -550,13 +545,13 @@ class CustomizationPickerFragment2 :
     }
 
     private fun applySystemBarInsets(
-        toolbar: Toolbar,
+        toolbarContainer: LinearLayout,
         optionContainer: ConstraintLayout,
         customizationFloatingSheetContainer: FrameLayout,
         statusBarHeight: Int,
         navBarHeight: Int,
     ) {
-        (toolbar.layoutParams as MarginLayoutParams).setMargins(0, statusBarHeight, 0, 0)
+        (toolbarContainer.layoutParams as MarginLayoutParams).setMargins(0, statusBarHeight, 0, 0)
 
         val horizontalPadding =
             resources.getDimensionPixelSize(
@@ -901,7 +896,9 @@ class CustomizationPickerFragment2 :
         onBackPressedCallback?.remove()
     }
 
-    private fun setupToolbar(navButton: FrameLayout, toolbar: Toolbar, applyButton: ApplyButton) {
+    private fun setupToolbar(toolbarContainer: LinearLayout) {
+        val toolbar: Toolbar = toolbarContainer.requireViewById(R.id.toolbar)
+        val navButton: FrameLayout = toolbarContainer.requireViewById(R.id.nav_button)
         toolbar.title = getString(R.string.app_name)
         toolbar.setBackgroundColor(Color.TRANSPARENT)
         DarkModeUpdateBinder.bind(
@@ -932,9 +929,7 @@ class CustomizationPickerFragment2 :
         }
 
         toolbarBinder.bind(
-            navButton,
-            toolbar,
-            applyButton,
+            toolbarContainer,
             customizationPickerViewModel.customizationOptionsViewModel,
             colorUpdateViewModel,
             viewLifecycleOwner,
