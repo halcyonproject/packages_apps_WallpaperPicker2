@@ -13,18 +13,18 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/toolbar_container"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
     <FrameLayout
         android:id="@+id/nav_button"
         android:layout_width="@dimen/nav_button_width"
         android:layout_height="@dimen/nav_button_height"
         android:layout_marginStart="@dimen/nav_button_start_margin"
-        android:contentDescription="@string/bottom_action_bar_back"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar">
+        android:contentDescription="@string/bottom_action_bar_back">
         <View
             android:id="@+id/nav_button_icon"
             android:layout_height="@dimen/nav_button_background_size"
@@ -42,17 +42,12 @@
         style="@style/ToolbarTheme"
         android:importantForAccessibility="yes"
         android:layout_gravity="top"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/nav_button"
-        app:layout_constraintEnd_toStartOf="@id/apply_button" />
+        android:layout_weight="1"/>
 
     <com.android.wallpaper.picker.customization.ui.view.ApplyButton
         android:id="@+id/apply_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/touch_target_min_height"
-        android:layout_marginEnd="@dimen/apply_button_end_margin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar" />
-</merge>
+        android:layout_marginEnd="@dimen/apply_button_end_margin" />
+</LinearLayout>

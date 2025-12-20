@@ -30,9 +30,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 @Singleton
 class FakeCuratedPhotosInteractorImpl @Inject constructor() : CuratedPhotosInteractor {
-    private val _category = MutableStateFlow(threeCuratedPhotos)
+    private val _category = MutableStateFlow<PhotoCategoryModel?>(null)
 
-    override val category: Flow<PhotoCategoryModel>
+    override val category: Flow<PhotoCategoryModel?>
         get() = _category
 
     override val dismissBanner: StateFlow<Boolean>
@@ -44,7 +44,7 @@ class FakeCuratedPhotosInteractorImpl @Inject constructor() : CuratedPhotosInter
 
     override fun refreshContent() {}
 
-    fun setCategory(newCategory: PhotoCategoryModel) {
+    fun setCategory(newCategory: PhotoCategoryModel?) {
         _category.value = newCategory
     }
 

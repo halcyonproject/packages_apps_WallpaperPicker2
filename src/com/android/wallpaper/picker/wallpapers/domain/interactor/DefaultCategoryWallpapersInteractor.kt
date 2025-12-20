@@ -54,6 +54,11 @@ constructor(private val categoryWallpapersRepository: CategoryWallpapersReposito
         categoryWallpapersRepository.clearSelectedCategory()
     }
 
+    override fun refreshCategoryWallpapers(collectionId: String) {
+        categoryWallpapersRepository.invalidateCache(collectionId)
+        categoryWallpapersRepository.refreshWallpapers()
+    }
+
     override suspend fun startRotation(networkPreference: Int) {
         withContext(Dispatchers.IO) {
             categoryWallpapersRepository.startRotation(networkPreference)

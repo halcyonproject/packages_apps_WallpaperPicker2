@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.DefaultElementContentPicker
@@ -142,21 +141,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val lockScreenPreview =
-            SurfaceView(context).also {
-                // Hide surface view until the to-be-parented surface controls are ready. This makes
-                // sure surfaceCreated is called and we can reparent the surface controls in the
-                // callback.
-                it.isVisible = false
-            }
-        val homeScreenPreview =
-            SurfaceView(context).also {
-                // Hide surface view until the to-be-parented surface controls are ready. This makes
-                // sure surfaceCreated is called and we can reparent the surface controls in the
-                // callback.
-                it.isVisible = false
-            }
-
+        val lockScreenPreview = SurfaceView(context)
+        val homeScreenPreview = SurfaceView(context)
         // Note that we need to make sure the parent container view is attached to window, so that
         // the surface control's token and the container's window token are ready.
         // The host token is used by the external rendering to listen to its lifecycle, so that when
@@ -262,6 +248,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     lockScreenPreview = lockScreenPreview,
                     homeScreenPreview = homeScreenPreview,
                     logger = logger,
+                    onFinishActivity = { activity?.finish() },
                 )
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {

@@ -24,12 +24,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 
 /** This is the default implementation for fetching curated photos. */
 @Singleton
 class DefaultCuratedPhotosInteractorImpl @Inject constructor() : CuratedPhotosInteractor {
-    override val category: Flow<PhotoCategoryModel> = emptyFlow()
+    override val category: Flow<PhotoCategoryModel?> = flowOf(null)
 
     private val _dismissBanner = MutableStateFlow(false)
 

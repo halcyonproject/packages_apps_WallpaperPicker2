@@ -53,6 +53,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -64,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
@@ -84,7 +86,6 @@ fun ContentScope.ApplyWallpaperScene(
     homeScreenPreview: View,
     onWallpaperApplied: () -> Unit,
 ) {
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
     val windowSize: IntSize = LocalWindowInfo.current.containerSize
@@ -98,10 +99,6 @@ fun ContentScope.ApplyWallpaperScene(
         viewModel.isHomeCheckBoxChecked.collectAsStateWithLifecycle(false)
     val onHomeScreenCheckChanged: (() -> Unit)? by
         viewModel.onHomeCheckBoxChecked.collectAsStateWithLifecycle(null)
-    val isApplyButtonEnabled: Boolean by
-        viewModel.isApplyButtonEnabled.collectAsStateWithLifecycle(false)
-    val onApplyWallpaper: (suspend () -> Unit)? by
-        viewModel.setWallpaperDialogOnConfirmButtonClicked.collectAsStateWithLifecycle(null)
     val isApplyWallpaperProgressDialogVisible: Boolean by
         viewModel.isSetWallpaperProgressBarVisible.collectAsStateWithLifecycle(false)
 
@@ -187,56 +184,117 @@ fun ContentScope.ApplyWallpaperScene(
                     }
                 }
             }
-
-            Column(
-                modifier =
-                    Modifier.element(Elements.ApplyWallpaperBottomButtons)
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 8.dp, start = 24.dp, end = 24.dp)
-            ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    onClick = {
-                        coroutineScope.launch {
-                            onApplyWallpaper?.invoke()
-                            onWallpaperApplied.invoke()
-                        }
-                    },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary,
-                        ),
-                    shape = RoundedCornerShape(percent = 50),
-                    enabled = isApplyButtonEnabled,
-                ) {
-                    Text(stringResource(R.string.apply_btn))
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    onClick = {
-                        sceneState.setTargetScene(
-                            targetScene = Scenes.SmallPreview,
-                            animationScope = coroutineScope,
-                        )
-                    },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = colorScheme.primary,
-                        ),
-                    border = BorderStroke(1.dp, colorScheme.outlineVariant),
-                    shape = RoundedCornerShape(percent = 50),
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            ApplyWallpaperButtons(
+                viewModel,
+                sceneState,
+                onWallpaperApplied,
+                Modifier.element(Elements.ApplyWallpaperBottomButtons),
+            )
         }
 
         if (isApplyWallpaperProgressDialogVisible) {
             Dialog(onDismissRequest = { /* Prevent dismissal */ }) {
                 ApplyWallpaperProgressDialog()
+            }
+        }
+    }
+}
+
+@Composable
+fun ApplyWallpaperButtons(
+    viewModel: WallpaperPreviewViewModel,
+    sceneState: MutableSceneTransitionLayoutState,
+    onWallpaperApplied: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    val isApplyButtonEnabled: Boolean by
+        viewModel.isApplyButtonEnabled.collectAsStateWithLifecycle(false)
+    val onApplyWallpaper: (suspend () -> Unit)? by
+        viewModel.setWallpaperDialogOnConfirmButtonClicked.collectAsStateWithLifecycle(null)
+
+    val colorScheme: ColorScheme = MaterialTheme.colorScheme
+    val shouldShowDesktopUi =
+        BaseFlags.get(LocalContext.current).shouldShowDesktopUi(LocalContext.current)
+
+    val onApplyButtonClicked: () -> Unit = {
+        coroutineScope.launch {
+            onApplyWallpaper?.invoke()
+            onWallpaperApplied.invoke()
+        }
+    }
+    val onCancelButtonClicked: () -> Unit = {
+        sceneState.setTargetScene(
+            targetScene = Scenes.SmallPreview,
+            animationScope = coroutineScope,
+        )
+    }
+
+    val applyButtonColors =
+        ButtonDefaults.buttonColors(
+            containerColor = colorScheme.primary,
+            contentColor = colorScheme.onPrimary,
+        )
+    val cancelButtonColors =
+        ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = colorScheme.primary,
+        )
+    val buttonShape = RoundedCornerShape(percent = 50)
+    val cancelButtonBorder = BorderStroke(1.dp, colorScheme.outlineVariant)
+
+    if (shouldShowDesktopUi) {
+        Row(
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp, start = 24.dp, end = 24.dp)
+        ) {
+            Button(
+                modifier = Modifier.weight(1f).height(56.dp),
+                onClick = onApplyButtonClicked,
+                colors = applyButtonColors,
+                shape = buttonShape,
+                enabled = isApplyButtonEnabled,
+            ) {
+                Text(stringResource(R.string.apply_btn))
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                modifier = Modifier.weight(1f).height(56.dp),
+                onClick = onCancelButtonClicked,
+                colors = cancelButtonColors,
+                border = cancelButtonBorder,
+                shape = buttonShape,
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    } else {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp, start = 24.dp, end = 24.dp)
+        ) {
+            Button(
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                onClick = onApplyButtonClicked,
+                colors = applyButtonColors,
+                shape = buttonShape,
+                enabled = isApplyButtonEnabled,
+            ) {
+                Text(stringResource(R.string.apply_btn))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                onClick = onCancelButtonClicked,
+                colors = cancelButtonColors,
+                border = cancelButtonBorder,
+                shape = buttonShape,
+            ) {
+                Text(stringResource(R.string.cancel))
             }
         }
     }
