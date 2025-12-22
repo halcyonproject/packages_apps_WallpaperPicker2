@@ -16,16 +16,27 @@
 
 package com.android.wallpaper.picker.preview.ui.view
 
+import android.net.Uri
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.slice.widget.SliceLiveData
+import androidx.slice.widget.SliceView
+import com.android.compose.modifiers.padding
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.PreviewFloatingSheetViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -77,7 +88,32 @@ fun PreviewBottomSheet(
         } else if (creativeEffectViewModel != null) {
             // TODO(b/465178376): Handle the case of creativeEffectViewModel.
         } else if (customizeViewModel != null) {
-            // TODO(b/465178376): Handle the case of customizeViewModel
+            Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                ComposeSliceView(customizeViewModel.customizeSliceUri)
+            }
         }
     }
+}
+
+@Composable
+private fun ComposeSliceView(sliceUri: Uri, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    val sliceView = remember {
+        SliceView(context).apply {
+            mode = SliceView.MODE_LARGE
+            isScrollable = false
+        }
+    }
+
+    DisposableEffect(sliceUri) {
+        val liveData = SliceLiveData.fromUri(context, sliceUri)
+        liveData.observeForever(sliceView)
+        onDispose { liveData.removeObserver(sliceView) }
+    }
+
+    AndroidView(
+        factory = { sliceView },
+        modifier = modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 24.dp),
+    )
 }

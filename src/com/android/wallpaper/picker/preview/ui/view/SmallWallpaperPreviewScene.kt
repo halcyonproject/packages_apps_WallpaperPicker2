@@ -75,6 +75,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.viewmodel.Action.CUSTOMIZE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DOWNLOAD
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.EDIT
@@ -157,6 +158,11 @@ fun ContentScope.SmallWallpaperPreviewScene(
     val isEditButtonVisible: Boolean by
         actionsViewModel.isEditVisible.collectAsStateWithLifecycle(false)
     val editButtonIntent: Intent? by actionsViewModel.editIntent.collectAsStateWithLifecycle(null)
+    /** [CUSTOMIZE] */
+    val isCustomizeVisible: Boolean by
+        actionsViewModel.isCustomizeVisible.collectAsStateWithLifecycle(false)
+    val onCustomizeClicked: (() -> Unit)? by
+        actionsViewModel.onCustomizeClicked.collectAsStateWithLifecycle(null)
     /** [SHARE] */
     val isShareButtonVisible: Boolean by
         actionsViewModel.isShareVisible.collectAsStateWithLifecycle(false)
@@ -238,6 +244,14 @@ fun ContentScope.SmallWallpaperPreviewScene(
                     iconDrawableRes = R.drawable.ic_edit_filled,
                     contentDescriptionRes = R.string.edit_live_wallpaper,
                     onClick = { editButtonIntent?.let { onNavigateToEditScreen.invoke(it) } },
+                )
+            }
+
+            if (isCustomizeVisible) {
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_tune_filled,
+                    contentDescriptionRes = R.string.tab_customize,
+                    onClick = { onCustomizeClicked?.invoke() },
                 )
             }
 
