@@ -169,6 +169,7 @@ fun ContentScope.SmallWallpaperPreviewScene(
         Spacer(modifier = Modifier.height(12.dp))
 
         PreviewPager(
+            viewModel = viewModel,
             modifier = Modifier.fillMaxWidth().weight(1f),
             pagerState = pagerState,
             lockScreenPreview = lockScreenPreview,
@@ -333,6 +334,7 @@ fun ContentScope.SmallWallpaperPreviewScene(
 
 @Composable
 private fun ContentScope.PreviewPager(
+    viewModel: WallpaperPreviewViewModel,
     pagerState: PagerState,
     lockScreenPreview: View,
     homeScreenPreview: View,
@@ -377,6 +379,8 @@ private fun ContentScope.PreviewPager(
                         content {
                             PreviewScreen(
                                 preview = lockScreenPreview,
+                                viewModel = viewModel,
+                                screen = Screen.LOCK_SCREEN,
                                 modifier =
                                     Modifier.fillMaxSize().clickable {
                                         onPreviewClick.invoke(Screen.LOCK_SCREEN)
@@ -384,7 +388,6 @@ private fun ContentScope.PreviewPager(
                             )
                         }
                     }
-
                 1 ->
                     MovableElement(
                         key = SharedElements.HomeScreen,
@@ -393,6 +396,8 @@ private fun ContentScope.PreviewPager(
                         content {
                             PreviewScreen(
                                 preview = homeScreenPreview,
+                                viewModel = viewModel,
+                                screen = Screen.HOME_SCREEN,
                                 modifier =
                                     Modifier.fillMaxSize().clickable {
                                         onPreviewClick.invoke(Screen.HOME_SCREEN)
