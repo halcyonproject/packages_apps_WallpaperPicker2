@@ -177,6 +177,10 @@ object PreviewBinder {
                                         override fun surfaceCreated(holder: SurfaceHolder) {
                                             preview.reparentWallpaper(wallpaperSurfaceControl)
                                             preview.reparentWorkspace(workspaceSurfaceControl)
+                                            viewModel.setPreviewReady(
+                                                screen = screen,
+                                                isReady = true,
+                                            )
                                         }
                                     }
                                     .also { surfaceViewCallback = it }

@@ -122,7 +122,14 @@ fun ContentScope.FullWallpaperPreviewScene(
                 },
             modifier = Modifier.fillMaxHeight().aspectRatio(phoneAspectRatio),
         ) {
-            content { PreviewScreen(preview = preview, modifier = Modifier.fillMaxSize()) }
+            content {
+                PreviewScreen(
+                    preview = preview,
+                    viewModel = viewModel,
+                    screen = screen,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
 
         Column(
