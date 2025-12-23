@@ -16,7 +16,10 @@
 
 package com.android.wallpaper.picker.preview.ui.view
 
+import android.content.Intent
 import android.view.View
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -74,6 +77,7 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DOWNLOAD
+import com.android.wallpaper.picker.preview.ui.viewmodel.Action.EDIT
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
 import com.android.wallpaper.picker.preview.ui.viewmodel.DeleteConfirmationDialogViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
@@ -95,9 +99,9 @@ fun ContentScope.SmallWallpaperPreviewScene(
     homeScreenPreview: View,
     logger: UserEventLogger,
     onFinishActivity: () -> Unit,
+    onNavigateToEditScreen: (Intent) -> Unit,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
-    val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
 
     val onLockSmallPreviewClicked: (() -> Unit)? by
@@ -147,6 +151,10 @@ fun ContentScope.SmallWallpaperPreviewScene(
     val isDownloading: Boolean by actionsViewModel.isDownloading.collectAsStateWithLifecycle(false)
     val onDownloadButtonClicked: (() -> Unit)? by
         actionsViewModel.onDownloadButtonClicked.collectAsStateWithLifecycle(null)
+    /** [EDIT] */
+    val isEditButtonVisible: Boolean by
+        actionsViewModel.isEditVisible.collectAsStateWithLifecycle(false)
+    val editButtonIntent: Intent? by actionsViewModel.editIntent.collectAsStateWithLifecycle(null)
     /** [DELETE] */
     val isDeleteButtonVisible: Boolean by
         actionsViewModel.isDeleteVisible.collectAsStateWithLifecycle(false)
@@ -198,78 +206,41 @@ fun ContentScope.SmallWallpaperPreviewScene(
             modifier =
                 Modifier.element(Elements.SmallPreviewBottomActionBar)
                     .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.Center,
+                    .padding(top = 12.dp, bottom = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (isInformationButtonVisible) {
-                Box(modifier = Modifier.padding(vertical = 4.dp).padding(end = 16.dp)) {
-                    IconButton(
-                        modifier = Modifier.size(56.dp),
-                        onClick = { onInformationClicked?.invoke() },
-                        colors =
-                            IconButtonDefaults.iconButtonColors(
-                                containerColor = colorScheme.surfaceContainerHighest
-                            ),
-                        shape = CircleShape,
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_info_filled),
-                            contentDescription = stringResource(R.string.tab_info),
-                            tint = colorScheme.primary,
-                        )
-                    }
-                }
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_info_filled,
+                    contentDescriptionRes = R.string.tab_info,
+                    onClick = { onInformationClicked?.invoke() },
+                )
             }
 
             if (isDownloadButtonVisible) {
-                Box(modifier = Modifier.padding(vertical = 4.dp).padding(end = 16.dp)) {
-                    IconButton(
-                        modifier = Modifier.size(56.dp),
-                        onClick = { onDownloadButtonClicked?.invoke() },
-                        colors =
-                            IconButtonDefaults.iconButtonColors(
-                                containerColor = colorScheme.surfaceContainerHighest
-                            ),
-                        shape = CircleShape,
-                    ) {
-                        if (isDownloading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.secondary,
-                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            )
-                        } else {
-                            Icon(
-                                imageVector =
-                                    ImageVector.vectorResource(R.drawable.ic_file_download_filled),
-                                contentDescription =
-                                    stringResource(R.string.bottom_action_bar_download),
-                                tint = colorScheme.primary,
-                            )
-                        }
-                    }
-                }
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_file_download_filled,
+                    contentDescriptionRes = R.string.bottom_action_bar_download,
+                    onClick = { onDownloadButtonClicked?.invoke() },
+                    showProgress = isDownloading,
+                )
+            }
+
+            if (isEditButtonVisible) {
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_edit_filled,
+                    contentDescriptionRes = R.string.edit_live_wallpaper,
+                    onClick = { editButtonIntent?.let { onNavigateToEditScreen.invoke(it) } },
+                )
             }
 
             if (isDeleteButtonVisible) {
-                Box(modifier = Modifier.padding(vertical = 4.dp).padding(end = 16.dp)) {
-                    IconButton(
-                        modifier = Modifier.size(56.dp),
-                        onClick = { onDeleteButtonClicked?.invoke() },
-                        colors =
-                            IconButtonDefaults.iconButtonColors(
-                                containerColor = colorScheme.surfaceContainerHighest
-                            ),
-                        shape = CircleShape,
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_delete_filled),
-                            contentDescription = stringResource(R.string.delete_live_wallpaper),
-                            tint = colorScheme.primary,
-                        )
-                    }
-                }
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_delete_filled,
+                    contentDescriptionRes = R.string.delete_live_wallpaper,
+                    onClick = { onDeleteButtonClicked?.invoke() },
+                )
             }
         }
 
@@ -483,6 +454,41 @@ private fun SmallPreviewTopToolbar(
                     Text(text = stringResource(R.string.next_page_content_description))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ActionButton(
+    @DrawableRes iconDrawableRes: Int,
+    @StringRes contentDescriptionRes: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    showProgress: Boolean = false,
+) {
+    val colorScheme: ColorScheme = MaterialTheme.colorScheme
+
+    IconButton(
+        modifier = modifier.size(56.dp),
+        onClick = { onClick.invoke() },
+        colors =
+            IconButtonDefaults.iconButtonColors(
+                containerColor = colorScheme.surfaceContainerHighest
+            ),
+        shape = CircleShape,
+    ) {
+        if (showProgress) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        } else {
+            Icon(
+                imageVector = ImageVector.vectorResource(iconDrawableRes),
+                contentDescription = stringResource(contentDescriptionRes),
+                tint = colorScheme.primary,
+            )
         }
     }
 }
