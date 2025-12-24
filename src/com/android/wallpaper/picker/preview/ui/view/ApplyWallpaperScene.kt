@@ -66,6 +66,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
@@ -143,6 +144,8 @@ fun ContentScope.ApplyWallpaperScene(
                             content {
                                 PreviewScreen(
                                     preview = lockScreenPreview,
+                                    viewModel = viewModel,
+                                    screen = Screen.LOCK_SCREEN,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
@@ -168,6 +171,8 @@ fun ContentScope.ApplyWallpaperScene(
                             content {
                                 PreviewScreen(
                                     preview = homeScreenPreview,
+                                    viewModel = viewModel,
+                                    screen = Screen.HOME_SCREEN,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }

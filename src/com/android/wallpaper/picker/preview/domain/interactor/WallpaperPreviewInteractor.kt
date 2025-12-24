@@ -17,6 +17,7 @@
 package com.android.wallpaper.picker.preview.domain.interactor
 
 import android.app.WallpaperColors
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
@@ -26,6 +27,7 @@ import android.util.Log
 import com.android.customization.picker.clock.shared.ClockSize
 import com.android.customization.picker.clock.shared.ClockSize.Companion.getPreferredClockSize
 import com.android.wallpaper.asset.Asset
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.CreativeCategory
 import com.android.wallpaper.model.CreativeWallpaperInfo
 import com.android.wallpaper.module.logging.UserEventLogger
@@ -107,11 +109,16 @@ constructor(
         @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
         destination: WallpaperDestination,
         wallpaperModel: LiveWallpaperModel,
+        onApplyLiveWallpaper: ((destination: WallpaperDestination) -> WallpaperDescription?)? = null,
     ) {
         // TODO(b/376846928) Move these calls to a separate injected component
         val updatedWallpaperModel =
-            applyAndUpdateLiveWallpaper(destination, wallpaperModel, wallpaperConnectionUtils)
-                ?: wallpaperModel
+            applyAndUpdateLiveWallpaper(
+                destination,
+                wallpaperModel,
+                wallpaperConnectionUtils,
+                onApplyLiveWallpaper,
+            ) ?: wallpaperModel
 
         wallpaperRepository.setLiveWallpaper(
             setWallpaperEntryPoint,
@@ -127,9 +134,16 @@ constructor(
         destination: WallpaperDestination,
         wallpaperModel: LiveWallpaperModel,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
+        onApplyLiveWallpaper: ((destination: WallpaperDestination) -> WallpaperDescription?)? = null,
     ): LiveWallpaperModel? {
         try {
-            wallpaperConnectionUtils.applyWallpaper(destination, wallpaperModel)?.let {
+            val wallpaperDescription: WallpaperDescription? =
+                if (BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
+                    onApplyLiveWallpaper?.invoke(destination)
+                } else {
+                    wallpaperConnectionUtils.applyWallpaper(destination, wallpaperModel)
+                }
+            wallpaperDescription?.let {
                 val description =
                     if (it.component != null) {
                         it

@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
@@ -58,6 +59,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -68,6 +70,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Top level [ViewModel] for [WallpaperPreviewActivity] and its fragments */
@@ -169,6 +172,35 @@ constructor(
         when (screen) {
             Screen.LOCK_SCREEN -> isLockPreviewReady.value = isReady
             Screen.HOME_SCREEN -> isHomePreviewReady.value = isReady
+        }
+    }
+
+    private val lockPreviewShadeAlpha: StateFlow<Float> =
+        combine(isLockPreviewReady, previewActionsViewModel.isDownloading) {
+                isLockPreviewReady,
+                isDownloading ->
+                if (isLockPreviewReady && !isDownloading) 0f else 1f
+            }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 1f)
+
+    private val homePreviewShadeAlpha: StateFlow<Float> =
+        combine(isHomePreviewReady, previewActionsViewModel.isDownloading) {
+                isHomePreviewReady,
+                isDownloading ->
+                if (isHomePreviewReady && !isDownloading) 0f else 1f
+            }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 1f)
+
+    /**
+     * Returns a flow of the shade alpha value. The shade can be a blurred low resolution image, or
+     * the surface container color to cover the preview until it is ready to show.
+     */
+    fun previewShadeAlpha(screen: Screen): StateFlow<Float> {
+        return when (screen) {
+            Screen.LOCK_SCREEN -> lockPreviewShadeAlpha
+            Screen.HOME_SCREEN -> homePreviewShadeAlpha
         }
     }
 
@@ -520,12 +552,26 @@ constructor(
     val isSetWallpaperProgressBarVisible: Flow<Boolean> =
         _isSetWallpaperProgressBarVisible.asStateFlow()
 
+    private val _onApplyLiveWallpaper:
+        MutableStateFlow<((destination: WallpaperDestination) -> WallpaperDescription?)?> =
+        MutableStateFlow(null)
+    private val onApplyLiveWallpaper:
+        StateFlow<((destination: WallpaperDestination) -> WallpaperDescription?)?> =
+        _onApplyLiveWallpaper.asStateFlow()
+
+    fun setOnApplyLiveWallpaper(
+        listener: (destination: WallpaperDestination) -> WallpaperDescription?
+    ) {
+        _onApplyLiveWallpaper.value = listener
+    }
+
     val setWallpaperDialogOnConfirmButtonClicked: Flow<suspend () -> Unit> =
         combine(
             wallpaper.filterNotNull(),
             staticWallpaperPreviewViewModel.fullResWallpaperViewModel,
             setWallpaperDialogSelectedScreens,
-        ) { wallpaper, fullResWallpaperViewModel, selectedScreens ->
+            onApplyLiveWallpaper,
+        ) { wallpaper, fullResWallpaperViewModel, selectedScreens, onApplyLiveWallpaper ->
             {
                 _isSetWallpaperProgressBarVisible.value = true
                 val destination = selectedScreens.getDestination()
@@ -553,6 +599,7 @@ constructor(
                             setWallpaperEntryPoint = wallpaperEntryPoint,
                             destination = destination,
                             wallpaperModel = wallpaper,
+                            onApplyLiveWallpaper = onApplyLiveWallpaper,
                         )
                     }
                 }
