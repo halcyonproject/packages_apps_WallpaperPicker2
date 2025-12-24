@@ -17,28 +17,25 @@
 package com.android.wallpaper.picker.preview.ui.view
 
 import android.content.Intent
-import android.view.View
+import android.view.SurfaceView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -59,10 +56,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,12 +65,12 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
-import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
-import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.view.previewpager.FoldablePreviewPager
+import com.android.wallpaper.picker.preview.ui.view.previewpager.SinglePreviewPager
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.CUSTOMIZE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DOWNLOAD
@@ -86,6 +81,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.DeleteConfirmationDialogViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.DisplaySizes
 import com.android.wallpaper.picker.preview.ui.viewmodel.floatingSheet.PreviewFloatingSheetViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -96,11 +92,15 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun ContentScope.SmallWallpaperPreviewScene(
+    isFoldable: Boolean,
     viewModel: WallpaperPreviewViewModel,
     sceneState: MutableSceneTransitionLayoutState,
     pagerState: PagerState,
-    lockScreenPreview: View,
-    homeScreenPreview: View,
+    lockScreenPreview: SurfaceView,
+    lockScreenUnfoldedPreview: SurfaceView?,
+    homeScreenPreview: SurfaceView,
+    homeScreenUnfoldedPreview: SurfaceView?,
+    displaySizes: DisplaySizes,
     logger: UserEventLogger,
     onFinishActivity: () -> Unit,
     onNavigateToEditScreen: (Intent) -> Unit,
@@ -109,33 +109,6 @@ fun ContentScope.SmallWallpaperPreviewScene(
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
-
-    val onLockSmallPreviewClicked: (() -> Unit)? by
-        viewModel
-            .onSmallPreviewClicked(
-                screen = Screen.LOCK_SCREEN,
-                deviceDisplayType = DeviceDisplayType.SINGLE,
-                navigate = {
-                    sceneState.setTargetScene(
-                        Scenes.FullLockPreview,
-                        animationScope = coroutineScope,
-                    )
-                },
-            )
-            .collectAsStateWithLifecycle(null)
-    val onHomeSmallPreviewClicked: (() -> Unit)? by
-        viewModel
-            .onSmallPreviewClicked(
-                screen = Screen.HOME_SCREEN,
-                deviceDisplayType = DeviceDisplayType.SINGLE,
-                navigate = {
-                    sceneState.setTargetScene(
-                        Scenes.FullHomePreview,
-                        animationScope = coroutineScope,
-                    )
-                },
-            )
-            .collectAsStateWithLifecycle(null)
 
     // Sync view model's smallPreviewSelectedTab with the pager state
     when (pagerState.currentPage) {
@@ -196,29 +169,29 @@ fun ContentScope.SmallWallpaperPreviewScene(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        PreviewPager(
-            viewModel = viewModel,
-            modifier = Modifier.fillMaxWidth().weight(1f),
-            pagerState = pagerState,
-            lockScreenPreview = lockScreenPreview,
-            homeScreenPreview = homeScreenPreview,
-            onPreviewClick = { screen ->
-                when (screen) {
-                    Screen.LOCK_SCREEN -> {
-                        if (pagerState.currentPage != 0) {
-                            coroutineScope.launch { pagerState.animateScrollToPage(0) }
-                        }
-                        onLockSmallPreviewClicked?.invoke()
-                    }
-                    Screen.HOME_SCREEN -> {
-                        if (pagerState.currentPage != 1) {
-                            coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                        }
-                        onHomeSmallPreviewClicked?.invoke()
-                    }
-                }
-            },
-        )
+        if (isFoldable) {
+            FoldablePreviewPager(
+                viewModel = viewModel,
+                sceneState = sceneState,
+                pagerState = pagerState,
+                lockScreenPreview = lockScreenPreview,
+                lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
+                homeScreenPreview = homeScreenPreview,
+                homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
+                displaySizes = displaySizes,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            )
+        } else {
+            SinglePreviewPager(
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                sceneState = sceneState,
+                pagerState = pagerState,
+                lockScreenPreview = lockScreenPreview,
+                homeScreenPreview = homeScreenPreview,
+                displaySizes = displaySizes,
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -345,84 +318,6 @@ fun ContentScope.SmallWallpaperPreviewScene(
                     }
                 },
             )
-        }
-    }
-}
-
-@Composable
-private fun ContentScope.PreviewPager(
-    viewModel: WallpaperPreviewViewModel,
-    pagerState: PagerState,
-    lockScreenPreview: View,
-    homeScreenPreview: View,
-    onPreviewClick: (screen: Screen) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val phoneAspectRatio: Float =
-        LocalWindowInfo.current.containerSize.width.toFloat() /
-            LocalWindowInfo.current.containerSize.height.toFloat()
-
-    BoxWithConstraints(modifier) {
-        val minHorizontalPadding: Dp = 48.dp
-        val minVerticalPadding: Dp = 8.dp
-        val availableWidth: Dp = maxWidth - minHorizontalPadding * 2
-        val availableHeight: Dp = maxHeight - minVerticalPadding * 2
-        val pagerAspectRatio: Float = availableWidth / availableHeight
-        val isPreviewFillMaxHeight: Boolean = pagerAspectRatio > phoneAspectRatio
-        val pageWidth: Dp =
-            if (isPreviewFillMaxHeight) availableHeight * phoneAspectRatio else availableWidth
-        val pageHeight: Dp =
-            if (isPreviewFillMaxHeight) availableHeight else availableWidth / phoneAspectRatio
-        // Use content padding to center the selected page horizontally and vertically
-        val contentPaddingHorizontal: Dp = (maxWidth - pageWidth) / 2
-        val contentPaddingVertical: Dp = (maxHeight - pageHeight) / 2
-
-        HorizontalPager(
-            pagerState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding =
-                PaddingValues(
-                    horizontal = contentPaddingHorizontal,
-                    vertical = contentPaddingVertical,
-                ),
-            pageSpacing = 12.dp,
-        ) { page ->
-            when (page) {
-                0 ->
-                    MovableElement(
-                        key = SharedElements.LockScreen,
-                        Modifier.size(pageWidth, pageHeight),
-                    ) {
-                        content {
-                            PreviewScreen(
-                                preview = lockScreenPreview,
-                                viewModel = viewModel,
-                                screen = Screen.LOCK_SCREEN,
-                                modifier =
-                                    Modifier.fillMaxSize().clickable {
-                                        onPreviewClick.invoke(Screen.LOCK_SCREEN)
-                                    },
-                            )
-                        }
-                    }
-                1 ->
-                    MovableElement(
-                        key = SharedElements.HomeScreen,
-                        Modifier.size(pageWidth, pageHeight),
-                    ) {
-                        content {
-                            PreviewScreen(
-                                preview = homeScreenPreview,
-                                viewModel = viewModel,
-                                screen = Screen.HOME_SCREEN,
-                                modifier =
-                                    Modifier.fillMaxSize().clickable {
-                                        onPreviewClick.invoke(Screen.HOME_SCREEN)
-                                    },
-                            )
-                        }
-                    }
-            }
         }
     }
 }

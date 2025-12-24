@@ -17,7 +17,7 @@
 package com.android.wallpaper.picker.preview.ui.view
 
 import android.view.MotionEvent
-import android.view.View
+import android.view.SurfaceView
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,29 +62,29 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
-import com.android.wallpaper.model.Screen
+import com.android.wallpaper.model.Screen.HOME_SCREEN
+import com.android.wallpaper.model.Screen.LOCK_SCREEN
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType.FOLDED
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType.SINGLE
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType.UNFOLDED
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.DisplaySizes
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.PreviewTarget
 
 @Composable
 fun ContentScope.FullWallpaperPreviewScene(
     sceneState: MutableSceneTransitionLayoutState,
     viewModel: WallpaperPreviewViewModel,
-    screen: Screen,
-    preview: View,
+    previewTarget: PreviewTarget,
+    displaySizes: DisplaySizes,
+    preview: SurfaceView,
+    onDispatchTouchEvent: ((event: MotionEvent) -> Unit)?,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
-
-    val windowSize: IntSize = LocalWindowInfo.current.containerSize
-    val phoneAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
-
-    val onLockDispatchTouchEvent: ((event: MotionEvent) -> Unit)? by
-        viewModel.onLockDispatchTouchEvent.collectAsStateWithLifecycle(null)
-    val onHomeDispatchTouchEvent: ((event: MotionEvent) -> Unit)? by
-        viewModel.onHomeDispatchTouchEvent.collectAsStateWithLifecycle(null)
 
     val onCropButtonClick: (() -> Unit)? by
         viewModel.onCropButtonClick.collectAsStateWithLifecycle(null)
@@ -95,40 +95,77 @@ fun ContentScope.FullWallpaperPreviewScene(
         sceneState.setTargetScene(Scenes.SmallPreview, coroutineScope)
     }
 
+    val windowSize: IntSize = LocalWindowInfo.current.containerSize
+    val currentScreenAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
+    val previewAspectRatio: Float =
+        when (previewTarget.deviceDisplayType) {
+            SINGLE -> displaySizes.single.x.toFloat() / displaySizes.single.y.toFloat()
+            FOLDED -> displaySizes.folded.x.toFloat() / displaySizes.folded.y.toFloat()
+            UNFOLDED -> displaySizes.unfolded.x.toFloat() / displaySizes.unfolded.y.toFloat()
+        }
+    // The higher the ratio, the wider rectangle it will be. Ratio 1 means square.
+    val isPreviewFillMaxHeight: Boolean = currentScreenAspectRatio > previewAspectRatio
+
     BackHandler { handleBackNavigation.invoke() }
 
-    Box(
-        modifier =
-            Modifier.fillMaxSize().pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event: MotionEvent? = awaitPointerEvent().motionEvent
-                        if (event != null) {
-                            when (screen) {
-                                Screen.LOCK_SCREEN -> onLockDispatchTouchEvent?.invoke(event)
-                                Screen.HOME_SCREEN -> onHomeDispatchTouchEvent?.invoke(event)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // Background that fades in and out to hide and reveal the other non-selected preview(s)
+        Box(
+            Modifier.element(Elements.FullPreviewBackground)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+        )
+
+        Box(
+            modifier =
+                Modifier.then(
+                        if (isPreviewFillMaxHeight) {
+                            Modifier.fillMaxHeight()
+                        } else {
+                            Modifier.fillMaxWidth()
+                        }
+                    )
+                    .fillMaxHeight()
+                    .aspectRatio(previewAspectRatio)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event: MotionEvent? = awaitPointerEvent().motionEvent
+                                if (event != null) {
+                                    onDispatchTouchEvent?.invoke(event)
+                                }
                             }
                         }
                     }
-                }
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        MovableElement(
-            key =
-                when (screen) {
-                    Screen.LOCK_SCREEN -> SharedElements.LockScreen
-                    Screen.HOME_SCREEN -> SharedElements.HomeScreen
-                },
-            modifier = Modifier.fillMaxHeight().aspectRatio(phoneAspectRatio),
         ) {
-            content {
-                PreviewScreen(
-                    preview = preview,
-                    viewModel = viewModel,
-                    screen = screen,
-                    modifier = Modifier.fillMaxSize(),
-                )
+            MovableElement(
+                key =
+                    when (previewTarget.screen) {
+                        LOCK_SCREEN -> {
+                            when (previewTarget.deviceDisplayType) {
+                                SINGLE,
+                                FOLDED -> SharedElements.LockScreen
+                                UNFOLDED -> SharedElements.LockScreenUnfolded
+                            }
+                        }
+                        HOME_SCREEN -> {
+                            when (previewTarget.deviceDisplayType) {
+                                SINGLE,
+                                FOLDED -> SharedElements.HomeScreen
+                                UNFOLDED -> SharedElements.HomeScreenUnfolded
+                            }
+                        }
+                    },
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                content {
+                    PreviewScreen(
+                        preview = preview,
+                        viewModel = viewModel,
+                        previewTarget = previewTarget,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
 
