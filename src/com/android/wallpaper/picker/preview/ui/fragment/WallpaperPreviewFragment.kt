@@ -24,6 +24,8 @@ import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.DefaultElementContentPicker
@@ -56,6 +59,7 @@ import com.android.wallpaper.picker.preview.ui.view.FullWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
 import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
@@ -127,6 +131,9 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
 
     private val wallpaperPreviewViewModel by activityViewModels<WallpaperPreviewViewModel>()
 
+    private val shareActivityResultLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!BaseFlags.get(requireContext()).isRefactorWallpaperPreviewScreenEnabled()) {
@@ -164,6 +171,14 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             )
         }
 
+        val extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent> =
+            ExtendedWallpaperEffectsUtils.registerExtendedWallpaperEffectsActivityLauncher(
+                requireActivity(),
+                viewLifecycleOwner,
+                wallpaperPreviewViewModel,
+                requireContext(),
+            )
+
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
@@ -171,6 +186,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     WallpaperPreviewRootContent(
                         lockScreenPreview = lockScreenPreview,
                         homeScreenPreview = homeScreenPreview,
+                        extendedWallpaperEffectActivityLauncher =
+                            extendedWallpaperEffectActivityLauncher,
                     )
                 }
             }
@@ -223,6 +240,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     fun WallpaperPreviewRootContent(
         lockScreenPreview: SurfaceView,
         homeScreenPreview: SurfaceView,
+        extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent>,
         modifier: Modifier = Modifier,
     ) {
         val sceneState =
@@ -259,6 +277,9 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                                 args = Bundle().apply { putParcelable(ARG_EDIT_INTENT, intent) },
                             )
                     },
+                    onStartShareActivity = { intent -> shareActivityResultLauncher.launch(intent) },
+                    extendedWallpaperEffectActivityLauncher =
+                        extendedWallpaperEffectActivityLauncher,
                 )
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {

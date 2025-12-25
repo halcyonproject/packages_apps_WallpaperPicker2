@@ -18,6 +18,7 @@ package com.android.wallpaper.picker.preview.ui.view
 
 import android.content.Intent
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -75,10 +76,13 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.viewmodel.Action.CUSTOMIZE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DELETE
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.DOWNLOAD
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.EDIT
+import com.android.wallpaper.picker.preview.ui.viewmodel.Action.EFFECTS
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
+import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.DeleteConfirmationDialogViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
@@ -100,6 +104,8 @@ fun ContentScope.SmallWallpaperPreviewScene(
     logger: UserEventLogger,
     onFinishActivity: () -> Unit,
     onNavigateToEditScreen: (Intent) -> Unit,
+    onStartShareActivity: (Intent) -> Unit,
+    extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent>,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
@@ -140,6 +146,11 @@ fun ContentScope.SmallWallpaperPreviewScene(
     val actionsViewModel: PreviewActionsViewModel = viewModel.previewActionsViewModel
     val previewFloatingSheetViewModel: PreviewFloatingSheetViewModel? by
         actionsViewModel.previewFloatingSheetViewModel.collectAsStateWithLifecycle(null)
+    /** [EFFECTS] */
+    val isEffectsButtonVisible: Boolean by
+        actionsViewModel.isEffectsVisible.collectAsStateWithLifecycle(false)
+    val onEffectsButtonClicked: ((ActivityResultLauncher<Intent>) -> Unit)? by
+        actionsViewModel.onEffectsClicked.collectAsStateWithLifecycle(null)
     /** [INFORMATION] */
     val isInformationButtonVisible: Boolean by
         actionsViewModel.isInformationVisible.collectAsStateWithLifecycle(false)
@@ -155,6 +166,15 @@ fun ContentScope.SmallWallpaperPreviewScene(
     val isEditButtonVisible: Boolean by
         actionsViewModel.isEditVisible.collectAsStateWithLifecycle(false)
     val editButtonIntent: Intent? by actionsViewModel.editIntent.collectAsStateWithLifecycle(null)
+    /** [CUSTOMIZE] */
+    val isCustomizeVisible: Boolean by
+        actionsViewModel.isCustomizeVisible.collectAsStateWithLifecycle(false)
+    val onCustomizeClicked: (() -> Unit)? by
+        actionsViewModel.onCustomizeClicked.collectAsStateWithLifecycle(null)
+    /** [SHARE] */
+    val isShareButtonVisible: Boolean by
+        actionsViewModel.isShareVisible.collectAsStateWithLifecycle(false)
+    val shareButtonIntent: Intent? by actionsViewModel.shareIntent.collectAsStateWithLifecycle(null)
     /** [DELETE] */
     val isDeleteButtonVisible: Boolean by
         actionsViewModel.isDeleteVisible.collectAsStateWithLifecycle(false)
@@ -210,6 +230,16 @@ fun ContentScope.SmallWallpaperPreviewScene(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (isEffectsButtonVisible) {
+                ActionButtonWithLabel(
+                    iconDrawableRes = R.drawable.ic_effect,
+                    labelRes = R.string.tab_effects,
+                    onClick = {
+                        onEffectsButtonClicked?.invoke(extendedWallpaperEffectActivityLauncher)
+                    },
+                )
+            }
+
             if (isInformationButtonVisible) {
                 ActionButton(
                     iconDrawableRes = R.drawable.ic_info_filled,
@@ -232,6 +262,22 @@ fun ContentScope.SmallWallpaperPreviewScene(
                     iconDrawableRes = R.drawable.ic_edit_filled,
                     contentDescriptionRes = R.string.edit_live_wallpaper,
                     onClick = { editButtonIntent?.let { onNavigateToEditScreen.invoke(it) } },
+                )
+            }
+
+            if (isCustomizeVisible) {
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_tune_filled,
+                    contentDescriptionRes = R.string.tab_customize,
+                    onClick = { onCustomizeClicked?.invoke() },
+                )
+            }
+
+            if (isShareButtonVisible) {
+                ActionButton(
+                    iconDrawableRes = R.drawable.ic_share_filled,
+                    contentDescriptionRes = R.string.tab_share,
+                    onClick = { shareButtonIntent?.let { onStartShareActivity.invoke(it) } },
                 )
             }
 
@@ -489,6 +535,39 @@ private fun ActionButton(
                 contentDescription = stringResource(contentDescriptionRes),
                 tint = colorScheme.primary,
             )
+        }
+    }
+}
+
+@Composable
+private fun ActionButtonWithLabel(
+    @DrawableRes iconDrawableRes: Int,
+    @StringRes labelRes: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colorScheme: ColorScheme = MaterialTheme.colorScheme
+
+    Button(
+        modifier = modifier.height(56.dp),
+        onClick = { onClick.invoke() },
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = colorScheme.surfaceContainerHighest,
+                contentColor = colorScheme.primary,
+            ),
+        shape = RoundedCornerShape(percent = 50),
+        contentPadding = PaddingValues(horizontal = 20.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(iconDrawableRes),
+                contentDescription = null, // Handled by the button label
+            )
+            Text(text = stringResource(labelRes))
         }
     }
 }
