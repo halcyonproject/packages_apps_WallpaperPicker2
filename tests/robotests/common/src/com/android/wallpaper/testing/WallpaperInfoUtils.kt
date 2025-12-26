@@ -83,6 +83,7 @@ class WallpaperInfoUtils {
                     serviceInfo.splitName = wallpaperSplit
                     serviceInfo.flags = PackageManager.GET_META_DATA
                     serviceInfo.metaData = metaData
+                    nonLocalizedLabel = "nonLocalizedLabel"
                 }
             // ShadowWallpaperInfo allows the creation of this object
             val wallpaperInfo = WallpaperInfo(context, resolveInfo)

@@ -19,8 +19,10 @@ package com.android.wallpaper.testing
 import android.app.WallpaperInfo
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
+import android.net.Uri
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 
@@ -54,5 +56,30 @@ class ShadowWallpaperInfo {
     @Implementation
     fun getServiceName(): String {
         return resolveInfo.serviceInfo.name
+    }
+
+    @Implementation
+    fun loadLabel(pm: PackageManager): CharSequence {
+        return resolveInfo.nonLocalizedLabel
+    }
+
+    @Implementation
+    fun loadAuthor(pm: PackageManager): CharSequence {
+        return "author"
+    }
+
+    @Implementation
+    fun loadDescription(pm: PackageManager): CharSequence {
+        return "description"
+    }
+
+    @Implementation
+    fun loadContextUri(pm: PackageManager): Uri {
+        return Uri.parse("contextUri")
+    }
+
+    @Implementation
+    fun loadContextDescription(pm: PackageManager): CharSequence {
+        return "contextDescription"
     }
 }
