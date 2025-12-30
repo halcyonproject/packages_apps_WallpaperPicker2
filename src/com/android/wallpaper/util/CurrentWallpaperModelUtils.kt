@@ -16,10 +16,14 @@
 
 package com.android.wallpaper.util
 
+import android.app.WallpaperInfo
 import android.app.WallpaperManager
+import android.app.WallpaperManager.SetWallpaperFlags
 import android.app.wallpaper.WallpaperDescription
+import android.app.wallpaper.WallpaperInstance
 import android.content.ComponentName
 import android.content.Context
+import android.content.res.Resources.NotFoundException
 import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
@@ -27,11 +31,14 @@ import androidx.annotation.VisibleForTesting
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
+import com.android.wallpaper.asset.LiveWallpaperThumbAsset
 import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
 import com.android.wallpaper.picker.data.ColorInfo
 import com.android.wallpaper.picker.data.CommonWallpaperData
+import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.data.Destination
+import com.android.wallpaper.picker.data.LiveWallpaperData
 import com.android.wallpaper.picker.data.StaticWallpaperData
 import com.android.wallpaper.picker.data.WallpaperId
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -44,6 +51,9 @@ import dagger.hilt.components.SingletonComponent
 object CurrentWallpaperModelUtils {
     private const val STATIC_WALLPAPER_PACKAGE = "StaticWallpaperPackage"
     private const val STATIC_WALLPAPER_CLASS = "StaticWallpaperClass"
+
+    private const val MULTIPLE_ENGINE_METADATA_NAME: String =
+        "com.android.wallpaper.supports_multiple_engines"
 
     // TODO(b/452460147): Make return type not null and handle nullness
     fun getCurrentWallpaperModels(context: Context): Pair<WallpaperModel?, WallpaperModel?> {
@@ -66,14 +76,19 @@ object CurrentWallpaperModelUtils {
         val homeDescription = homeWallpaperInstance.description
         if (isHomeStatic) {
             homeWallpaperModel =
-                createStaticWallpaperModelFromDescription(
+                createCurrentStaticWallpaperModelFromDescription(
                     context,
                     homeDescription,
                     WallpaperManager.FLAG_SYSTEM,
                 )
         } else {
             // TODO(b/452460147): Handle LiveWallpaper (Home)
-            homeWallpaperModel = null
+            homeWallpaperModel =
+                createCurrentLiveWallpaperModelFromInstance(
+                    context,
+                    homeWallpaperInstance,
+                    WallpaperManager.FLAG_SYSTEM,
+                )
         }
 
         if (lockWallpaperInstance == null) {
@@ -84,8 +99,9 @@ object CurrentWallpaperModelUtils {
         val isLockStatic = (lockWallpaperInstance.info == null)
         val lockDescription = lockWallpaperInstance.description
         if (isLockStatic) {
+            // TODO(b/452460147): Handle built-in Lock wallpaper
             lockWallpaperModel =
-                createStaticWallpaperModelFromDescription(
+                createCurrentStaticWallpaperModelFromDescription(
                     context,
                     lockDescription,
                     WallpaperManager.FLAG_LOCK,
@@ -98,10 +114,10 @@ object CurrentWallpaperModelUtils {
     }
 
     @VisibleForTesting
-    fun createStaticWallpaperModelFromDescription(
+    fun createCurrentStaticWallpaperModelFromDescription(
         context: Context,
         wallpaperDescription: WallpaperDescription,
-        wallpaperManagerDestinationFlag: Int,
+        @SetWallpaperFlags wallpaperManagerDestinationFlag: Int,
     ): WallpaperModel {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
         val displayUtils = entryPoint.getDisplayUtils()
@@ -167,6 +183,159 @@ object CurrentWallpaperModelUtils {
             networkWallpaperData = null,
             imageWallpaperData = null,
         )
+    }
+
+    @VisibleForTesting
+    fun createCurrentLiveWallpaperModelFromInstance(
+        context: Context,
+        wallpaperInstance: WallpaperInstance,
+        @SetWallpaperFlags wallpaperManagerDestinationFlag: Int,
+    ): WallpaperModel {
+        val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
+        val displayUtils = entryPoint.getDisplayUtils()
+        val wallpaperClient = entryPoint.getWallpaperClient()
+
+        // WallpaperInfo is not null for Live Wallpaper.
+        val wallpaperInfo: WallpaperInfo =
+            checkNotNull(wallpaperInstance.info) {
+                "WallpaperInfo should not be null for Live Wallpaper"
+            }
+        val wallpaperDescription: WallpaperDescription = wallpaperInstance.description
+        val uniqueId: String = wallpaperInfo.serviceName
+        val collectionId: String =
+            WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
+
+        val displaySizes: List<Point> = displayUtils.getInternalDisplaySizes(allDimensions = true)
+        val cropHints: Map<Point, Rect> =
+            wallpaperClient.getCurrentCropHints(displaySizes, wallpaperManagerDestinationFlag)
+        val wallpaperId: WallpaperId =
+            WallpaperId(
+                componentName = wallpaperInfo.component,
+                uniqueId = uniqueId,
+                collectionId = collectionId,
+            )
+        val destination: Destination =
+            if (wallpaperManagerDestinationFlag == WallpaperManager.FLAG_SYSTEM) {
+                Destination.APPLIED_TO_SYSTEM
+            } else {
+                Destination.APPLIED_TO_LOCK
+            }
+        return WallpaperModel.LiveWallpaperModel(
+            commonWallpaperData =
+                CommonWallpaperData(
+                    id = wallpaperId,
+                    title = wallpaperInfo.loadLabel(context.packageManager).toString(),
+                    attributions = getLiveWallpaperAttributions(context, wallpaperInfo),
+                    exploreActionUrl = getLiveWallpaperActionUri(context, wallpaperInfo),
+                    // TODO(b/452460147): Make different thumbAssets for Google
+                    thumbAsset = LiveWallpaperThumbAsset(context, wallpaperInfo),
+                    placeholderColorInfo =
+                        ColorInfo(
+                            wallpaperColors = null,
+                            placeholderColor =
+                                WallpaperDescriptionUtils.getPlaceHolderColor(
+                                    wallpaperDescription.content
+                                ) ?: Color.TRANSPARENT,
+                        ),
+                    destination = destination,
+                ),
+            liveWallpaperData =
+                LiveWallpaperData(
+                    // TODO(b/452460147): Add group name for creative wallpaper
+                    groupName = "",
+                    systemWallpaperInfo = wallpaperInfo,
+                    isTitleVisible = !isCreative(context, wallpaperInfo),
+                    isApplied = true,
+                    isEffectWallpaper =
+                        ExtendedWallpaperEffectsUtils.isExtendedEffectWallpaper(
+                            context,
+                            wallpaperInfo.component,
+                        ),
+                    effectNames =
+                        WallpaperDescriptionUtils.getEffects(wallpaperDescription.content),
+                    contextDescription = getLiveWallpaperContextDescription(context, wallpaperInfo),
+                    description = wallpaperDescription,
+                    supportsMultipleEngines =
+                        wallpaperInfo.serviceInfo.metaData?.getBoolean(
+                            MULTIPLE_ENGINE_METADATA_NAME,
+                            false,
+                        ) ?: false,
+                ),
+            // TODO(b/452460147): Add creativeWallpaperData
+            creativeWallpaperData =
+                if (isCreative(context, wallpaperInfo)) {
+                    CreativeWallpaperData(
+                        configPreviewUri = null,
+                        cleanPreviewUri = null,
+                        deleteUri = null,
+                        thumbnailUri = null,
+                        shareUri = null,
+                        author = "author",
+                        description = "description",
+                        contentDescription = null,
+                        isCurrent = true,
+                        creativeWallpaperEffectsData = null,
+                        isNewCreativeWallpaper = false,
+                    )
+                } else null,
+            // TODO(b/452460147): Add internalLiveWallpaperData
+            internalLiveWallpaperData = null,
+        )
+    }
+
+    private fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
+        // TODO(b/452460147) Handle creative wallpaper.
+        return false
+    }
+
+    private fun getLiveWallpaperAttributions(
+        context: Context,
+        wallpaperInfo: WallpaperInfo,
+    ): List<String> {
+        val packageManager = context.packageManager
+        val attributions = mutableListOf<String>()
+        val labelCharSeq = wallpaperInfo.loadLabel(packageManager)
+        attributions.add(labelCharSeq.toString())
+
+        try {
+            val authorCharSeq = wallpaperInfo.loadAuthor(packageManager)
+            if (authorCharSeq != null) {
+                attributions.add(authorCharSeq.toString())
+            }
+        } catch (e: NotFoundException) {
+            // No author specified, so no other attribution to add.
+        }
+
+        try {
+            val descCharSeq = wallpaperInfo.loadDescription(packageManager)
+            if (descCharSeq != null) {
+                attributions.add(descCharSeq.toString())
+            }
+        } catch (e: NotFoundException) {
+            // No description specified, so no other attribution to add.
+        }
+
+        return attributions
+    }
+
+    private fun getLiveWallpaperActionUri(context: Context, wallpaperInfo: WallpaperInfo): String? {
+        try {
+            val wallpaperContextUri = wallpaperInfo.loadContextUri(context.packageManager)
+            return wallpaperContextUri.toString() ?: null
+        } catch (e: NotFoundException) {
+            return null
+        }
+    }
+
+    private fun getLiveWallpaperContextDescription(
+        context: Context,
+        wallpaperInfo: WallpaperInfo,
+    ): CharSequence? {
+        try {
+            return wallpaperInfo.loadContextDescription(context.packageManager)
+        } catch (e: NotFoundException) {
+            return null
+        }
     }
 
     /** Constructs and returns an Asset instance representing the currently-set wallpaper asset. */
