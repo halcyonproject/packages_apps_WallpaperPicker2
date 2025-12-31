@@ -30,7 +30,9 @@ import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.testing.ShadowWallpaperInfo
 import com.android.wallpaper.testing.TestInjector
+import com.android.wallpaper.testing.WallpaperInfoUtils
 import com.android.wallpaper.testing.TestWallpaperStatusChecker
 import com.android.wallpaper.module.WallpaperStatusChecker
 import com.google.common.truth.Truth.assertThat
@@ -47,8 +49,10 @@ import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
+import org.robolectric.annotation.Config
 
 @HiltAndroidTest
+@Config(shadows = [ShadowWallpaperInfo::class])
 @RunWith(RobolectricTestRunner::class)
 class CurrentWallpaperModelUtilsTest {
     @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
@@ -165,7 +169,7 @@ class CurrentWallpaperModelUtilsTest {
                 .build()
 
         val wallpaperModel =
-            CurrentWallpaperModelUtils.createStaticWallpaperModelFromDescription(
+            CurrentWallpaperModelUtils.createCurrentStaticWallpaperModelFromDescription(
                 context,
                 sourceDescription,
                 WallpaperManager.FLAG_SYSTEM,
@@ -218,7 +222,7 @@ class CurrentWallpaperModelUtilsTest {
                 .build()
 
         val wallpaperModel =
-            CurrentWallpaperModelUtils.createStaticWallpaperModelFromDescription(
+            CurrentWallpaperModelUtils.createCurrentStaticWallpaperModelFromDescription(
                 context,
                 sourceDescription,
                 WallpaperManager.FLAG_SYSTEM,
@@ -253,7 +257,7 @@ class CurrentWallpaperModelUtilsTest {
                 .build()
 
         val wallpaperModel =
-            CurrentWallpaperModelUtils.createStaticWallpaperModelFromDescription(
+            CurrentWallpaperModelUtils.createCurrentStaticWallpaperModelFromDescription(
                 context,
                 sourceDescription,
                 WallpaperManager.FLAG_LOCK,
@@ -261,5 +265,46 @@ class CurrentWallpaperModelUtilsTest {
 
         assertThat(wallpaperModel.commonWallpaperData.destination)
             .isEqualTo(Destination.APPLIED_TO_LOCK)
+    }
+
+    @Test
+    fun createLiveWallpaperModelFromWallpaperInstance_applyToHome() {
+        val sourceInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+        val sourceDescription =
+            WallpaperDescription.Builder()
+                .setId("id")
+                .setComponent(sourceInfo.component)
+                .setContent(
+                    PersistableBundle().apply {
+                        putString("picker_metadata_collection_id", "collectionId")
+                    }
+                )
+                .build()
+        val sourceInstance = WallpaperInstance(sourceInfo, sourceDescription)
+
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createCurrentLiveWallpaperModelFromInstance(
+                context,
+                sourceInstance,
+                WallpaperManager.FLAG_SYSTEM,
+            ) as WallpaperModel.LiveWallpaperModel
+
+        assertThat(wallpaperModel.commonWallpaperData.id.uniqueId).isEqualTo("NewYorkWallpaper")
+        assertThat(wallpaperModel.commonWallpaperData.id.componentName)
+            .isEqualTo(sourceInfo.component)
+        assertThat(wallpaperModel.commonWallpaperData.id.collectionId).isEqualTo("collectionId")
+        assertThat(wallpaperModel.commonWallpaperData.title).isEqualTo("nonLocalizedLabel")
+        assertThat(wallpaperModel.commonWallpaperData.attributions)
+            .isEqualTo(listOf("nonLocalizedLabel", "author", "description"))
+        assertThat(wallpaperModel.commonWallpaperData.exploreActionUrl).isEqualTo("contextUri")
+        assertThat(wallpaperModel.commonWallpaperData.placeholderColorInfo.wallpaperColors).isNull()
+        assertThat(wallpaperModel.commonWallpaperData.placeholderColorInfo.placeholderColor)
+            .isEqualTo(0)
+        assertThat(wallpaperModel.commonWallpaperData.destination)
+            .isEqualTo(Destination.APPLIED_TO_SYSTEM)
+        assertThat(wallpaperModel.liveWallpaperData.groupName).isEqualTo("")
+        assertThat(wallpaperModel.liveWallpaperData.systemWallpaperInfo).isEqualTo(sourceInfo)
+        assertThat(wallpaperModel.liveWallpaperData.isTitleVisible).isTrue()
+        assertThat(wallpaperModel.liveWallpaperData.isApplied).isTrue()
     }
 }
