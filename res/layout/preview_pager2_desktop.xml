@@ -24,7 +24,7 @@
 
     <LinearLayout
         android:id="@+id/tabs"
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -35,20 +35,19 @@
         <!-- The container here is to increase the click area for a11y -->
         <FrameLayout
             android:id="@+id/lock_preview_label_container"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:minHeight="48dp"
-            android:layout_weight="1"
+            android:minWidth="96dp"
             android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom">
             <TextView
                 android:id="@+id/lock_preview_label"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:textColor="@color/system_on_surface"
                 android:maxLines="1"
-                android:ellipsize="end"
                 android:text="@string/lock_screen_tab"
                 android:importantForAccessibility="no"/>
         </FrameLayout>
@@ -56,20 +55,19 @@
         <!-- The container here is to increase the click area for a11y -->
         <FrameLayout
             android:id="@+id/home_preview_label_container"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:minHeight="48dp"
-            android:layout_weight="1"
+            android:minWidth="96dp"
             android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom">
             <TextView
                 android:id="@+id/home_preview_label"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:textColor="@color/system_on_surface"
                 android:maxLines="1"
-                android:ellipsize="end"
                 android:text="@string/home_screen_tab"
                 android:importantForAccessibility="no"/>
         </FrameLayout>
