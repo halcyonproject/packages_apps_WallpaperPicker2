@@ -56,8 +56,11 @@ import javax.inject.Inject;
 /**
  * Default implementation of {@link WallpaperRefresher} which refreshes wallpaper metadata
  * asynchronously.
+ *
+ * @deprecated, migrating to [CurrentWallpaperModelUtils]. See b/448461608
  */
 @SuppressLint("ServiceCast")
+@Deprecated
 public class DefaultWallpaperRefresher implements WallpaperRefresher {
 
     private static final String TAG = "DefaultWPRefresher";
