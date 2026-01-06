@@ -23,7 +23,10 @@ import com.android.wallpaper.module.WallpaperPreferences.PresentationMode;
 /**
  * Interface for classes which refresh stored wallpaper metadata against the currently set
  * wallpaper.
+ *
+ * @deprecated, migrating to [CurrentWallpaperModelUtils]. See b/448461608
  */
+@Deprecated
 public interface WallpaperRefresher {
 
     /**

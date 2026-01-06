@@ -26,6 +26,7 @@ import javax.inject.Singleton
  * Test implementation of [WallpaperRefresher] which simply provides whatever metadata is saved in
  * WallpaperPreferences and the image wallpaper set to [WallpaperManager].
  */
+@Deprecated("Migrating to CurrentWallpaperModelUtils. See b/448461608")
 @Singleton
 class FakeWallpaperRefresher @Inject constructor(private val prefs: WallpaperPreferences) :
     WallpaperRefresher {

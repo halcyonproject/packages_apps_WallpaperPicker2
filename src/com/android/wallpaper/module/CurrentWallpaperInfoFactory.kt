@@ -23,6 +23,7 @@ import com.android.wallpaper.module.WallpaperPreferences.PresentationMode
  * Interface for factories which construct [WallpaperInfo] objects representing the device's
  * currently set wallpapers.
  */
+@Deprecated("Migrating to CurrentWallpaperModelUtils. See b/448461608")
 interface CurrentWallpaperInfoFactory {
     /**
      * Constructs WallpaperInfo object(s) to represent the current home wallpaper and optionally the
