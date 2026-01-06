@@ -65,6 +65,8 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
+import com.android.wallpaper.model.Screen.HOME_SCREEN
+import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
@@ -178,18 +180,20 @@ fun ContentScope.SmallWallpaperPreviewScene(
                 lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
                 homeScreenPreview = homeScreenPreview,
                 homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
+                enableNavToFullPreview = true,
+                pagerCheckBoxViewModel = null,
                 displaySizes = displaySizes,
                 modifier = Modifier.fillMaxWidth().weight(1f),
             )
         } else {
             SinglePreviewPager(
                 viewModel = viewModel,
-                modifier = Modifier.fillMaxWidth().weight(1f),
                 sceneState = sceneState,
                 pagerState = pagerState,
                 lockScreenPreview = lockScreenPreview,
                 homeScreenPreview = homeScreenPreview,
                 displaySizes = displaySizes,
+                modifier = Modifier.fillMaxWidth().weight(1f),
             )
         }
 

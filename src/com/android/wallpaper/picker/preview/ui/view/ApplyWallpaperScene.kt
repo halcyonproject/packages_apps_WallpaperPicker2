@@ -16,10 +16,9 @@
 
 package com.android.wallpaper.picker.preview.ui.view
 
-import android.view.View
+import android.view.SurfaceView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,18 +30,14 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -56,7 +51,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,7 +67,10 @@ import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.view.previewpager.FoldablePreviewPager
+import com.android.wallpaper.picker.preview.ui.view.previewpager.PagerCheckBoxViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.DisplaySizes
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.PreviewTarget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -81,13 +78,20 @@ import kotlinx.coroutines.launch
 /**
  * [ApplyWallpaperScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout. It is
  * bound to the [WallpaperPreviewFragment] and is not expected to be used somewhere else.
+ *
+ * @param foldablePreviewPagerState We only need the pager state when [isFoldable] is true.
  */
 @Composable
 fun ContentScope.ApplyWallpaperScene(
+    isFoldable: Boolean,
     viewModel: WallpaperPreviewViewModel,
     sceneState: MutableSceneTransitionLayoutState,
-    lockScreenPreview: View,
-    homeScreenPreview: View,
+    foldablePreviewPagerState: PagerState?,
+    lockScreenPreview: SurfaceView,
+    lockScreenUnfoldedPreview: SurfaceView?,
+    homeScreenPreview: SurfaceView,
+    homeScreenUnfoldedPreview: SurfaceView?,
+    displaySizes: DisplaySizes,
     onWallpaperApplied: () -> Unit,
 ) {
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
@@ -135,60 +139,87 @@ fun ContentScope.ApplyWallpaperScene(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        MovableElement(
-                            key = SharedElements.LockScreen,
-                            modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                if (isFoldable) {
+                    FoldablePreviewPager(
+                        viewModel = viewModel,
+                        sceneState = sceneState,
+                        pagerState = checkNotNull(foldablePreviewPagerState),
+                        lockScreenPreview = lockScreenPreview,
+                        lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
+                        homeScreenPreview = homeScreenPreview,
+                        homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
+                        displaySizes = displaySizes,
+                        enableNavToFullPreview = false,
+                        pagerCheckBoxViewModel =
+                            PagerCheckBoxViewModel(
+                                isLockScreenChecked = isLockScreenChecked,
+                                isHomeScreenChecked = isHomeScreenChecked,
+                                onCheckChanged = { screen ->
+                                    when (screen) {
+                                        LOCK_SCREEN -> onLockScreenCheckChanged?.invoke()
+                                        HOME_SCREEN -> onHomeScreenCheckChanged?.invoke()
+                                    }
+                                },
+                            ),
+                    )
+                } else {
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            content {
-                                PreviewScreen(
-                                    preview = lockScreenPreview,
-                                    viewModel = viewModel,
-                                    previewTarget = PreviewTarget(LOCK_SCREEN, SINGLE),
-                                    modifier = Modifier.fillMaxSize(),
-                                )
+                            MovableElement(
+                                key = SharedElements.LockScreen,
+                                modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                            ) {
+                                content {
+                                    PreviewScreen(
+                                        preview = lockScreenPreview,
+                                        viewModel = viewModel,
+                                        previewTarget = PreviewTarget(LOCK_SCREEN, SINGLE),
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            LabelCheckbox(
+                                modifier =
+                                    Modifier.element(Elements.ApplyWallpaperLockScreenCheckbox),
+                                isChecked = isLockScreenChecked,
+                                onCheckedChange = { onLockScreenCheckChanged?.invoke() },
+                                text = stringResource(R.string.lock_screen_tab),
+                            )
                         }
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        CheckboxWithText(
-                            modifier = Modifier.element(Elements.ApplyWallpaperLockScreenCheckbox),
-                            isChecked = isLockScreenChecked,
-                            onCheckedChange = { onLockScreenCheckChanged?.invoke() },
-                            text = stringResource(R.string.lock_screen_tab),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Column(Modifier.weight(1f)) {
-                        MovableElement(
-                            key = SharedElements.HomeScreen,
-                            modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
-                        ) {
-                            content {
-                                PreviewScreen(
-                                    preview = homeScreenPreview,
-                                    viewModel = viewModel,
-                                    previewTarget = PreviewTarget(HOME_SCREEN, SINGLE),
-                                    modifier = Modifier.fillMaxSize(),
-                                )
+                        Column(Modifier.weight(1f)) {
+                            MovableElement(
+                                key = SharedElements.HomeScreen,
+                                modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                            ) {
+                                content {
+                                    PreviewScreen(
+                                        preview = homeScreenPreview,
+                                        viewModel = viewModel,
+                                        previewTarget = PreviewTarget(HOME_SCREEN, SINGLE),
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            LabelCheckbox(
+                                modifier =
+                                    Modifier.element(Elements.ApplyWallpaperHomeScreenCheckbox),
+                                isChecked = isHomeScreenChecked,
+                                onCheckedChange = { onHomeScreenCheckChanged?.invoke() },
+                                text = stringResource(R.string.home_screen_tab),
+                            )
                         }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        CheckboxWithText(
-                            modifier = Modifier.element(Elements.ApplyWallpaperHomeScreenCheckbox),
-                            isChecked = isHomeScreenChecked,
-                            onCheckedChange = { onHomeScreenCheckChanged?.invoke() },
-                            text = stringResource(R.string.home_screen_tab),
-                        )
                     }
                 }
             }
@@ -305,57 +336,6 @@ fun ApplyWallpaperButtons(
                 Text(stringResource(R.string.cancel))
             }
         }
-    }
-}
-
-@Composable
-fun CheckboxWithText(
-    isChecked: Boolean,
-    onCheckedChange: () -> Unit,
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    val colorScheme = MaterialTheme.colorScheme
-    Row(
-        modifier =
-            modifier
-                .heightIn(min = 48.dp)
-                .toggleable(
-                    value = isChecked,
-                    onValueChange = { onCheckedChange.invoke() },
-                    role = Role.Checkbox,
-                ),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier =
-                Modifier.padding(14.dp)
-                    .size(20.dp)
-                    .then(
-                        if (isChecked) {
-                            Modifier.background(colorScheme.primary, CircleShape)
-                        } else {
-                            Modifier.border(
-                                width = 2.dp,
-                                color = colorScheme.primary,
-                                shape = CircleShape,
-                            )
-                        }
-                    ),
-            contentAlignment = Alignment.Center,
-        ) {
-            Checkbox(
-                modifier = Modifier.size(20.dp),
-                checked = isChecked,
-                onCheckedChange = null,
-                colors =
-                    CheckboxDefaults.colors(
-                        checkedColor = Color.Transparent,
-                        uncheckedColor = Color.Transparent,
-                    ),
-            )
-        }
-        Text(text = text, fontSize = 16.sp, color = colorScheme.onSurface)
     }
 }
 
