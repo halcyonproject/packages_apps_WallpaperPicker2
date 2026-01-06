@@ -66,12 +66,15 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
-import com.android.wallpaper.model.Screen
+import com.android.wallpaper.model.Screen.HOME_SCREEN
+import com.android.wallpaper.model.Screen.LOCK_SCREEN
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType.SINGLE
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.PreviewTarget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -145,7 +148,7 @@ fun ContentScope.ApplyWallpaperScene(
                                 PreviewScreen(
                                     preview = lockScreenPreview,
                                     viewModel = viewModel,
-                                    screen = Screen.LOCK_SCREEN,
+                                    previewTarget = PreviewTarget(LOCK_SCREEN, SINGLE),
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
@@ -172,7 +175,7 @@ fun ContentScope.ApplyWallpaperScene(
                                 PreviewScreen(
                                     preview = homeScreenPreview,
                                     viewModel = viewModel,
-                                    screen = Screen.HOME_SCREEN,
+                                    previewTarget = PreviewTarget(HOME_SCREEN, SINGLE),
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
