@@ -61,16 +61,6 @@ flag {
 }
 
 flag {
-    name: "desktop_ui_flag"
-    namespace: "desktop_personalization"
-    description: "Mouse, keyboard, large screen improvements for customization picker"
-    bug: "415883086"
-    metadata {
-        purpose: PURPOSE_FEATURE
-    }
-}
-
-flag {
     name: "adaptive_wallpaper_flag"
     namespace: "customization_picker"
     description: "Add wallpapers that change based on the system's theme"
