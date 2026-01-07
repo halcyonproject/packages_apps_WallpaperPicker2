@@ -59,6 +59,12 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
         }
     }
 
+    /**
+     * Connect a live wallpaper from remote.
+     *
+     * @param onEngineReady Note that onEngineReady will still be called for the case of returning
+     *   an already-created engine when forceSingleEngine is true.
+     */
     suspend fun connect(
         context: Context,
         wallpaperModel: LiveWallpaperModel,
@@ -68,7 +74,7 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
         windowToken: IBinder,
         displayId: Int,
         whichPreview: WhichPreview,
-        onEngineCreated: (engine: IWallpaperEngine) -> Unit,
+        onEngineReady: (engine: IWallpaperEngine) -> Unit,
         onWallpaperColorsChanged:
             (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): IWallpaperEngine {
@@ -81,6 +87,7 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
             return mutex.withLock {
                 val existingEngine = liveWallpaperEngines[connectionKey]
                 if (existingEngine != null) {
+                    onEngineReady.invoke(existingEngine)
                     return@withLock existingEngine // Found it, return immediately
                 }
 
@@ -93,7 +100,7 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
                         windowToken = windowToken,
                         displayId = displayId,
                         whichPreview = whichPreview,
-                        onEngineCreated = onEngineCreated,
+                        onEngineCreated = onEngineReady,
                         onWallpaperColorsChanged = onWallpaperColorsChanged,
                     )
 
@@ -111,7 +118,7 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
             windowToken = windowToken,
             displayId = displayId,
             whichPreview = whichPreview,
-            onEngineCreated = onEngineCreated,
+            onEngineCreated = onEngineReady,
             onWallpaperColorsChanged = onWallpaperColorsChanged,
         )
     }
