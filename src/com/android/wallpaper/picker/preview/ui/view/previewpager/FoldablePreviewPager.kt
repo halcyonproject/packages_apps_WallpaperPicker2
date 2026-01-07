@@ -23,11 +23,15 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -35,11 +39,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
+import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
@@ -47,8 +53,11 @@ import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.FOLDED
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.SINGLE
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.UNFOLDED
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
+import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScene
+import com.android.wallpaper.picker.preview.ui.view.LabelCheckbox
 import com.android.wallpaper.picker.preview.ui.view.PreviewScreen
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
@@ -61,10 +70,21 @@ private val MIN_HORIZONTAL_PADDING = 48.dp
 private val MIN_VERTICAL_PADDING = 8.dp
 private val SPACE_BETWEEN_PREVIEWS = 8.dp
 private val PAGE_SPACING = 16.dp
+private val CHECKBOX_MIN_HEIGHT = 48.dp
+private val CHECKBOX_TOP_SPACING = 8.dp
+
+data class PagerCheckBoxViewModel(
+    val isLockScreenChecked: Boolean,
+    val isHomeScreenChecked: Boolean,
+    val onCheckChanged: ((screen: Screen) -> Unit),
+)
 
 /**
- * The preview pager that is used in [SmallWallpaperPreviewScene]. It is used for the case when the
- * device is a foldable that has 2 screens (folded and unfolded).
+ * The preview pager that is used in [SmallWallpaperPreviewScene] and [ApplyWallpaperScene]. It is
+ * used for the case when the device is a foldable that has 2 screens (folded and unfolded).
+ *
+ * @param enableNavToFullPreview This should be true when we want to navigate to full preview on
+ *   preview clicked.
  */
 @Composable
 fun ContentScope.FoldablePreviewPager(
@@ -76,6 +96,8 @@ fun ContentScope.FoldablePreviewPager(
     homeScreenPreview: SurfaceView,
     homeScreenUnfoldedPreview: SurfaceView,
     displaySizes: DisplaySizes,
+    enableNavToFullPreview: Boolean,
+    pagerCheckBoxViewModel: PagerCheckBoxViewModel?,
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -115,15 +137,19 @@ fun ContentScope.FoldablePreviewPager(
     }
 
     BoxWithConstraints(modifier) {
+        // When pagerCheckBoxViewModel is no null, show the check box
+        val minCheckboxHeight: Dp =
+            if (pagerCheckBoxViewModel != null) CHECKBOX_MIN_HEIGHT + CHECKBOX_TOP_SPACING else 0.dp
         val availableWidth: Dp = maxWidth - MIN_HORIZONTAL_PADDING * 2 - SPACE_BETWEEN_PREVIEWS
-        val availableHeight: Dp = maxHeight - MIN_VERTICAL_PADDING * 2
-        val pagerAspectRatio: Float = availableWidth / availableHeight
-        val isPreviewFillMaxHeight: Boolean = pagerAspectRatio > combinedRatio
+        val availableHeight: Dp = maxHeight - MIN_VERTICAL_PADDING * 2 - minCheckboxHeight
+        val pagerRatio: Float = availableWidth / availableHeight
+        val isPreviewFillMaxHeight: Boolean = pagerRatio > combinedRatio
         val pageWidth: Dp =
             (if (isPreviewFillMaxHeight) availableHeight * combinedRatio else availableWidth) +
                 SPACE_BETWEEN_PREVIEWS
-        val pageHeight: Dp =
+        val previewHeight: Dp =
             if (isPreviewFillMaxHeight) availableHeight else availableWidth / combinedRatio
+        val pageHeight: Dp = previewHeight + minCheckboxHeight
 
         HorizontalPager(
             pagerState,
@@ -147,32 +173,36 @@ fun ContentScope.FoldablePreviewPager(
                     LOCK_SCREEN -> PreviewTarget(LOCK_SCREEN, UNFOLDED)
                     HOME_SCREEN -> PreviewTarget(HOME_SCREEN, UNFOLDED)
                 }
-            val onClick by
+            val onClick: (() -> Unit)? by
                 viewModel
                     .onSmallPreviewClicked(previewTarget.screen, previewTarget.deviceDisplayType) {
-                        moveSurfaceViewToTop(previewTarget)
-                        sceneState.setTargetScene(
-                            targetScene =
-                                when (screen) {
-                                    LOCK_SCREEN -> Scenes.FullLockPreview
-                                    HOME_SCREEN -> Scenes.FullHomePreview
-                                },
-                            animationScope = coroutineScope,
-                        )
+                        if (enableNavToFullPreview) {
+                            moveSurfaceViewToTop(previewTarget)
+                            sceneState.setTargetScene(
+                                targetScene =
+                                    when (screen) {
+                                        LOCK_SCREEN -> Scenes.FullLockPreview
+                                        HOME_SCREEN -> Scenes.FullHomePreview
+                                    },
+                                animationScope = coroutineScope,
+                            )
+                        }
                     }
                     .collectAsStateWithLifecycle(null)
             val onClickUnfolded by
                 viewModel
                     .onSmallPreviewClicked(previewTarget.screen, previewTarget.deviceDisplayType) {
-                        moveSurfaceViewToTop(previewTargetUnfolded)
-                        sceneState.setTargetScene(
-                            targetScene =
-                                when (screen) {
-                                    LOCK_SCREEN -> Scenes.FullLockUnfoldedPreview
-                                    HOME_SCREEN -> Scenes.FullHomeUnfoldedPreview
-                                },
-                            animationScope = coroutineScope,
-                        )
+                        if (enableNavToFullPreview) {
+                            moveSurfaceViewToTop(previewTargetUnfolded)
+                            sceneState.setTargetScene(
+                                targetScene =
+                                    when (screen) {
+                                        LOCK_SCREEN -> Scenes.FullLockUnfoldedPreview
+                                        HOME_SCREEN -> Scenes.FullHomeUnfoldedPreview
+                                    },
+                                animationScope = coroutineScope,
+                            )
+                        }
                     }
                     .collectAsStateWithLifecycle(null)
 
@@ -245,6 +275,35 @@ fun ContentScope.FoldablePreviewPager(
                             )
                         }
                     }
+                }
+
+                if (pagerCheckBoxViewModel != null) {
+                    Spacer(modifier = Modifier.height(CHECKBOX_TOP_SPACING))
+
+                    LabelCheckbox(
+                        modifier =
+                            Modifier.element(
+                                    when (screen) {
+                                        LOCK_SCREEN -> Elements.ApplyWallpaperLockScreenCheckbox
+                                        HOME_SCREEN -> Elements.ApplyWallpaperHomeScreenCheckbox
+                                    }
+                                )
+                                .heightIn(min = CHECKBOX_MIN_HEIGHT)
+                                .wrapContentHeight(),
+                        isChecked =
+                            when (screen) {
+                                LOCK_SCREEN -> pagerCheckBoxViewModel.isLockScreenChecked
+                                HOME_SCREEN -> pagerCheckBoxViewModel.isHomeScreenChecked
+                            },
+                        onCheckedChange = { pagerCheckBoxViewModel.onCheckChanged.invoke(screen) },
+                        text =
+                            stringResource(
+                                when (screen) {
+                                    LOCK_SCREEN -> R.string.lock_screen_tab
+                                    HOME_SCREEN -> R.string.home_screen_tab
+                                }
+                            ),
+                    )
                 }
             }
         }
