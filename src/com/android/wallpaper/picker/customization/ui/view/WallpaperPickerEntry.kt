@@ -24,6 +24,7 @@ import android.graphics.Path
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
@@ -66,12 +67,13 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
     private val expandedBackgroundTopCornerRadius: Float
 
     private var expandedWidth = 0
-    private var expandedHeight = 0
-    private var collapsedHeight = 0
+    var expandedHeight = 0
     private var collapsedWidth = 0
+    var collapsedHeight = 0
     private var progress = 1f
     private var animator: ValueAnimator? = null
     private var state: State = State.EXPANDED
+    private var expandable: Boolean = true
 
     init {
         val shouldShowDesktopUi = BaseFlags.get(context).shouldShowDesktopUi(context)
@@ -106,25 +108,40 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
 
         clipChildren = false
         clipToPadding = false
-    }
 
-    fun configureForAnimation() {
-        post {
-            // Make fixed width and height of the container, so it does not shrink with parent.
-            expandedContainer.layoutParams =
-                LayoutParams(expandedContainer.width, expandedContainer.height).apply {
-                    gravity = Gravity.CENTER
-                }
-
-            expandedWidth = width
-            expandedHeight = height
-            collapsedWidth =
-                collapsedButton.width +
-                    resources.getDimensionPixelSize(
-                        R.dimen.customization_option_container_horizontal_padding
-                    ) * 4
-            collapsedHeight = collapsedButton.height
+        // For desktop UI, the wallpaper entry does not expand and collapse when scrolling. It is
+        // either initially expanded if there are carousel items or collapsed if no items.
+        if (!shouldShowDesktopUi) {
+            post {
+                // Make fixed width and height of the container, so it does not shrink with parent.
+                expandedContainer.layoutParams =
+                    LayoutParams(expandedContainer.width, expandedContainer.height).apply {
+                        gravity = Gravity.CENTER
+                    }
+            }
         }
+
+        // Use a ViewTreeObserver to get dimensions after the first layout pass
+        viewTreeObserver.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    // Ensure we only run this once
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                    // Capture the fully expanded dimensions (default state)
+                    expandedWidth = width
+                    expandedHeight = height
+
+                    // Calculate collapsed dimensions based on the button size
+                    collapsedWidth =
+                        collapsedButton.width +
+                            resources.getDimensionPixelSize(
+                                R.dimen.customization_option_container_horizontal_padding
+                            ) * 4
+                    collapsedHeight = collapsedButton.height
+                }
+            }
+        )
     }
 
     override fun dispatchDraw(canvas: Canvas) {
@@ -168,14 +185,34 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
         radii[7] = defaultCornerRadius
         background.cornerRadii = radii
 
-        val params = layoutParams as ConstraintLayout.LayoutParams
-
-        params.width = (collapsedWidth + (expandedWidth - collapsedWidth) * progress).toInt()
-        params.height = (collapsedHeight + (expandedHeight - collapsedHeight) * progress).toInt()
-        layoutParams = params
+        layoutParams =
+            (layoutParams as ConstraintLayout.LayoutParams).apply {
+                width = (collapsedWidth + (expandedWidth - collapsedWidth) * progress).toInt()
+                height = (collapsedHeight + (expandedHeight - collapsedHeight) * progress).toInt()
+            }
     }
 
-    fun animateToExpanded() {
+    /**
+     * @param expandable When false, we should collapse the entry and never allow it to expand. When
+     *   true, we will expand it if it's collapsed.
+     */
+    fun setExpandable(expandable: Boolean) {
+        this.expandable = expandable
+        if (expandable) {
+            if (state == State.COLLAPSED) {
+                expand()
+            }
+        } else {
+            state = State.COLLAPSED
+            setProgress(0f)
+        }
+    }
+
+    /** Animate the entry to expand. */
+    fun expand() {
+        if (!expandable) {
+            return
+        }
         if (wallpaperCarousel?.adapter?.itemCount == 0) return
 
         if (state == State.EXPANDED || state == State.EXPANDING) {
@@ -185,7 +222,7 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
         state = State.EXPANDING
         animator =
             ValueAnimator.ofFloat(progress, PROGRESS_EXPANDED).apply {
-                duration = 500
+                duration = ANIMATION_DURATION
                 addUpdateListener { animation -> setProgress(animation.animatedValue as Float) }
                 addListener(
                     object : Animator.AnimatorListener {
@@ -210,7 +247,8 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
         animator?.start()
     }
 
-    fun animateToCollapsed() {
+    /** Animate the entry to collapse. */
+    fun collapse() {
         if (state == State.COLLAPSED || state == State.COLLAPSING) {
             return
         }
@@ -242,8 +280,6 @@ constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context
             }
         animator?.start()
     }
-
-    fun getState(): State = state
 
     companion object {
         private const val PROGRESS_COLLAPSED = 0F
