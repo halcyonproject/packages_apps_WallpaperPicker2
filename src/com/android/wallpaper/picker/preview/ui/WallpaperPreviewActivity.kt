@@ -108,32 +108,22 @@ class WallpaperPreviewActivity :
 
         refreshCreativeCategories = intent.getBooleanExtra(SHOULD_CATEGORY_REFRESH, false)
 
-        val (wallpaper, source) =
-            when {
-                !isFirstRun -> Pair(wallpaperPreviewViewModel.wallpaper.value, "previewViewModel")
-                persistentWallpaperModelRepository.wallpaperModel.value != null ->
-                    Pair(
-                        persistentWallpaperModelRepository.wallpaperModel.value,
-                        "persistentWallpaperModelRepository",
-                    )
-                else -> {
-                    Pair(
-                        intent
-                            .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
-                            ?.convertToWallpaperModel(),
-                        "intent",
-                    )
+        val wallpaper =
+            if (isFirstRun) {
+                    (persistentWallpaperModelRepository.wallpaperModel.value
+                            ?: intent
+                                .getParcelableExtra(EXTRA_WALLPAPER_INFO, WallpaperInfo::class.java)
+                                ?.convertToWallpaperModel())
+                        ?.also { wallpaperPreviewRepository.setWallpaperModel(it) }
+                        ?: run {
+                            Log.e(TAG, "No wallpaper for previewing on first launch")
+                            showToastAndFinish(R.string.wallpaper_preview_error)
+                            return
+                        }
+                } else {
+                    wallpaperPreviewViewModel.wallpaper.value
                 }
-            }.also { persistentWallpaperModelRepository.cleanup() }
-        if (wallpaper == null) {
-            Log.e(TAG, "No wallpaper for previewing, source: $source")
-            showToastAndFinish(R.string.wallpaper_preview_error)
-            return
-        }
-
-        if (isFirstRun) {
-            wallpaperPreviewRepository.setWallpaperModel(wallpaper)
-        }
+                .also { persistentWallpaperModelRepository.cleanup() }
 
         val navController =
             (supportFragmentManager.findFragmentById(R.id.wallpaper_preview_nav_host)

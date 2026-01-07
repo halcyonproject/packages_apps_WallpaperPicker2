@@ -140,6 +140,34 @@ class WallpaperPreviewActivityTest {
     }
 
     @Test
+    fun modelIsCorrect_afterRecreate() {
+        val requestedModel =
+            WallpaperModelUtils.getStaticWallpaperModel(
+                wallpaperId = "wallpaperId",
+                collectionId = "collectionId",
+            )
+        persistentRepository.setWallpaperModel(requestedModel)
+        val scenario: ActivityScenario<WallpaperPreviewActivity> =
+            ActivityScenario.launch(WallpaperPreviewActivity::class.java)
+
+        scenario.recreate()
+
+        scenario.onActivity { activity ->
+            val activityScopeEntryPoint =
+                EntryPointAccessors.fromActivity(
+                    activity,
+                    WallpaperPreviewTestActivityScopeEntryPoint::class.java,
+                )
+            val wallpaperPreviewRepository = activityScopeEntryPoint.wallpaperPreviewRepository()
+            val actualModel = wallpaperPreviewRepository.wallpaperModel.value
+            assertThat(actualModel).isNotNull()
+            actualModel ?: return@onActivity
+            assertThat(actualModel.commonWallpaperData.id.wallpaperId)
+                .isEqualTo(requestedModel.commonWallpaperData.id.wallpaperId)
+        }
+    }
+
+    @Test
     fun showsToastWhenMissingWallpaper() {
         val model =
             WallpaperModelUtils.getStaticWallpaperModel(
