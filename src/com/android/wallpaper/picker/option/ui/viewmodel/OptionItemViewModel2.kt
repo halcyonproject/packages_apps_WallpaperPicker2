@@ -17,14 +17,8 @@
 
 package com.android.wallpaper.picker.option.ui.viewmodel
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.spring
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import com.android.compose.animation.Bounceable
 import com.android.wallpaper.picker.common.text.ui.viewmodel.Text
+import com.android.wallpaper.picker.option.ui.compose.OptionBounceable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -64,35 +58,4 @@ data class OptionItemViewModel2<Payload>(
 
     /** Whether onClicked binding should be skipped. */
     val skipOnClickBinding: Boolean = false,
-) : Bounceable {
-    /** EffectItem container bounce animation logic. */
-    override val bounce: Dp
-        get() = effectItemBounceWidth.value
-
-    // This width is manipulated with the clickBounceAnimate function and is added/subtracted
-    // onto the width of the effect item buttons.
-    private val effectItemBounceWidth = Animatable(0.dp, Dp.VectorConverter)
-
-    /**
-     * When an EffectItem is chosen, this function gets called and animates the width of the effect
-     * button to simulate a bounce effect.
-     */
-    suspend fun clickBounceAnimate() {
-        effectItemBounceWidth.animateTo(
-            targetValue = 5.dp,
-            animationSpec =
-                spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMedium,
-                ),
-        )
-        effectItemBounceWidth.animateTo(
-            targetValue = 0.dp,
-            animationSpec =
-                spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMedium,
-                ),
-        )
-    }
-}
+) : OptionBounceable()
