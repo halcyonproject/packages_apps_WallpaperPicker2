@@ -23,7 +23,10 @@ import com.android.wallpaper.module.InjectorProvider
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-/** Utils for [CurrentWallpaperInfo]. */
+/**
+ * Utils for [CurrentWallpaperInfo].
+ */
+@Deprecated("Migrating to CurrentWallpaperModelUtils. See b/448461608")
 object CurrentWallpaperInfoUtils {
 
     /**

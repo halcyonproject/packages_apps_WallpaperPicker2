@@ -30,6 +30,7 @@ import com.android.wallpaper.module.WallpaperPreferences.PresentationMode
  * Default implementation of [CurrentWallpaperInfoFactory] which actually constructs [WallpaperInfo]
  * instances representing the wallpapers currently set to the device.
  */
+@Deprecated("Migrating to CurrentWallpaperModelUtils. See b/448461608")
 class DefaultCurrentWallpaperInfoFactory(
     private val mWallpaperRefresher: WallpaperRefresher,
     private val mLiveWallpaperInfoFactory: LiveWallpaperInfoFactory,

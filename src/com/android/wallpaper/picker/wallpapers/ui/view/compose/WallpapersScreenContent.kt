@@ -150,7 +150,8 @@ fun WallpapersScreenContent(
                     bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
                 )
                 // This semantics modifier is used to make testTags act like resource IDs,
-                // which allows UI automation tools like Espresso to find elements using their testTag.
+                // which allows UI automation tools like Espresso to find elements using their
+                // testTag.
                 .semantics { testTagsAsResourceId = true }
     ) {
         TopToolbar(
@@ -222,24 +223,32 @@ fun WallpapersScreenContent(
                         ThumbnailCard(item, viewModel = viewModel)
                     }
 
-                    is CategoryWallpapersItemViewModel.PlainThumbnailsRowViewModelCategory -> {
+                    is CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory -> {
                         val tileSize = if (item.areTilesLarge) featuredTileSize else regularTileSize
-                        AnimatedVisibility(visible = expanded) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                            ) {
-                                item.rowThumbnails.forEach { thumb ->
-                                    ThumbnailCard(
-                                        thumb,
-                                        viewModel = viewModel,
-                                        modifier = Modifier.size(tileSize),
-                                    )
-                                }
+                        val columnCount =
+                            if (item.areTilesLarge) {
+                                2
+                            } else {
+                                activity?.let { SizeCalculator.getNumIndividualColumns(it) } ?: 3
+                            }
+                        item.thumbnails.chunked(columnCount).forEach { row ->
+                            AnimatedVisibility(visible = expanded) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                ) {
+                                    row.forEach { thumb ->
+                                        ThumbnailCard(
+                                            thumb,
+                                            viewModel = viewModel,
+                                            modifier = Modifier.size(tileSize),
+                                        )
+                                    }
 
-                                // Add spacers to align the last row
-                                repeat(item.totalColumns - item.rowThumbnails.size) {
-                                    Spacer(modifier = Modifier.size(tileSize))
+                                    // Add spacers to align the last row
+                                    repeat(columnCount - row.size) {
+                                        Spacer(modifier = Modifier.size(tileSize))
+                                    }
                                 }
                             }
                         }
