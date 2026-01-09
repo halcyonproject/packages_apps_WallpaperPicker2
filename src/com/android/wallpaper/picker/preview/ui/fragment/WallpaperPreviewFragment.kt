@@ -29,6 +29,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -353,7 +354,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             )
         // Pager state needs to be outside the scope of the SceneTransitionLayout so that after
         // transitioning back to the small preview scene, the selected page index can be retained.
-        val pagerState =
+        val pagerState: PagerState =
             rememberPagerState(
                 initialPage = wallpaperPreviewViewModel.getSmallPreviewTabIndex(),
                 pageCount = { wallpaperPreviewViewModel.smallPreviewTabs.size },
@@ -400,10 +401,15 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
             }
             scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
                 ApplyWallpaperScene(
+                    isFoldable = isFoldable,
                     viewModel = wallpaperPreviewViewModel,
                     sceneState = sceneState,
+                    foldablePreviewPagerState = pagerState,
                     lockScreenPreview = lockScreenPreview,
+                    lockScreenUnfoldedPreview = lockScreenUnfoldedPreview,
                     homeScreenPreview = homeScreenPreview,
+                    homeScreenUnfoldedPreview = homeScreenUnfoldedPreview,
+                    displaySizes = displaySizes,
                     onWallpaperApplied = {
                         Toast.makeText(
                                 context,

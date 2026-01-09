@@ -254,7 +254,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
             wallpaperPreviewViewModel.wallpaper?.value?.let {
                 categoryWallpapersRepository.invalidateCache(it.commonWallpaperData.id.collectionId)
             }
-            categoryWallpapersRepository.refreshWallpapers()
+
             if (activityReference != null) {
                 if (wallpaperPreviewViewModel.isNewTask) {
                     activityReference.window?.exitTransition = Slide(Gravity.END)

@@ -64,6 +64,8 @@ import com.android.wallpaper.picker.preview.ui.util.DefaultImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.wallpapers.data.repository.DefaultRotationInitializerFactory
 import com.android.wallpaper.picker.wallpapers.data.repository.RotationInitializerFactory
+import com.android.wallpaper.util.CurrentWallpaperModelUtilsHelper
+import com.android.wallpaper.util.DefaultCurrentWallpaperModelUtilsHelper
 import com.android.wallpaper.util.converter.DefaultPhotosErrorConvertor
 import com.android.wallpaper.util.converter.DefaultWallpaperModelFactory
 import com.android.wallpaper.util.converter.PhotosErrorConvertor
@@ -178,6 +180,12 @@ abstract class WallpaperPicker2AppModule {
     abstract fun bindWallpaperModelFactory(
         impl: DefaultWallpaperModelFactory
     ): WallpaperModelFactory
+
+    @Binds
+    @Singleton
+    abstract fun bindCurrentWallpaperModelUtilsHelper(
+        impl: DefaultCurrentWallpaperModelUtilsHelper
+    ): CurrentWallpaperModelUtilsHelper
 
     @Binds
     @Singleton

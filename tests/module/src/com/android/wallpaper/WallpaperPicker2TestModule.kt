@@ -66,6 +66,8 @@ import com.android.wallpaper.testing.FakeWallpaperModelFactory
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestPartnerProvider
 import com.android.wallpaper.testing.TestWallpaperPreferences
+import com.android.wallpaper.util.CurrentWallpaperModelUtilsHelper
+import com.android.wallpaper.util.DefaultCurrentWallpaperModelUtilsHelper
 import com.android.wallpaper.util.converter.PhotosErrorConvertor
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import dagger.Binds
@@ -170,6 +172,12 @@ abstract class WallpaperPicker2TestModule {
     @Binds
     @Singleton
     abstract fun bindWallpaperModelFactory(impl: FakeWallpaperModelFactory): WallpaperModelFactory
+
+    @Binds
+    @Singleton
+    abstract fun bindCurrentWallpaperModelUtilsHelper(
+        impl: DefaultCurrentWallpaperModelUtilsHelper
+    ): CurrentWallpaperModelUtilsHelper
 
     @Binds
     @Singleton
