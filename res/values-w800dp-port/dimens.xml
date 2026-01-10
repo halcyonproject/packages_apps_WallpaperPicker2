@@ -20,4 +20,6 @@
     <dimen name="set_wallpaper_dialog_handheld_content_width">450dp</dimen>
     <dimen name="set_wallpaper_dialog_handheld_preview_width">220dp</dimen>
     <dimen name="set_wallpaper_dialog_handheld_preview_height">352dp</dimen>
+
+    <dimen name="grid_item_start">32dp</dimen>
 </resources>

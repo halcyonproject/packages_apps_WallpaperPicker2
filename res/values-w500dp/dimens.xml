@@ -20,4 +20,6 @@
     display.
     -->
     <dimen name="screen_preview_width">300dp</dimen>
+
+    <dimen name="grid_item_start">32dp</dimen>
 </resources>
