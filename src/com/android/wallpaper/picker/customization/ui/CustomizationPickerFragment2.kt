@@ -40,6 +40,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.graphics.Insets
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -312,7 +313,7 @@ class CustomizationPickerFragment2 :
         // Listen to the window's bottom nav bar height and the top status bar height and update the
         // layout padding accordingly.
         ViewCompat.setOnApplyWindowInsetsListener(pickerMotionContainer) { _, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val insets: Insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             applySystemBarInsets(
                 toolbarContainer = toolbarContainer,
                 optionContainer = optionContainer,
@@ -325,14 +326,17 @@ class CustomizationPickerFragment2 :
                 // Reconfigure motion container constraints if already initialized, to adjust
                 // for new insets (doing it only after it's initialized to avoid jumping if
                 // insets first arrive before the first initialization)
-                updateHeaderHeightConstraints(
-                    pickerMotionContainer = pickerMotionContainer,
-                    wallpaperPickerEntry = view.requireViewById(R.id.wallpaper_picker_entry),
-                    previewLabelHeight = view.requireViewById<View>(R.id.label_placeholder).height,
-                    optionContainerHeight = optionContainer.height,
-                    packThemeSuggestedChip = packThemeSuggestedChip,
-                    bottomInset = insets.bottom,
-                )
+                view.post {
+                    updateHeaderHeightConstraints(
+                        pickerMotionContainer = pickerMotionContainer,
+                        wallpaperPickerEntry = view.requireViewById(R.id.wallpaper_picker_entry),
+                        previewLabelHeight =
+                            view.requireViewById<View>(R.id.label_placeholder).height,
+                        optionContainerHeight = optionContainer.height,
+                        packThemeSuggestedChip = packThemeSuggestedChip,
+                        bottomInset = insets.bottom,
+                    )
+                }
             }
             WindowInsetsCompat.CONSUMED
         }
@@ -575,16 +579,16 @@ class CustomizationPickerFragment2 :
         bottomInset: Int,
     ) {
         val isLargeScreenSingleDisplayPortrait = displayUtils.isLargeScreenSingleDisplayPortrait()
-        val wallpaperPickerEntryExpandedHeight = wallpaperPickerEntry.height
+        val wallpaperPickerEntryExpandedHeight = wallpaperPickerEntry.expandedHeight
         // Do not collapse the wallpaper entry when isLargeScreenSingleDisplayPortrait
         val wallpaperPickerEntryCollapsedHeight =
             if (isLargeScreenSingleDisplayPortrait) wallpaperPickerEntryExpandedHeight
-            else wallpaperPickerEntry.collapsedButton.height
+            else wallpaperPickerEntry.collapsedHeight
+
         val minCollapsedPreviewHeight =
             resources.getDimensionPixelSize(
                 R.dimen.customization_picker_min_preview_collapsed_height
             )
-        wallpaperPickerEntry.configureForAnimation()
 
         val minCollapsedPagerHeight = minCollapsedPreviewHeight + previewLabelHeight
         val minExpandedPreviewHeight =
@@ -598,13 +602,16 @@ class CustomizationPickerFragment2 :
         val minExpandedPagerHeight = minExpandedPreviewHeight + previewLabelHeight
         val maxExpandedPagerHeight = maxExpandedPreviewHeight + previewLabelHeight
 
+        val isHeaderCollapsed = pickerMotionContainer.currentState == R.id.collapsed_header_primary
+        val wallpaperEntryCollapseDistant =
+            wallpaperPickerEntryExpandedHeight - wallpaperPickerEntryCollapsedHeight
         // For collapsed, it needs to show the all option entries, with the collapsed wallpaper
         // entry, which shows as a single button.
         val collapsedHeaderHeight =
             (pickerMotionContainer.height -
                     (optionContainerHeight -
                         (packThemeSuggestedChip?.height ?: 0) -
-                        (wallpaperPickerEntryExpandedHeight - wallpaperPickerEntryCollapsedHeight)))
+                        (if (isHeaderCollapsed) 0 else wallpaperEntryCollapseDistant)))
                 .coerceAtLeast(minCollapsedPagerHeight)
         pickerMotionContainer
             .getConstraintSet(R.id.collapsed_header_primary)
@@ -640,14 +647,14 @@ class CustomizationPickerFragment2 :
                         // Do not collapse or expand the wallpaper entry when
                         // isLargeScreenSingleDisplayPortrait is true
                         if (!isLargeScreenSingleDisplayPortrait) {
-                            wallpaperPickerEntry.animateToExpanded()
+                            wallpaperPickerEntry.expand()
                             packThemeSuggestedChip?.animateToExpanded()
                         }
                     } else if (currentId == R.id.collapsed_header_primary) {
                         // Do not collapse or expand the wallpaper entry when
                         // isLargeScreenSingleDisplayPortrait is true
                         if (!isLargeScreenSingleDisplayPortrait) {
-                            wallpaperPickerEntry.animateToCollapsed()
+                            wallpaperPickerEntry.collapse()
                             packThemeSuggestedChip?.animateToCollapsed({})
                         }
                     }
