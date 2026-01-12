@@ -56,6 +56,7 @@ import com.android.wallpaper.picker.wallpapers.data.repository.DefaultRotationIn
 import com.android.wallpaper.picker.wallpapers.data.repository.RotationInitializerFactory
 import com.android.wallpaper.testing.FakeCategoryInteractor
 import com.android.wallpaper.testing.FakeCuratedPhotosInteractorImpl
+import com.android.wallpaper.testing.FakeCurrentWallpaperModelUtilsHelper
 import com.android.wallpaper.testing.FakeDefaultPhotosErrorConvertor
 import com.android.wallpaper.testing.FakeDefaultRequester
 import com.android.wallpaper.testing.FakeDefaultWallpaperCategoryClient
@@ -67,7 +68,6 @@ import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestPartnerProvider
 import com.android.wallpaper.testing.TestWallpaperPreferences
 import com.android.wallpaper.util.CurrentWallpaperModelUtilsHelper
-import com.android.wallpaper.util.DefaultCurrentWallpaperModelUtilsHelper
 import com.android.wallpaper.util.converter.PhotosErrorConvertor
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import dagger.Binds
@@ -176,7 +176,7 @@ abstract class WallpaperPicker2TestModule {
     @Binds
     @Singleton
     abstract fun bindCurrentWallpaperModelUtilsHelper(
-        impl: DefaultCurrentWallpaperModelUtilsHelper
+        impl: FakeCurrentWallpaperModelUtilsHelper
     ): CurrentWallpaperModelUtilsHelper
 
     @Binds
