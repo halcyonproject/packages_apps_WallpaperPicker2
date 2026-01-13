@@ -481,10 +481,7 @@ fun ThumbnailCard(
     showLabel: Boolean = false,
 ) {
     Card(
-        modifier =
-            modifier.testTag(THUMBNAIL_TEST_TAG).clickable {
-                thumbnail.getLaunchActivityIntent?.invoke()
-            },
+        modifier = modifier.testTag(THUMBNAIL_TEST_TAG),
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
         elevation = CardDefaults.cardElevation(),
     ) {
