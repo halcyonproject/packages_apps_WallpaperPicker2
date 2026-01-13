@@ -20,6 +20,8 @@
     <dimen name="section_horizontal_padding">127dp</dimen>
     <dimen name="separated_tabs_inset_horizontal">8dp</dimen>
 
+    <dimen name="grid_item_start">32dp</dimen>
+
     <!--  Default page horizontal margin (127dp) - separated tabs inset horizontal (8dp) -->
     <dimen name="separated_tabs_horizontal_padding">119dp</dimen>
     <dimen name="wallpaper_picker_entry_margin_vertical">9dp</dimen>

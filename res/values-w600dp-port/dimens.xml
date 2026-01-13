@@ -23,6 +23,8 @@
     <!--  Default page horizontal margin (64dp) - separated tabs inset horizontal (4dp) -->
     <dimen name="separated_tabs_horizontal_padding">60dp</dimen>
 
+    <dimen name="grid_item_start">32dp</dimen>
+
     <!-- Dimensions for CategorySelectorFragment. -->
     <dimen name="category_grid_edge_space">64dp</dimen>
     <dimen name="grid_item_featured_category_padding_bottom">24dp</dimen>

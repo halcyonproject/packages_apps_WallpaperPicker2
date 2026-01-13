@@ -26,6 +26,8 @@
     <!-- Dimensions for small "dual" previews screen. -->
     <dimen name="small_dual_preview_edge_space">94dp</dimen>
 
+    <dimen name="grid_item_start">32dp</dimen>
+
     <!-- Dimensions for set wallpaper dialog with previews -->
     <dimen name="set_wallpaper_dialog_handheld_width">520dp</dimen>
     <dimen name="set_wallpaper_dialog_handheld_content_width">450dp</dimen>
