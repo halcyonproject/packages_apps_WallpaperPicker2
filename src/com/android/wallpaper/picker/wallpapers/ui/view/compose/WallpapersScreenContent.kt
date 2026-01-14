@@ -141,6 +141,8 @@ fun WallpapersScreenContent(
     val regularTileSize: DpSize =
         activity?.let { SizeCalculator.getIndividualTileSize(it) }?.toDpSize() ?: DpSize(0.dp, 0.dp)
 
+    val horizontalPadding = dimensionResource(R.dimen.grid_item_start)
+
     Column(
         modifier =
             modifier
@@ -164,7 +166,10 @@ fun WallpapersScreenContent(
             items(viewModel.wallpaperItems) { item ->
                 when (item) {
                     is CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory -> {
-                        SectionLabel(item.title, modifier.wrapContentSize().padding(start = 18.dp))
+                        SectionLabel(
+                            item.title,
+                            modifier.wrapContentSize().padding(start = horizontalPadding),
+                        )
                     }
 
                     is CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory -> {
@@ -173,7 +178,7 @@ fun WallpapersScreenContent(
                                 modifier =
                                     Modifier.fillMaxWidth()
                                         .clickable { expanded = !expanded }
-                                        .padding(start = 18.dp, end = 10.dp),
+                                        .padding(start = horizontalPadding, end = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
@@ -206,7 +211,7 @@ fun WallpapersScreenContent(
                         } else {
                             SectionLabel(
                                 item.title,
-                                modifier.wrapContentSize().padding(start = 20.dp),
+                                modifier.wrapContentSize().padding(start = horizontalPadding),
                             )
                         }
                     }
@@ -216,6 +221,14 @@ fun WallpapersScreenContent(
                             thumbnails = item.thumbnailAssets,
                             viewModel = viewModel,
                             maxRows = 2,
+                            contentPadding =
+                                PaddingValues(
+                                    horizontal = horizontalPadding,
+                                    vertical =
+                                        dimensionResource(
+                                            R.dimen.creative_category_individual_item_view_space
+                                        ),
+                                ),
                         )
                     }
 
@@ -234,8 +247,13 @@ fun WallpapersScreenContent(
                         item.thumbnails.chunked(columnCount).forEach { row ->
                             AnimatedVisibility(visible = expanded) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    modifier =
+                                        Modifier.fillMaxWidth()
+                                            .padding(
+                                                horizontal = horizontalPadding,
+                                                vertical = 8.dp,
+                                            ),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     row.forEach { thumb ->
                                         ThumbnailCard(
@@ -405,28 +423,19 @@ fun HorizontalGridSection(
     thumbnails: List<CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory>,
     viewModel: CategoryWallpapersContentViewModel,
     maxRows: Int,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     val density: Density = LocalDensity.current
     val tileHeightPx: Float =
         LocalActivity.current?.let { SizeCalculator.getFeaturedIndividualTileSize(it).y.toFloat() }
             ?: with(density) { 260.dp.toPx() }
-
     val heightDp = with(density) { (TILE_HEIGHT_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
     val widthDp = with(density) { (TILE_WIDTH_SCALE_FACTOR * tileHeightPx).toInt().toDp() }
 
     LazyHorizontalGrid(
         rows = GridCells.Fixed(maxRows),
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(
-                    heightDp * 2
-                ) // need to set a fixed height for this grid as its inside of a LazyColumn
-                .padding(
-                    vertical =
-                        dimensionResource(R.dimen.creative_category_individual_item_view_space)
-                ),
+        modifier = modifier.fillMaxWidth().height(heightDp * 2),
         horizontalArrangement =
             Arrangement.spacedBy(
                 dimensionResource(R.dimen.creative_category_individual_item_view_space)
@@ -435,10 +444,7 @@ fun HorizontalGridSection(
             Arrangement.spacedBy(
                 dimensionResource(R.dimen.creative_category_individual_item_view_space)
             ),
-        contentPadding =
-            PaddingValues(
-                horizontal = dimensionResource(R.dimen.featured_wallpaper_grid_edge_space)
-            ),
+        contentPadding = contentPadding,
     ) {
         items(thumbnails) { thumbnail ->
             ThumbnailCard(
