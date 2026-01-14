@@ -51,6 +51,7 @@ import com.android.wallpaper.picker.preview.domain.interactor.PreviewActionsInte
 import com.android.wallpaper.picker.preview.domain.interactor.WallpaperPreviewInteractor
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
+import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity.Companion.SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS
 import com.android.wallpaper.picker.preview.ui.binder.ApplyWallpaperOptionsProvider
 import com.android.wallpaper.picker.preview.ui.binder.PreviewTooltipBinder
 import com.android.wallpaper.picker.preview.ui.util.AccessibilityUtil
@@ -133,6 +134,9 @@ constructor(
     var isNewTask = false
 
     val isViewAsHome = savedStateHandle.get<Boolean>(EXTRA_VIEW_AS_HOME) ?: false
+
+    val launchedForWallpaperEffects =
+        savedStateHandle.get<Boolean>(SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS) ?: false
 
     private fun getWallpaperPreviewSource(): Screen = if (isViewAsHome) HOME_SCREEN else LOCK_SCREEN
 

@@ -81,10 +81,11 @@ object PreviewActionsBinder {
 
         val extendedWallpaperEffectActivityLauncher =
             ExtendedWallpaperEffectsUtils.registerExtendedWallpaperEffectsActivityLauncher(
-                activity,
-                lifecycleOwner,
-                previewViewModel,
-                actionGroup.context.applicationContext,
+                activity = activity,
+                lifecycleOwner = lifecycleOwner,
+                wallpaperPreviewViewModel = previewViewModel,
+                context = actionGroup.context.applicationContext,
+                exitActivityOnCancel = previewViewModel.launchedForWallpaperEffects,
             )
 
         val floatingSheetCallback =

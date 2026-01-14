@@ -305,10 +305,11 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
 
         val extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent> =
             ExtendedWallpaperEffectsUtils.registerExtendedWallpaperEffectsActivityLauncher(
-                requireActivity(),
-                viewLifecycleOwner,
-                wallpaperPreviewViewModel,
-                requireContext(),
+                activity = requireActivity(),
+                lifecycleOwner = viewLifecycleOwner,
+                wallpaperPreviewViewModel = wallpaperPreviewViewModel,
+                context = requireContext(),
+                exitActivityOnCancel = wallpaperPreviewViewModel.launchedForWallpaperEffects,
             )
 
         return ComposeView(requireContext()).apply {
