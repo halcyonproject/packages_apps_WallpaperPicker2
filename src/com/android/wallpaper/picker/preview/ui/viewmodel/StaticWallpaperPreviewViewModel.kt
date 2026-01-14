@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -48,6 +49,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** View model for static wallpaper preview used in [WallpaperPreviewActivity] and its fragments */
@@ -97,10 +99,15 @@ constructor(
         interactor.wallpaperModel.map { it as? StaticWallpaperModel }.filterNotNull()
 
     /** Null indicates the wallpaper has no low res image. */
-    val lowResBitmap: Flow<Bitmap?> =
+    val lowResBitmap: StateFlow<Bitmap?> =
         staticWallpaperModel
             .map { it.staticWallpaperData.asset.getLowResBitmap(context) }
             .flowOn(bgDispatcher)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = null,
+            )
     // Asset detail includes the dimensions, bitmap and the asset.
     private val assetDetail: Flow<Triple<Point, Bitmap?, Asset>?> =
         interactor.wallpaperModel
