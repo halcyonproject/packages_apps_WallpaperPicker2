@@ -32,8 +32,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -360,6 +362,21 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                 initialPage = wallpaperPreviewViewModel.getSmallPreviewTabIndex(),
                 pageCount = { wallpaperPreviewViewModel.smallPreviewTabs.size },
             )
+        // This is only needed for the apply wallpaper scene on foldables. We need a separate
+        // PagerState for the ApplyWallpaperScene because when alwaysCompose is true, the scene
+        // is composed even when not active. Having a separate PagerState allows the
+        // ApplyWallpaperScene to manage its pager independently while still syncing with the
+        // main pagerState used in SmallPreviewScene.
+        val applyWallpaperScenePagerState: PagerState? =
+            if (isFoldable) {
+                rememberPagerState(
+                        initialPage = pagerState.currentPage,
+                        pageCount = { pagerState.pageCount },
+                    )
+                    .also { LaunchedSyncPagerState(pagerState, it) }
+            } else {
+                null
+            }
 
         val fullLockPreviewOnDispatchTouchEvent: ((event: MotionEvent) -> Unit)? by
             fullLockPreviewOnDispatchTouchEventFlow.collectAsStateWithLifecycle(null)
@@ -400,12 +417,20 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                         extendedWallpaperEffectActivityLauncher,
                 )
             }
-            scene(Scenes.ApplyWallpaper, userActions = mapOf(Back to Scenes.SmallPreview)) {
+            // Apply wallpaper scene
+            scene(
+                key = Scenes.ApplyWallpaper,
+                userActions = mapOf(Back to Scenes.SmallPreview),
+                // For foldables, we need to compose the scene first since the scene is
+                // comparatively heavier to compose. It can introduce jank if it composes on the fly
+                // when transition starts.
+                alwaysCompose = isFoldable,
+            ) {
                 ApplyWallpaperScene(
                     isFoldable = isFoldable,
                     viewModel = wallpaperPreviewViewModel,
                     sceneState = sceneState,
-                    foldablePreviewPagerState = pagerState,
+                    foldablePreviewPagerState = applyWallpaperScenePagerState,
                     lockScreenPreview = lockScreenPreview,
                     lockScreenUnfoldedPreview = lockScreenUnfoldedPreview,
                     homeScreenPreview = homeScreenPreview,
@@ -435,6 +460,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     },
                 )
             }
+            // Full preview scene
             if (isFoldable) {
                 scene(Scenes.FullLockPreview, userActions = mapOf(Back to Scenes.SmallPreview)) {
                     FullWallpaperPreviewScene(
@@ -548,6 +574,30 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         timestampRange(startMillis = 200) {
             fade(Elements.FullPreviewTopToolbar)
             fade(Elements.FullPreviewBackground)
+        }
+    }
+
+    @Composable
+    private fun LaunchedSyncPagerState(pagerStateA: PagerState, pagerStateB: PagerState) {
+        LaunchedEffect(pagerStateA, pagerStateB) {
+            snapshotFlow {
+                    // Pair the current pages of both states
+                    pagerStateA.currentPage to pagerStateB.currentPage
+                }
+                .collect { (currentPageA, currentPageB) ->
+                    if (currentPageA != currentPageB) {
+                        // Sync the 'inactive' pager to the primary.
+                        if (pagerStateA.isScrollInProgress) {
+                            pagerStateB.scrollToPage(currentPageA)
+                        } else if (pagerStateB.isScrollInProgress) {
+                            pagerStateA.scrollToPage(currentPageB)
+                        } else {
+                            // This is to prevent infinite loop if both of the pager states
+                            // are not scroll in progress, which should not happen.
+                            pagerStateB.scrollToPage(currentPageA)
+                        }
+                    }
+                }
         }
     }
 
