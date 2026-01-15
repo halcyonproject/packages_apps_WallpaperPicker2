@@ -114,3 +114,12 @@ flag {
     description: "Enables deletion of recent wallpaper entries via the content provider"
     bug: "465589212"
 }
+
+flag {
+    name: "enable_android_photopicker"
+    namespace: "customization_picker"
+    description: "Enables the Android Photopicker"
+    bug: "475397703"
+}
+
+
