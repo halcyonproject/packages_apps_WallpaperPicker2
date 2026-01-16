@@ -17,6 +17,7 @@
 package com.android.wallpaper.util
 
 import android.app.WallpaperInfo
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.LiveWallpaperThumbAsset
@@ -25,12 +26,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * This provides a factory method to generate relevant [WallpaperModel] fields for
- * CurrentWallpaperModelUtils.
+ * This provides a factory method to generate relevant [WallpaperModel] fields when we convert
+ * [WallpaperDescription] or [WallpaperInfo] to [WallpaperModel].
  */
 @Singleton
-class DefaultCurrentWallpaperModelUtilsHelper @Inject constructor() :
-    CurrentWallpaperModelUtilsHelper {
+class DefaultWallpaperModelConversionHelper @Inject constructor() : WallpaperModelConversionHelper {
 
     override fun getLiveWallpaperThumbAssets(
         context: Context,
