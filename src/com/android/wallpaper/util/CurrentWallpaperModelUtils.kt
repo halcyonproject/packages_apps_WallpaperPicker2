@@ -31,7 +31,6 @@ import androidx.annotation.VisibleForTesting
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
-import com.android.wallpaper.asset.LiveWallpaperThumbAsset
 import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
 import com.android.wallpaper.picker.data.ColorInfo
@@ -222,8 +221,10 @@ object CurrentWallpaperModelUtils {
                     title = wallpaperInfo.loadLabel(context.packageManager).toString(),
                     attributions = getLiveWallpaperAttributions(context, wallpaperInfo),
                     exploreActionUrl = getLiveWallpaperActionUri(context, wallpaperInfo),
-                    // TODO(b/452460147): Make different thumbAssets for Google
-                    thumbAsset = LiveWallpaperThumbAsset(context, wallpaperInfo),
+                    thumbAsset =
+                        entryPoint
+                            .getWallpaperModelConversionHelper()
+                            .getLiveWallpaperThumbAssets(context, wallpaperInfo),
                     placeholderColorInfo =
                         ColorInfo(
                             wallpaperColors = null,
@@ -360,5 +361,7 @@ object CurrentWallpaperModelUtils {
         fun getWallpaperClient(): WallpaperClient
 
         fun getWallpaperStatusChecker(): WallpaperStatusChecker
+
+        fun getWallpaperModelConversionHelper(): WallpaperModelConversionHelper
     }
 }
