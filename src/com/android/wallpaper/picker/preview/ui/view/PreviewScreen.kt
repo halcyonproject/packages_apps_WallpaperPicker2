@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
@@ -69,7 +70,8 @@ fun PreviewShade(
     val colorScheme = MaterialTheme.colorScheme
 
     val lowResBitmap: Bitmap? by
-        viewModel.staticWallpaperPreviewViewModel.lowResBitmap.collectAsStateWithLifecycle(null)
+        viewModel.staticWallpaperPreviewViewModel.lowResBitmap.collectAsStateWithLifecycle()
+
     val shadeAlpha: Float by
         viewModel.previewShadeAlpha(previewTarget).collectAsStateWithLifecycle()
     val shadeAnimateAlpha: Float by animateFloatAsState(shadeAlpha)

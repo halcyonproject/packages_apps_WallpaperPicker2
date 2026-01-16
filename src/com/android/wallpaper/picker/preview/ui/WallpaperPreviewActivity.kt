@@ -383,7 +383,7 @@ class WallpaperPreviewActivity :
     companion object {
         const val HIDE_SURFACES_FOR_ENTER_TRANSITION = "hide_surfaces_for_enter_transition"
         const val HIDE_SURFACES_FOR_EXIT_TRANSITION = "hide_surfaces_for_exit_transition"
-        private const val SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS =
+        const val SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS =
             "should_navigate_to_extended_wallpaper_effects"
         private const val HIDE_INFO_SHEET = "hide_info_sheet"
 

@@ -312,13 +312,15 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
                     ?.setIsChecked(Action.SHARE, false)
             }
 
-        if (arguments?.getBoolean(SHOULD_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS) == true) {
+        if (wallpaperPreviewViewModel.launchedForWallpaperEffects) {
             wallpaperPreviewViewModel.wallpaper.value?.let { wallpaperModel ->
                 ExtendedWallpaperEffectsUtils.registerExtendedWallpaperEffectsActivityLauncher(
                         activity = requireActivity(),
                         lifecycleOwner = viewLifecycleOwner,
                         wallpaperPreviewViewModel = wallpaperPreviewViewModel,
                         context = context,
+                        exitActivityOnCancel =
+                            wallpaperPreviewViewModel.launchedForWallpaperEffects,
                     )
                     .let { launcher ->
                         arguments?.clear()

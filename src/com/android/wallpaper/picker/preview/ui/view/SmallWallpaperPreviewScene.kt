@@ -64,7 +64,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.wallpaper.R
-import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.module.logging.UserEventLogger
@@ -114,8 +113,8 @@ fun ContentScope.SmallWallpaperPreviewScene(
 
     // Sync view model's smallPreviewSelectedTab with the pager state
     when (pagerState.currentPage) {
-        0 -> viewModel.setSmallPreviewSelectedTab(Screen.LOCK_SCREEN)
-        1 -> viewModel.setSmallPreviewSelectedTab(Screen.HOME_SCREEN)
+        0 -> viewModel.setSmallPreviewSelectedTab(LOCK_SCREEN)
+        1 -> viewModel.setSmallPreviewSelectedTab(HOME_SCREEN)
     }
 
     val actionsViewModel: PreviewActionsViewModel = viewModel.previewActionsViewModel

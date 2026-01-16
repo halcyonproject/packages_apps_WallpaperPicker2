@@ -82,6 +82,7 @@ object ExtendedWallpaperEffectsUtils {
         lifecycleOwner: LifecycleOwner,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
         context: Context?,
+        exitActivityOnCancel: Boolean = false,
     ): ActivityResultLauncher<Intent> {
         return activity.activityResultRegistry.register(
             PREVIEW_RESULT_REGISTRY,
@@ -115,6 +116,8 @@ object ExtendedWallpaperEffectsUtils {
                                 }
                             }
                         }
+                    } else {
+                        if (exitActivityOnCancel) activity.finishAfterTransition()
                     }
                     return resultCode
                 }
