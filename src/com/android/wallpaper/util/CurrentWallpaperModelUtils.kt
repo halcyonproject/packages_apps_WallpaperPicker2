@@ -192,8 +192,6 @@ object CurrentWallpaperModelUtils {
         @SetWallpaperFlags wallpaperManagerDestinationFlag: Int,
     ): WallpaperModel {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
-        val displayUtils = entryPoint.getDisplayUtils()
-        val wallpaperClient = entryPoint.getWallpaperClient()
 
         // WallpaperInfo is not null for Live Wallpaper.
         val wallpaperInfo: WallpaperInfo =
@@ -205,9 +203,6 @@ object CurrentWallpaperModelUtils {
         val collectionId: String =
             WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
 
-        val displaySizes: List<Point> = displayUtils.getInternalDisplaySizes(allDimensions = true)
-        val cropHints: Map<Point, Rect> =
-            wallpaperClient.getCurrentCropHints(displaySizes, wallpaperManagerDestinationFlag)
         val wallpaperId: WallpaperId =
             WallpaperId(
                 componentName = wallpaperInfo.component,
