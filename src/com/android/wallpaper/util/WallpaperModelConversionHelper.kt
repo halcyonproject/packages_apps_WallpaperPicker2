@@ -14,27 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wallpaper.testing
+package com.android.wallpaper.util
 
 import android.app.WallpaperInfo
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import com.android.wallpaper.asset.Asset
-import com.android.wallpaper.util.CurrentWallpaperModelUtilsHelper
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.android.wallpaper.picker.data.WallpaperModel
 
-@Singleton
-class FakeCurrentWallpaperModelUtilsHelper @Inject constructor() :
-    CurrentWallpaperModelUtilsHelper {
-
-    override fun getLiveWallpaperThumbAssets(
-        context: Context,
-        wallpaperInfo: WallpaperInfo,
-    ): Asset {
-        return TestAsset(COLOR_DEFAULT, /* isCorrupt= */ false)
-    }
-
-    companion object {
-        private const val COLOR_DEFAULT: Int = 0xff000000.toInt()
-    }
+/**
+ * This provides a factory method to generate relevant [WallpaperModel] fields when we convert
+ * [WallpaperDescription] or [WallpaperInfo] to [WallpaperModel].
+ */
+interface WallpaperModelConversionHelper {
+    fun getLiveWallpaperThumbAssets(context: Context, wallpaperInfo: WallpaperInfo): Asset
 }

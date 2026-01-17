@@ -31,7 +31,6 @@ import androidx.annotation.VisibleForTesting
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
-import com.android.wallpaper.asset.LiveWallpaperThumbAsset
 import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
 import com.android.wallpaper.picker.data.ColorInfo
@@ -192,8 +191,6 @@ object CurrentWallpaperModelUtils {
         @SetWallpaperFlags wallpaperManagerDestinationFlag: Int,
     ): WallpaperModel {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
-        val displayUtils = entryPoint.getDisplayUtils()
-        val wallpaperClient = entryPoint.getWallpaperClient()
 
         // WallpaperInfo is not null for Live Wallpaper.
         val wallpaperInfo: WallpaperInfo =
@@ -205,9 +202,6 @@ object CurrentWallpaperModelUtils {
         val collectionId: String =
             WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
 
-        val displaySizes: List<Point> = displayUtils.getInternalDisplaySizes(allDimensions = true)
-        val cropHints: Map<Point, Rect> =
-            wallpaperClient.getCurrentCropHints(displaySizes, wallpaperManagerDestinationFlag)
         val wallpaperId: WallpaperId =
             WallpaperId(
                 componentName = wallpaperInfo.component,
@@ -227,8 +221,10 @@ object CurrentWallpaperModelUtils {
                     title = wallpaperInfo.loadLabel(context.packageManager).toString(),
                     attributions = getLiveWallpaperAttributions(context, wallpaperInfo),
                     exploreActionUrl = getLiveWallpaperActionUri(context, wallpaperInfo),
-                    // TODO(b/452460147): Make different thumbAssets for Google
-                    thumbAsset = LiveWallpaperThumbAsset(context, wallpaperInfo),
+                    thumbAsset =
+                        entryPoint
+                            .getWallpaperModelConversionHelper()
+                            .getLiveWallpaperThumbAssets(context, wallpaperInfo),
                     placeholderColorInfo =
                         ColorInfo(
                             wallpaperColors = null,
@@ -365,5 +361,7 @@ object CurrentWallpaperModelUtils {
         fun getWallpaperClient(): WallpaperClient
 
         fun getWallpaperStatusChecker(): WallpaperStatusChecker
+
+        fun getWallpaperModelConversionHelper(): WallpaperModelConversionHelper
     }
 }

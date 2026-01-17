@@ -37,11 +37,11 @@ import org.robolectric.annotation.Config
 @HiltAndroidTest
 @Config(shadows = [ShadowWallpaperInfo::class])
 @RunWith(RobolectricTestRunner::class)
-class DefaultCurrentWallpaperModelUtilsHelperTest {
+class DefaultWallpaperModelConversionHelperTest {
     @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
     @Inject lateinit var testInjector: TestInjector
-    @Inject lateinit var currentWallpaperModelUtilsHelper: DefaultCurrentWallpaperModelUtilsHelper
+    @Inject lateinit var wallpaperModelConversionHelper: DefaultWallpaperModelConversionHelper
 
     private lateinit var context: Context
 
@@ -58,7 +58,7 @@ class DefaultCurrentWallpaperModelUtilsHelperTest {
         val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context)
 
         val asset =
-            currentWallpaperModelUtilsHelper.getLiveWallpaperThumbAssets(context, wallpaperInfo)
+            wallpaperModelConversionHelper.getLiveWallpaperThumbAssets(context, wallpaperInfo)
 
         assertThat(asset).isNotNull()
         assertThat(asset).isInstanceOf(LiveWallpaperThumbAsset::class.java)

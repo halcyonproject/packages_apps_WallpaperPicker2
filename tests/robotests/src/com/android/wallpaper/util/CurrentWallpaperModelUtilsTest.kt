@@ -31,6 +31,7 @@ import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.testing.ShadowWallpaperInfo
+import com.android.wallpaper.testing.TestAsset
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.WallpaperInfoUtils
 import com.android.wallpaper.testing.TestWallpaperStatusChecker
@@ -300,6 +301,9 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(wallpaperModel.commonWallpaperData.placeholderColorInfo.wallpaperColors).isNull()
         assertThat(wallpaperModel.commonWallpaperData.placeholderColorInfo.placeholderColor)
             .isEqualTo(0)
+        // The FakeWallpaperModelConversionHelper provides a TestAsset for the thumbAsset.
+        assertThat(wallpaperModel.commonWallpaperData.thumbAsset)
+            .isInstanceOf(TestAsset::class.java)
         assertThat(wallpaperModel.commonWallpaperData.destination)
             .isEqualTo(Destination.APPLIED_TO_SYSTEM)
         assertThat(wallpaperModel.liveWallpaperData.groupName).isEqualTo("")
