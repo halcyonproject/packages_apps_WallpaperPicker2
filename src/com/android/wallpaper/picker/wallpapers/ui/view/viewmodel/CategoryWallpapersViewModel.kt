@@ -194,7 +194,7 @@ constructor(
                             CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory(
                                 thumbnailAsset = it.commonWallpaperData.thumbAsset,
                                 title = it.commonWallpaperData.title,
-                                contentDescription = it.commonWallpaperData.title,
+                                contentDescription = getContentDescriptionFromWallpaperModel(it),
                                 isApplied =
                                     if (it is WallpaperModel.LiveWallpaperModel) {
                                         it.isApplied(currentHomeWallpaper, currentLockWallpaper)
@@ -275,6 +275,24 @@ constructor(
     override fun onCleared() {
         super.onCleared()
         categoryWallpapersInteractor.clearSelectedCategory()
+    }
+
+    /**
+     * Retrieves a suitable content description for the given [wallpaperModel].
+     *
+     * The selection logic follows this priority:
+     * 1. Returns the wallpaper title if available.
+     * 2. Returns the first attribution string if available.
+     * 3. Defaults to an empty string if no description can be determined.
+     *
+     * @param wallpaperModel The model containing wallpaper metadata.
+     * @return A [String] description or an empty string.
+     */
+    private fun getContentDescriptionFromWallpaperModel(wallpaperModel: WallpaperModel): String {
+        // TODO(b/476145304): add default wallpaper content description
+        return wallpaperModel.commonWallpaperData.title
+            ?: wallpaperModel.commonWallpaperData.attributions?.firstOrNull()
+            ?: ""
     }
 
     private fun startRotation() {
