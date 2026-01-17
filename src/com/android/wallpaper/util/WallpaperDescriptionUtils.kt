@@ -17,6 +17,7 @@
 package com.android.wallpaper.util
 
 import android.app.wallpaper.WallpaperDescription
+import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.PersistableBundle
@@ -123,4 +124,9 @@ fun StaticWallpaperModel.toDescription(
         .setCropHints(cropHints)
         .setContent(content)
         .build()
+}
+
+fun WallpaperDescription.toLiveWallpaperModel(context: Context): LiveWallpaperModel? {
+    // TODO(b/452460147): Implement this method.
+    return null
 }
