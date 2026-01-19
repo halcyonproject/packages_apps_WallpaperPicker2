@@ -27,7 +27,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
@@ -41,6 +40,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,12 +50,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -80,6 +80,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -88,12 +89,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -118,6 +119,17 @@ private const val TAG = "WallpapersScreenContent"
 
 private const val THUMBNAIL_TEST_TAG = "wp_thumbnail"
 
+private object WallpaperGridConfig {
+    /**
+     * This parameter is used for comparing the threshold DP of the screen on whether we want a
+     * "fewer columns" configuration or a "more columns" configuration.
+     */
+    const val COLUMN_THRESHOLD_DP = 820
+    const val COLUMNS_FEATURED = 2
+    const val COLUMNS_COMPACT = 3
+    const val COLUMNS_WIDE = 5
+}
+
 /**
  * Displays the main screen content for category wallpapers using a [LazyColumn].
  *
@@ -132,17 +144,10 @@ fun WallpapersScreenContent(
     networkPreference: Int,
     modifier: Modifier = Modifier,
 ) {
-
-    var expanded by remember { mutableStateOf(true) } // initial state (expanded)
-
-    val activity = LocalActivity.current
-    val featuredTileSize: DpSize =
-        activity?.let { SizeCalculator.getFeaturedIndividualTileSize(it) }?.toDpSize()
-            ?: DpSize(0.dp, 0.dp)
-    val regularTileSize: DpSize =
-        activity?.let { SizeCalculator.getIndividualTileSize(it) }?.toDpSize() ?: DpSize(0.dp, 0.dp)
-
+    var expanded by remember { mutableStateOf(true) }
     val horizontalPadding = dimensionResource(R.dimen.grid_item_start)
+
+    val columnCount = rememberColumnCount()
 
     Column(
         modifier =
@@ -152,124 +157,76 @@ fun WallpapersScreenContent(
                     top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
                     bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
                 )
-                // This semantics modifier is used to make testTags act like resource IDs,
-                // which allows UI automation tools like Espresso to find elements using their
-                // testTag.
                 .semantics { testTagsAsResourceId = true }
     ) {
-        TopToolbar(
-            viewModel.title,
-            viewModel.rotationEnabled,
-            viewModel.onShowRotationDialog,
-            modifier = modifier,
-        )
-        LazyColumn(modifier = modifier.fillMaxSize()) {
-            items(viewModel.wallpaperItems) { item ->
+        TopToolbar(viewModel.title, viewModel.rotationEnabled, viewModel.onShowRotationDialog)
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columnCount),
+            modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding),
+            contentPadding = PaddingValues(bottom = 16.dp),
+        ) {
+            viewModel.wallpaperItems.forEach { item ->
                 when (item) {
                     is CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory -> {
-                        SectionLabel(
-                            item.title,
-                            modifier.wrapContentSize().padding(start = horizontalPadding),
-                        )
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            SectionLabel(item.title, Modifier.padding(top = 16.dp, bottom = 8.dp))
+                        }
                     }
 
                     is CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory -> {
-                        if (viewModel.isNewUIEnabled) {
-                            Row(
-                                modifier =
-                                    Modifier.fillMaxWidth()
-                                        .clickable { expanded = !expanded }
-                                        .padding(start = horizontalPadding, end = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                val colorScheme = MaterialTheme.colorScheme
-                                Text(
-                                    text = item.title,
-                                    modifier = modifier,
-                                    fontSize = 16.sp,
-                                    lineHeight = 15.sp,
-                                    color = colorScheme.onSurface,
-                                    textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.W500,
-                                )
-
-                                Icon(
-                                    imageVector =
-                                        ImageVector.vectorResource(
-                                            R.drawable.ic_arrow_forward_24px
-                                        ),
-                                    contentDescription =
-                                        if (expanded)
-                                            stringResource(R.string.collapse_content_description)
-                                        else stringResource(R.string.expand_content_description),
-                                    modifier =
-                                        Modifier.rotate(if (expanded) 90f else 0f)
-                                            .animateContentSize(),
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        } else {
-                            SectionLabel(
-                                item.title,
-                                modifier.wrapContentSize().padding(start = horizontalPadding),
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            SecondaryHeader(
+                                title = item.title,
+                                isExpanded = expanded,
+                                isNewUi = viewModel.isNewUIEnabled,
+                                onToggle = { expanded = !expanded },
+                                horizontalPadding = 0.dp,
                             )
                         }
                     }
 
                     is CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory -> {
-                        HorizontalGridSection(
-                            thumbnails = item.thumbnailAssets,
-                            viewModel = viewModel,
-                            maxRows = 2,
-                            contentPadding =
-                                PaddingValues(
-                                    horizontal = horizontalPadding,
-                                    vertical =
-                                        dimensionResource(
-                                            R.dimen.creative_category_individual_item_view_space
-                                        ),
-                                ),
-                        )
-                    }
-
-                    is CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory -> {
-                        ThumbnailCard(item, viewModel = viewModel)
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            HorizontalGridSection(
+                                thumbnails = item.thumbnailAssets,
+                                viewModel = viewModel,
+                                maxRows = 2,
+                                contentPadding = PaddingValues(horizontal = 0.dp),
+                            )
+                        }
                     }
 
                     is CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory -> {
-                        val tileSize = if (item.areTilesLarge) featuredTileSize else regularTileSize
-                        val columnCount =
-                            if (item.areTilesLarge) {
-                                2
-                            } else {
-                                activity?.let { SizeCalculator.getNumIndividualColumns(it) } ?: 3
-                            }
-                        item.thumbnails.chunked(columnCount).forEach { row ->
-                            AnimatedVisibility(visible = expanded) {
-                                Row(
+                        // vertical grid section
+                        if (expanded) {
+                            items(
+                                items = item.thumbnails,
+                                // If the category specifies large tiles, span more columns
+                                span = { _ ->
+                                    val spanCount = if (item.areTilesLarge) maxLineSpan / 2 else 1
+                                    GridItemSpan(spanCount.coerceAtLeast(1))
+                                },
+                            ) { thumb ->
+                                ThumbnailCard(
+                                    thumbnail = thumb,
+                                    viewModel = viewModel,
                                     modifier =
-                                        Modifier.fillMaxWidth()
-                                            .padding(
-                                                horizontal = horizontalPadding,
-                                                vertical = 8.dp,
-                                            ),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                ) {
-                                    row.forEach { thumb ->
-                                        ThumbnailCard(
-                                            thumb,
-                                            viewModel = viewModel,
-                                            modifier = Modifier.size(tileSize),
-                                        )
-                                    }
-
-                                    // Add spacers to align the last row
-                                    repeat(columnCount - row.size) {
-                                        Spacer(modifier = Modifier.size(tileSize))
-                                    }
-                                }
+                                        Modifier.padding(4.dp) // Spacing between items
+                                            .aspectRatio(1f), // Force Square
+                                    showLabel = false,
+                                )
                             }
+                        }
+                    }
+
+                    is CategoryWallpapersItemViewModel.ThumbnailsViewModelCategory -> {
+                        item {
+                            ThumbnailCard(
+                                item,
+                                viewModel = viewModel,
+                                modifier = Modifier.padding(4.dp).aspectRatio(1f),
+                            )
                         }
                     }
                 }
@@ -341,15 +298,57 @@ fun WallpapersScreenContent(
 }
 
 @Composable
+fun rememberColumnCount(): Int {
+    val configuration = LocalConfiguration.current
+    val windowWidthDp = configuration.screenWidthDp
+
+    return if (windowWidthDp < WallpaperGridConfig.COLUMN_THRESHOLD_DP) {
+        WallpaperGridConfig.COLUMNS_COMPACT
+    } else {
+        WallpaperGridConfig.COLUMNS_WIDE
+    }
+}
+
+@Composable
+fun SecondaryHeader(
+    title: String,
+    isExpanded: Boolean,
+    isNewUi: Boolean,
+    onToggle: () -> Unit,
+    horizontalPadding: Dp,
+    modifier: Modifier = Modifier,
+) {
+    if (isNewUi) {
+        Row(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .clickable { onToggle() }
+                    .padding(start = horizontalPadding, end = 10.dp, top = 12.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(text = title, fontWeight = FontWeight.W500, fontSize = 16.sp)
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_forward_24px),
+                contentDescription = null,
+                modifier = Modifier.rotate(if (isExpanded) 90f else 0f),
+            )
+        }
+    } else {
+        SectionLabel(title, Modifier.padding(start = horizontalPadding))
+    }
+}
+
+@Composable
 fun SectionLabel(text: String, modifier: Modifier) {
     val colorScheme = MaterialTheme.colorScheme
     Text(
         text = text,
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         fontSize = 16.sp,
         lineHeight = 15.sp,
         color = colorScheme.onSurface,
-        textAlign = TextAlign.Center,
+        textAlign = TextAlign.Start,
         fontWeight = FontWeight.W500,
     )
 }
@@ -359,7 +358,7 @@ fun TopToolbar(
     title: String,
     isRotationEnabled: Boolean,
     startRotation: (() -> Unit)?,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     val activity = LocalActivity.current as ComponentActivity
     val colorScheme = MaterialTheme.colorScheme
@@ -484,9 +483,9 @@ fun ThumbnailCard(
     Card(
         modifier = modifier.testTag(THUMBNAIL_TEST_TAG),
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.grid_item_all_radius_small)),
-        elevation = CardDefaults.cardElevation(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Box(modifier = modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
             AssetImageView(
                 thumbnail = thumbnail,
                 viewModel = viewModel,
@@ -588,15 +587,14 @@ fun AssetImageView(
         )
 
     AndroidView(
-        factory = { context ->
-            ImageView(context).apply {
+        factory = { ctx ->
+            ImageView(ctx).apply {
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 layoutParams =
                     ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                     )
-                contentDescription = thumbnail.contentDescription ?: ""
             }
         },
         update = { imageView ->
