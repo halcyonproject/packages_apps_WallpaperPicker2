@@ -616,12 +616,15 @@ class CustomizationPickerFragment2 :
         pickerMotionContainer
             .getConstraintSet(R.id.collapsed_header_primary)
             ?.constrainHeight(R.id.preview_header, collapsedHeaderHeight)
-        // For expanded, it needs to show at least half of the entry view below the wallpaper entry.
-        val expandedHeaderHeight =
+        // For expanded, it needs to show at least one and a half of the entry view below the
+        // wallpaper entry.
+        val expandedHeaderHeight: Int =
             (pickerMotionContainer.height -
                     wallpaperPickerEntryExpandedHeight -
                     bottomInset -
-                    resources.getDimensionPixelSize(R.dimen.customization_option_entry_height) / 2)
+                    resources.getDimensionPixelSize(R.dimen.customization_option_entry_height) *
+                        1.5f)
+                .toInt()
                 .coerceAtMost(maxExpandedPagerHeight)
                 .coerceAtLeast(minExpandedPagerHeight)
         pickerMotionContainer
