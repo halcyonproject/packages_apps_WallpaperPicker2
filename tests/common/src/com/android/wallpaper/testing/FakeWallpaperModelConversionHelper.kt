@@ -33,6 +33,10 @@ class FakeWallpaperModelConversionHelper @Inject constructor() : WallpaperModelC
         return TestAsset(COLOR_DEFAULT, /* isCorrupt= */ false)
     }
 
+    override fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
+        return false
+    }
+
     companion object {
         private const val COLOR_DEFAULT: Int = 0xff000000.toInt()
     }

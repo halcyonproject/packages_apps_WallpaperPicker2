@@ -38,4 +38,8 @@ class DefaultWallpaperModelConversionHelper @Inject constructor() : WallpaperMod
     ): Asset {
         return LiveWallpaperThumbAsset(context, wallpaperInfo)
     }
+
+    override fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
+        return false
+    }
 }
