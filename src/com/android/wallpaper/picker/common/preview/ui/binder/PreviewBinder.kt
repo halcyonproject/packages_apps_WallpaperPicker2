@@ -65,6 +65,7 @@ import com.android.wallpaper.util.SurfaceViewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import com.android.wallpaper.util.WallpaperCropUtils
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
+import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils.Companion.shouldEnforceSingleEngine
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import java.lang.Integer.min
 import kotlin.coroutines.resume
@@ -106,7 +107,7 @@ object PreviewBinder {
                 applicationContext = applicationContext,
                 viewLifecycleOwner = viewLifecycleOwner,
                 previewTarget = PreviewTarget(LOCK_SCREEN, SINGLE),
-                displaySize = displaySizes.single,
+                displaySizes = displaySizes,
                 display = display,
                 hostToken = hostToken,
                 windowToken = windowToken,
@@ -125,7 +126,7 @@ object PreviewBinder {
                 applicationContext = applicationContext,
                 viewLifecycleOwner = viewLifecycleOwner,
                 previewTarget = PreviewTarget(HOME_SCREEN, SINGLE),
-                displaySize = displaySizes.single,
+                displaySizes = displaySizes,
                 display = display,
                 hostToken = hostToken,
                 windowToken = windowToken,
@@ -166,7 +167,7 @@ object PreviewBinder {
                 applicationContext = applicationContext,
                 viewLifecycleOwner = viewLifecycleOwner,
                 previewTarget = PreviewTarget(LOCK_SCREEN, FOLDED),
-                displaySize = displaySizes.folded,
+                displaySizes = displaySizes,
                 display = display,
                 hostToken = hostToken,
                 windowToken = windowToken,
@@ -184,7 +185,7 @@ object PreviewBinder {
                 applicationContext = applicationContext,
                 viewLifecycleOwner = viewLifecycleOwner,
                 previewTarget = PreviewTarget(LOCK_SCREEN, UNFOLDED),
-                displaySize = displaySizes.unfolded,
+                displaySizes = displaySizes,
                 display = display,
                 hostToken = hostToken,
                 windowToken = windowToken,
@@ -203,7 +204,7 @@ object PreviewBinder {
                 applicationContext = applicationContext,
                 viewLifecycleOwner = viewLifecycleOwner,
                 previewTarget = PreviewTarget(HOME_SCREEN, FOLDED),
-                displaySize = displaySizes.folded,
+                displaySizes = displaySizes,
                 display = display,
                 hostToken = hostToken,
                 windowToken = windowToken,
@@ -221,7 +222,7 @@ object PreviewBinder {
                 applicationContext = applicationContext,
                 viewLifecycleOwner = viewLifecycleOwner,
                 previewTarget = PreviewTarget(HOME_SCREEN, UNFOLDED),
-                displaySize = displaySizes.unfolded,
+                displaySizes = displaySizes,
                 display = display,
                 hostToken = hostToken,
                 windowToken = windowToken,
@@ -242,7 +243,7 @@ object PreviewBinder {
         applicationContext: Context,
         viewLifecycleOwner: LifecycleOwner,
         previewTarget: PreviewTarget,
-        displaySize: Point,
+        displaySizes: DisplaySizes,
         display: Display,
         hostToken: IBinder,
         windowToken: IBinder,
@@ -265,6 +266,7 @@ object PreviewBinder {
 
         // Set fixed size as the size of the correspondent display, which is the largest size a
         // preview is expected to expand. So that we will not lose image resolution when expanding.
+        val displaySize: Point = displaySizes.getDisplaySize(previewTarget.deviceDisplayType)
         preview.holder.setFixedSize(displaySize.x, displaySize.y)
         // Make surface view's lifecycle follows attach and detach, instead of visibility
         preview.setSurfaceLifecycle(SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT)
@@ -276,16 +278,17 @@ object PreviewBinder {
                         val (wallpaper, whichPreview) = smallWallpaper
 
                         if (wallpaper is LiveWallpaperModel) {
-                            // TODO (b/423956081): Figure out when we need to force single engine.
-                            //                     We may use wallpaper.shouldEnforceSingleEngine()
-                            val forceSingleEngine = true
-
+                            val forceSingleEngine = wallpaper.shouldEnforceSingleEngine()
                             val liveWallpaperSurfaceControl: WallpaperSurfaceControl.Live? =
                                 renderLiveWallpaperPreview(
                                     context = applicationContext,
                                     wallpaperModel = wallpaper,
                                     forceSingleEngine = forceSingleEngine,
-                                    displaySize = displaySize,
+                                    engineDisplaySize =
+                                        displaySizes.getEngineDisplaySize(
+                                            displayType = previewTarget.deviceDisplayType,
+                                            forceSingleEngine = forceSingleEngine,
+                                        ),
                                     whichPreview = whichPreview,
                                     windowToken = windowToken,
                                     destinationFlag = previewTarget.screen.toFlag(),
@@ -401,7 +404,7 @@ object PreviewBinder {
         context: Context,
         wallpaperModel: LiveWallpaperModel,
         forceSingleEngine: Boolean,
-        displaySize: Point,
+        engineDisplaySize: Point,
         whichPreview: WhichPreview,
         windowToken: IBinder,
         destinationFlag: Int,
@@ -416,7 +419,7 @@ object PreviewBinder {
                 wallpaperModel = wallpaperModel,
                 forceSingleEngine = forceSingleEngine,
                 destinationFlag = destinationFlag,
-                displaySize = displaySize,
+                engineDisplaySize = engineDisplaySize,
                 windowToken = windowToken,
                 displayId = 0, // TODO(b/423956081): give a proper ID here
                 whichPreview = whichPreview,
