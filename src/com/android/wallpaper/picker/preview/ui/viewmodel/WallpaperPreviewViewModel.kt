@@ -102,7 +102,34 @@ constructor(
     data class PreviewAlpha(val alpha: Float, val shouldAnimate: Boolean)
 
     /** Data class containing the display size for single, folded and unfolded screens. */
-    data class DisplaySizes(val single: Point, val folded: Point, val unfolded: Point)
+    data class DisplaySizes(val single: Point, val folded: Point, val unfolded: Point) {
+
+        /** Get display size according to [DeviceDisplayType] */
+        fun getDisplaySize(displayType: DeviceDisplayType): Point {
+            return when (displayType) {
+                SINGLE -> single
+                FOLDED -> folded
+                UNFOLDED -> unfolded
+            }
+        }
+
+        /**
+         * Get engine display size for rendering live wallpapers.
+         *
+         * @param forceSingleEngine In the case of forcing single engine, always use the larger
+         *   display size to render the preview that covers all displays.
+         */
+        fun getEngineDisplaySize(
+            displayType: DeviceDisplayType,
+            forceSingleEngine: Boolean,
+        ): Point {
+            return when (displayType) {
+                SINGLE -> single
+                FOLDED -> if (forceSingleEngine) unfolded else folded
+                UNFOLDED -> unfolded
+            }
+        }
+    }
 
     /** Data class encapsulating [Screen] and [DeviceDisplayType] */
     data class PreviewTarget(val screen: Screen, val deviceDisplayType: DeviceDisplayType)
