@@ -55,8 +55,10 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.theme.PlatformTheme
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.FOLDED
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.SINGLE
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.UNFOLDED
@@ -64,6 +66,7 @@ import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.common.preview.ui.binder.PreviewBinder
 import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.preview.ui.util.AnimationUtil
 import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScene
 import com.android.wallpaper.picker.preview.ui.view.FullWallpaperPreviewScene
 import com.android.wallpaper.picker.preview.ui.view.SmallWallpaperPreviewScene
@@ -199,6 +202,8 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                     "refactor_wallpaper_preview_screen_flag is turned on."
             )
         }
+        exitTransition = AnimationUtil.getFastFadeOutTransition()
+        reenterTransition = AnimationUtil.getFastFadeInTransition()
     }
 
     override fun onCreateView(
@@ -336,6 +341,14 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
     override fun onDestroyView() {
         previewBindings?.forEach { it.releasePreview() }
         previewBindings = null
+        Screen.entries.forEach { screen ->
+            DeviceDisplayType.entries.forEach { deviceDisplayType ->
+                wallpaperPreviewViewModel.setPreviewReady2(
+                    PreviewTarget(screen, deviceDisplayType),
+                    false,
+                )
+            }
+        }
         super.onDestroyView()
     }
 
