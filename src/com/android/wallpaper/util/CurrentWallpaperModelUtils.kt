@@ -274,8 +274,8 @@ object CurrentWallpaperModelUtils {
                         isNewCreativeWallpaper = false,
                     )
                 } else null,
-            // TODO(b/452460147): Add internalLiveWallpaperData
-            internalLiveWallpaperData = null,
+            internalLiveWallpaperData =
+                entryPoint.getWallpaperModelConversionHelper().getInternalLiveWallpaperData(),
         )
     }
 

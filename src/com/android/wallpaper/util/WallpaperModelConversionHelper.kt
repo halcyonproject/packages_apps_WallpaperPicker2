@@ -20,6 +20,7 @@ import android.app.WallpaperInfo
 import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import com.android.wallpaper.asset.Asset
+import com.android.wallpaper.picker.data.InternalLiveWallpaperData
 import com.android.wallpaper.picker.data.WallpaperModel
 
 /**
@@ -29,8 +30,9 @@ import com.android.wallpaper.picker.data.WallpaperModel
 interface WallpaperModelConversionHelper {
     fun getLiveWallpaperThumbAssets(context: Context, wallpaperInfo: WallpaperInfo): Asset
 
-    /**
-     * Returns true if the wallpaper is a creative wallpaper.
-     */
+    /** Returns true if the wallpaper is a creative wallpaper. */
     fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean
+
+    /** Creates the [InternalLiveWallpaperData] for the given [WallpaperModel]. */
+    fun getInternalLiveWallpaperData(): InternalLiveWallpaperData?
 }

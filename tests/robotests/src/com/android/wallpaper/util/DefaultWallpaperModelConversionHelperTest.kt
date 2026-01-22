@@ -71,4 +71,8 @@ class DefaultWallpaperModelConversionHelperTest {
         assertThat(wallpaperModelConversionHelper.isCreative(context, wallpaperInfo)).isFalse()
     }
 
+    @Test
+    fun getInternalLiveWallpaperData_returnsNull() {
+        assertThat(wallpaperModelConversionHelper.getInternalLiveWallpaperData()).isNull()
+    }
 }
