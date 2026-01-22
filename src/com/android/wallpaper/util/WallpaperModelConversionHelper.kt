@@ -28,4 +28,9 @@ import com.android.wallpaper.picker.data.WallpaperModel
  */
 interface WallpaperModelConversionHelper {
     fun getLiveWallpaperThumbAssets(context: Context, wallpaperInfo: WallpaperInfo): Asset
+
+    /**
+     * Returns true if the wallpaper is a creative wallpaper.
+     */
+    fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean
 }

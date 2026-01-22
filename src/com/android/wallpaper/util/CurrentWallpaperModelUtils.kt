@@ -280,8 +280,8 @@ object CurrentWallpaperModelUtils {
     }
 
     private fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
-        // TODO(b/452460147) Handle creative wallpaper.
-        return false
+        val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
+        return entryPoint.getWallpaperModelConversionHelper().isCreative(context, wallpaperInfo)
     }
 
     private fun getLiveWallpaperAttributions(
