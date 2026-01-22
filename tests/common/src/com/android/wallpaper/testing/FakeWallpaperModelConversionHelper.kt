@@ -27,6 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class FakeWallpaperModelConversionHelper @Inject constructor() : WallpaperModelConversionHelper {
 
+    var isCreative: Boolean = false
+
     override fun getLiveWallpaperThumbAssets(
         context: Context,
         wallpaperInfo: WallpaperInfo,
@@ -34,11 +36,13 @@ class FakeWallpaperModelConversionHelper @Inject constructor() : WallpaperModelC
         return TestAsset(COLOR_DEFAULT, /* isCorrupt= */ false)
     }
 
-    override fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
-        return false
+    override fun isCreative(wallpaperInfo: WallpaperInfo): Boolean {
+        return isCreative
     }
 
-    override fun getInternalLiveWallpaperData(): InternalLiveWallpaperData? {
+    override fun getInternalLiveWallpaperData(
+        wallpaperInfo: WallpaperInfo
+    ): InternalLiveWallpaperData? {
         return null
     }
 

@@ -68,11 +68,14 @@ class DefaultWallpaperModelConversionHelperTest {
     fun isCreative_alwaysReturnsFalse() {
         val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context)
 
-        assertThat(wallpaperModelConversionHelper.isCreative(context, wallpaperInfo)).isFalse()
+        assertThat(wallpaperModelConversionHelper.isCreative(wallpaperInfo)).isFalse()
     }
 
     @Test
-    fun getInternalLiveWallpaperData_returnsNull() {
-        assertThat(wallpaperModelConversionHelper.getInternalLiveWallpaperData()).isNull()
+    fun getInternalLiveWallpaperData_alwaysReturnsNull() {
+        val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+
+        assertThat(wallpaperModelConversionHelper.getInternalLiveWallpaperData(wallpaperInfo))
+            .isNull()
     }
 }

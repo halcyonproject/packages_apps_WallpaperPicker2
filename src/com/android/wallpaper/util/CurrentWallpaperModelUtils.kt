@@ -31,8 +31,10 @@ import androidx.annotation.VisibleForTesting
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
+import com.android.wallpaper.module.CreativeHelper
 import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.picker.customization.data.content.WallpaperClient
+import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
 import com.android.wallpaper.picker.data.ColorInfo
 import com.android.wallpaper.picker.data.CommonWallpaperData
 import com.android.wallpaper.picker.data.CreativeWallpaperData
@@ -214,6 +216,12 @@ object CurrentWallpaperModelUtils {
             } else {
                 Destination.APPLIED_TO_LOCK
             }
+        val destinationForCreativeHelper: WallpaperDestination =
+            if (wallpaperManagerDestinationFlag == WallpaperManager.FLAG_SYSTEM) {
+                WallpaperDestination.HOME
+            } else {
+                WallpaperDestination.LOCK
+            }
         return WallpaperModel.LiveWallpaperModel(
             commonWallpaperData =
                 CommonWallpaperData(
@@ -237,7 +245,6 @@ object CurrentWallpaperModelUtils {
                 ),
             liveWallpaperData =
                 LiveWallpaperData(
-                    // TODO(b/452460147): Add group name for creative wallpaper
                     groupName = "",
                     systemWallpaperInfo = wallpaperInfo,
                     isTitleVisible = !isCreative(context, wallpaperInfo),
@@ -257,17 +264,23 @@ object CurrentWallpaperModelUtils {
                             false,
                         ) ?: false,
                 ),
-            // TODO(b/452460147): Add creativeWallpaperData
             creativeWallpaperData =
                 if (isCreative(context, wallpaperInfo)) {
                     CreativeWallpaperData(
-                        configPreviewUri = null,
+                        configPreviewUri =
+                            entryPoint
+                                .getCreativeHelper()
+                                .getCreativePreviewUri(
+                                    context,
+                                    wallpaperInfo,
+                                    destinationForCreativeHelper,
+                                ),
                         cleanPreviewUri = null,
                         deleteUri = null,
                         thumbnailUri = null,
                         shareUri = null,
-                        author = "author",
-                        description = "description",
+                        author = "",
+                        description = "",
                         contentDescription = null,
                         isCurrent = true,
                         creativeWallpaperEffectsData = null,
@@ -275,13 +288,15 @@ object CurrentWallpaperModelUtils {
                     )
                 } else null,
             internalLiveWallpaperData =
-                entryPoint.getWallpaperModelConversionHelper().getInternalLiveWallpaperData(),
+                entryPoint
+                    .getWallpaperModelConversionHelper()
+                    .getInternalLiveWallpaperData(wallpaperInfo),
         )
     }
 
     private fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
-        return entryPoint.getWallpaperModelConversionHelper().isCreative(context, wallpaperInfo)
+        return entryPoint.getWallpaperModelConversionHelper().isCreative(wallpaperInfo)
     }
 
     private fun getLiveWallpaperAttributions(
@@ -363,5 +378,7 @@ object CurrentWallpaperModelUtils {
         fun getWallpaperStatusChecker(): WallpaperStatusChecker
 
         fun getWallpaperModelConversionHelper(): WallpaperModelConversionHelper
+
+        fun getCreativeHelper(): CreativeHelper
     }
 }
