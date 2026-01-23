@@ -28,13 +28,17 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Keeps references of the connections created when rendering a live wallpapers, so that they can
- * later be cleaned up when needed.
+ * A wrapper for [IWallpaperEngine], [ServiceConnection], and [IWallpaperService] references created
+ * during live wallpaper rendering.
  *
- * [LiveWallpaperConnections] is only used when the flag refactor_wallpaper_preview_screen_flag is
- * turned on and should be gated with the flag.
+ * This class ensures that these components can be properly cleaned up and disconnected when no
+ * longer needed. Each [LiveWallpaperConnection] instance should maintain a 1:1 mapping with its
+ * respective engine, connection, and service.
+ *
+ * Note that this class is only intended for use when the wallpaper preview refactor flag is
+ * enabled. Use should be gated by [BaseFlags.isRefactorWallpaperPreviewScreenEnabled].
  */
-data class LiveWallpaperConnections(
+data class LiveWallpaperConnection(
     val context: Context,
     val wallpaperEngine: WeakReference<IWallpaperEngine>,
     val serviceConnection: WeakReference<ServiceConnection>,
@@ -46,7 +50,7 @@ data class LiveWallpaperConnections(
     init {
         if (!BaseFlags.get(context).isRefactorWallpaperPreviewScreenEnabled()) {
             throw IllegalStateException(
-                "LiveWallpaperConnections can only be used when " +
+                "LiveWallpaperConnection can only be used when " +
                     "refactor_wallpaper_preview_screen_flag is turned on."
             )
         }
@@ -99,6 +103,6 @@ data class LiveWallpaperConnections(
     }
 
     companion object {
-        const val TAG = "LiveWallpaperConnections"
+        const val TAG = "LiveWallpaperConnection"
     }
 }
