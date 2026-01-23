@@ -32,7 +32,7 @@ class FakeCreativeHelper @Inject constructor() : CreativeHelper {
         info: WallpaperInfo,
         destination: WallpaperDestination,
     ): Uri? {
-        TODO("Not yet implemented")
+        return Uri.parse("content://fake_creative_preview_uri")
     }
 
     fun setCreativeDescription(
