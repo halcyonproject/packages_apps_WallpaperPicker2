@@ -63,4 +63,16 @@ class DefaultWallpaperModelConversionHelperTest {
         assertThat(asset).isNotNull()
         assertThat(asset).isInstanceOf(LiveWallpaperThumbAsset::class.java)
     }
+
+    @Test
+    fun isCreative_alwaysReturnsFalse() {
+        val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+
+        assertThat(wallpaperModelConversionHelper.isCreative(context, wallpaperInfo)).isFalse()
+    }
+
+    @Test
+    fun getInternalLiveWallpaperData_returnsNull() {
+        assertThat(wallpaperModelConversionHelper.getInternalLiveWallpaperData()).isNull()
+    }
 }

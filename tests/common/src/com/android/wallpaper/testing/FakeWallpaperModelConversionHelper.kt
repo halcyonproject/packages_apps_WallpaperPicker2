@@ -19,6 +19,7 @@ package com.android.wallpaper.testing
 import android.app.WallpaperInfo
 import android.content.Context
 import com.android.wallpaper.asset.Asset
+import com.android.wallpaper.picker.data.InternalLiveWallpaperData
 import com.android.wallpaper.util.WallpaperModelConversionHelper
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,6 +32,14 @@ class FakeWallpaperModelConversionHelper @Inject constructor() : WallpaperModelC
         wallpaperInfo: WallpaperInfo,
     ): Asset {
         return TestAsset(COLOR_DEFAULT, /* isCorrupt= */ false)
+    }
+
+    override fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
+        return false
+    }
+
+    override fun getInternalLiveWallpaperData(): InternalLiveWallpaperData? {
+        return null
     }
 
     companion object {
