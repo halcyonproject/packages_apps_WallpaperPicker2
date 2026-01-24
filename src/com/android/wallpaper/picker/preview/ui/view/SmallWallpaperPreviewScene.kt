@@ -18,6 +18,7 @@ package com.android.wallpaper.picker.preview.ui.view
 
 import android.content.Intent
 import android.view.SurfaceView
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -338,7 +339,7 @@ private fun SmallPreviewTopToolbar(
         viewModel.isSetWallpaperButtonVisible.collectAsStateWithLifecycle(false)
     val onNextButtonClicked: (() -> Unit)? by
         viewModel.onNextButtonClicked.collectAsStateWithLifecycle(null)
-
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -352,7 +353,7 @@ private fun SmallPreviewTopToolbar(
         ) {
             IconButton(
                 modifier = Modifier.size(40.dp),
-                onClick = {},
+                onClick = { backDispatcher?.onBackPressed() },
                 colors =
                     IconButtonDefaults.iconButtonColors(
                         containerColor = colorScheme.surfaceContainerHighest

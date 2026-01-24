@@ -28,14 +28,16 @@ import androidx.test.core.app.ApplicationProvider
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.module.InjectorProvider
+import com.android.wallpaper.module.WallpaperStatusChecker
+import com.android.wallpaper.picker.data.CreativeWallpaperData
 import com.android.wallpaper.picker.data.Destination
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.testing.FakeWallpaperModelConversionHelper
 import com.android.wallpaper.testing.ShadowWallpaperInfo
 import com.android.wallpaper.testing.TestAsset
 import com.android.wallpaper.testing.TestInjector
-import com.android.wallpaper.testing.WallpaperInfoUtils
 import com.android.wallpaper.testing.TestWallpaperStatusChecker
-import com.android.wallpaper.module.WallpaperStatusChecker
+import com.android.wallpaper.testing.WallpaperInfoUtils
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -61,6 +63,7 @@ class CurrentWallpaperModelUtilsTest {
 
     @Inject lateinit var testInjector: TestInjector
     @Inject lateinit var wallpaperStatusChecker: WallpaperStatusChecker
+    @Inject lateinit var wallpaperModelConversionHelper: WallpaperModelConversionHelper
 
     @Mock lateinit var wallpaperManager: WallpaperManager
 
@@ -310,5 +313,45 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(wallpaperModel.liveWallpaperData.systemWallpaperInfo).isEqualTo(sourceInfo)
         assertThat(wallpaperModel.liveWallpaperData.isTitleVisible).isTrue()
         assertThat(wallpaperModel.liveWallpaperData.isApplied).isTrue()
+        assertThat(wallpaperModel.creativeWallpaperData).isNull()
+    }
+
+    @Test
+    fun createLiveWallpaperModelFromWallpaperInstance_creative_applyToHome() {
+        (wallpaperModelConversionHelper as FakeWallpaperModelConversionHelper).isCreative = true
+        val sourceInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+        val sourceDescription =
+            WallpaperDescription.Builder()
+                .setId("id")
+                .setComponent(sourceInfo.component)
+                .setContent(
+                    PersistableBundle().apply {
+                        putString("picker_metadata_collection_id", "collectionId")
+                    }
+                )
+                .build()
+        val sourceInstance = WallpaperInstance(sourceInfo, sourceDescription)
+
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createCurrentLiveWallpaperModelFromInstance(
+                context,
+                sourceInstance,
+                WallpaperManager.FLAG_SYSTEM,
+            ) as WallpaperModel.LiveWallpaperModel
+
+        assertThat(wallpaperModel.creativeWallpaperData).isNotNull()
+        val creativeWallpaperData: CreativeWallpaperData = wallpaperModel.creativeWallpaperData!!
+        assertThat(creativeWallpaperData.configPreviewUri.toString())
+            .isEqualTo("content://fake_creative_preview_uri")
+        assertThat(creativeWallpaperData.cleanPreviewUri).isNull()
+        assertThat(creativeWallpaperData.deleteUri).isNull()
+        assertThat(creativeWallpaperData.thumbnailUri).isNull()
+        assertThat(creativeWallpaperData.shareUri).isNull()
+        assertThat(creativeWallpaperData.author).isEmpty()
+        assertThat(creativeWallpaperData.description).isEmpty()
+        assertThat(creativeWallpaperData.contentDescription).isNull()
+        assertThat(creativeWallpaperData.isCurrent).isTrue()
+        assertThat(creativeWallpaperData.creativeWallpaperEffectsData).isNull()
+        assertThat(creativeWallpaperData.isNewCreativeWallpaper).isFalse()
     }
 }

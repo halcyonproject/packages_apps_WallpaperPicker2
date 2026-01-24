@@ -31,8 +31,8 @@ interface WallpaperModelConversionHelper {
     fun getLiveWallpaperThumbAssets(context: Context, wallpaperInfo: WallpaperInfo): Asset
 
     /** Returns true if the wallpaper is a creative wallpaper. */
-    fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean
+    fun isCreative(wallpaperInfo: WallpaperInfo): Boolean
 
     /** Creates the [InternalLiveWallpaperData] for the given [WallpaperModel]. */
-    fun getInternalLiveWallpaperData(): InternalLiveWallpaperData?
+    fun getInternalLiveWallpaperData(wallpaperInfo: WallpaperInfo): InternalLiveWallpaperData?
 }

@@ -70,7 +70,7 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
         wallpaperModel: LiveWallpaperModel,
         forceSingleEngine: Boolean,
         destinationFlag: Int,
-        displaySize: Point,
+        engineDisplaySize: Point,
         windowToken: IBinder,
         displayId: Int,
         whichPreview: WhichPreview,
@@ -78,49 +78,37 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
         onWallpaperColorsChanged:
             (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): IWallpaperEngine {
-        // When forcing single engine, we will use mutex lock to first check if the engine is
-        // created and cached in liveWallpaperEngines; otherwise, create one and cache it in
-        // liveWallpaperEngines.
-        if (forceSingleEngine) {
-            val connectionKey = wallpaperModel.getConnectionKey()
-
-            return mutex.withLock {
-                val existingEngine = liveWallpaperEngines[connectionKey]
-                if (existingEngine != null) {
-                    onEngineReady.invoke(existingEngine)
-                    return@withLock existingEngine // Found it, return immediately
-                }
-
-                val newEngine =
-                    bindWallpaperServiceAndCreateEngine(
-                        context = context,
-                        wallpaperModel = wallpaperModel,
-                        destinationFlag = destinationFlag,
-                        displaySize = displaySize,
-                        windowToken = windowToken,
-                        displayId = displayId,
-                        whichPreview = whichPreview,
-                        onEngineCreated = onEngineReady,
-                        onWallpaperColorsChanged = onWallpaperColorsChanged,
-                    )
-
-                liveWallpaperEngines[connectionKey] = newEngine
-
-                return@withLock newEngine
+        val engineKey: String =
+            getEngineKey(
+                forceSingleEngine = forceSingleEngine,
+                wallpaperModel = wallpaperModel,
+                destinationFlag = destinationFlag,
+                engineDisplaySize = engineDisplaySize,
+            )
+        return mutex.withLock {
+            val existingEngine = liveWallpaperEngines[engineKey]
+            if (existingEngine != null) {
+                onEngineReady.invoke(existingEngine)
+                return@withLock existingEngine // Found it, return immediately
             }
-        }
 
-        return bindWallpaperServiceAndCreateEngine(
-            context = context,
-            wallpaperModel = wallpaperModel,
-            destinationFlag = destinationFlag,
-            displaySize = displaySize,
-            windowToken = windowToken,
-            displayId = displayId,
-            whichPreview = whichPreview,
-            onEngineCreated = onEngineReady,
-            onWallpaperColorsChanged = onWallpaperColorsChanged,
-        )
+            val newEngine =
+                bindWallpaperServiceAndCreateEngine(
+                    context = context,
+                    wallpaperModel = wallpaperModel,
+                    destinationFlag = destinationFlag,
+                    displaySize = engineDisplaySize,
+                    windowToken = windowToken,
+                    displayId = displayId,
+                    whichPreview = whichPreview,
+                    onEngineCreated = onEngineReady,
+                    onWallpaperColorsChanged = onWallpaperColorsChanged,
+                )
+
+            liveWallpaperEngines[engineKey] = newEngine
+
+            return@withLock newEngine
+        }
     }
 
     private suspend fun bindWallpaperServiceAndCreateEngine(
@@ -178,9 +166,27 @@ class LiveWallpaperConnectionUtils @Inject constructor(@ApplicationContext conte
         return engine
     }
 
-    private fun LiveWallpaperModel.getConnectionKey(): String {
-        val wallpaperInfo: WallpaperInfo = liveWallpaperData.systemWallpaperInfo
-        val description: WallpaperDescription = liveWallpaperData.description
-        return "${wallpaperInfo.packageName}:${wallpaperInfo.serviceName}:${description.id}"
+    /**
+     * Generates a unique key for an engine instance.
+     *
+     * @param forceSingleEngine If true, creates a global key for the wallpaper, ensuring only one
+     *   engine is instantiated regardless of where it is displayed. If false, the key includes
+     *   [destinationFlag] and [engineDisplaySize] to allow separate engine instances for different
+     *   display contexts (e.g., home vs. lock screen).
+     * @return A unique string key used to identify and cache the wallpaper engine.
+     */
+    private fun getEngineKey(
+        forceSingleEngine: Boolean,
+        wallpaperModel: LiveWallpaperModel,
+        destinationFlag: Int,
+        engineDisplaySize: Point,
+    ): String {
+        val wallpaperInfo: WallpaperInfo = wallpaperModel.liveWallpaperData.systemWallpaperInfo
+        val description: WallpaperDescription = wallpaperModel.liveWallpaperData.description
+        val engineDisplaySizeString = "${engineDisplaySize.x}x${engineDisplaySize.y}"
+        return if (forceSingleEngine)
+            "${wallpaperInfo.packageName}:${wallpaperInfo.serviceName}:${description.id}"
+        else
+            "${wallpaperInfo.packageName}:${wallpaperInfo.serviceName}:${description.id}:${destinationFlag}:$engineDisplaySizeString"
     }
 }
