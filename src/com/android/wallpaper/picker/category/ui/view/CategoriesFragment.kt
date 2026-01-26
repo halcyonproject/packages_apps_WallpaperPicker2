@@ -32,6 +32,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -87,6 +88,8 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
     @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
     private lateinit var photoPickerLauncher: ActivityResultLauncher<Intent>
     private lateinit var extendedWallpaperEffectsLauncher: ActivityResultLauncher<Intent>
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+    private var shouldNavigateToExtendedWallpaperEffectsFromPhotoPicker = false
 
     // TODO: this may need to be scoped to fragment if the architecture changes
     private val categoriesViewModel by activityViewModels<CategoriesViewModel>()
@@ -129,6 +132,24 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                     wallpaperModel = wallpaperModel,
                     isCreativeCategories = false,
                     shouldNavigateToExtendedWallpaperEffects = true,
+                    setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+                )
+            }
+
+        pickMedia =
+            registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                if (uri == null) {
+                    return@registerForActivityResult
+                }
+                val imageWallpaperInfo = ImageWallpaperInfo(uri)
+                val context = context ?: return@registerForActivityResult
+                val wallpaperModel =
+                    wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
+                startPreviewActivity(
+                    wallpaperModel = wallpaperModel,
+                    isCreativeCategories = false,
+                    shouldNavigateToExtendedWallpaperEffects =
+                        shouldNavigateToExtendedWallpaperEffectsFromPhotoPicker,
                     setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
                 )
             }
@@ -277,17 +298,12 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         shouldNavigateToExtendedWallpaperEffects: Boolean,
         callback: (() -> Unit)?,
     ) {
-        if (BaseFlags.get(requireContext()).isPhotoPickerEnabled()) {
-            parentFragmentManager.commit {
-                replace(
-                    R.id.fragment_container,
-                    PhotoPickerFragment.newInstance(
-                        shouldNavigateToExtendedWallpaperEffects =
-                            shouldNavigateToExtendedWallpaperEffects
-                    ),
-                )
-                addToBackStack(null)
-            }
+        if (BaseFlags.get(requireContext()).isEnableAndroidPhotoPicker()) {
+            shouldNavigateToExtendedWallpaperEffectsFromPhotoPicker =
+                shouldNavigateToExtendedWallpaperEffects
+            pickMedia.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
         } else {
             // make call to permission handler to grab photos and pass callback
             myPhotosStarterImpl.requestCustomPhotoPicker(
