@@ -595,6 +595,7 @@ fun AssetImageView(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                     )
+                contentDescription = thumbnail.contentDescription ?: ""
             }
         },
         update = { imageView ->
