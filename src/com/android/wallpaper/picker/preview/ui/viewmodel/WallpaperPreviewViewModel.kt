@@ -198,6 +198,14 @@ constructor(
             accumulator.second to currentValue
         }
 
+    // Only read when `refactor_wallpaper_preview_screen_flag` is active.
+    private val _shouldForceDesktopFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val shouldForceDesktopFullscreen: Flow<Boolean> = _shouldForceDesktopFullscreen.asStateFlow()
+
+    fun setShouldForceDesktopFullscreen(value: Boolean) {
+        _shouldForceDesktopFullscreen.value = value
+    }
+
     val shouldEnableClickOnPager: Flow<Boolean> =
         _currentPreviewScreen.map { it != PreviewScreen.FULL_PREVIEW }
 
