@@ -28,6 +28,7 @@ import com.android.wallpaper.Flags.collapsableReorderedAiWallpapersScreen
 import com.android.wallpaper.Flags.colorPickerUpdateFlag
 import com.android.wallpaper.Flags.composeRefactorFlag
 import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
+import com.android.wallpaper.Flags.enableAndroidPhotopicker
 import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.enableRecentWallpaperDeletion
 import com.android.wallpaper.Flags.enableRecentsDeletionViaProvider
@@ -96,6 +97,8 @@ abstract class BaseFlags {
     open fun isRefactorWallpaperPreviewScreenEnabled() = refactorWallpaperPreviewScreenFlag()
 
     open fun isRefactorWallpaperInfoFlag() = refactorWallpaperInfoFlag()
+
+    open fun isEnableAndroidPhotoPicker() = enableAndroidPhotopicker()
 
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
