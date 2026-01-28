@@ -133,3 +133,9 @@ flag {
 }
 
 
+flag {
+    name: "enable_effect_for_cat_smile"
+    namespace: "customization_picker"
+    description: "Enables effect for the cat smile project"
+    bug: "479401365"
+}
