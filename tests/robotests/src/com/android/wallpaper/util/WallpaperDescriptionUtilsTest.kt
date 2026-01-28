@@ -20,10 +20,15 @@ import android.app.WallpaperManager
 import android.app.wallpaper.WallpaperDescription
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.content.pm.ServiceInfo
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
 import android.os.PersistableBundle
+import android.service.wallpaper.WallpaperService
 import androidx.test.core.app.ApplicationProvider
 import com.android.wallpaper.testing.ShadowWallpaperInfo
 import com.android.wallpaper.testing.WallpaperInfoUtils
@@ -34,10 +39,12 @@ import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getPlaceHo
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getUniqueId
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.updateMetadata
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @Config(shadows = [ShadowWallpaperInfo::class])
@@ -201,5 +208,102 @@ class WallpaperDescriptionUtilsTest {
         assertThat(description.cropHints.contains(WallpaperManager.ORIENTATION_PORTRAIT)).isTrue()
         assertThat(description.cropHints.get(WallpaperManager.ORIENTATION_PORTRAIT))
             .isEqualTo(cropRect)
+    }
+
+    @Test
+    fun createWallpaperInfoFromDescription_succeeds() {
+        setupResolveInfo()
+        val componentName = ComponentName(PACKAGE_NAME, CLASS_NAME)
+        val wallpaperDescription =
+            WallpaperDescription.Builder().setComponent(componentName).build()
+
+        val wallpaperInfo =
+            WallpaperDescriptionUtils.createWallpaperInfoFromDescription(
+                context,
+                wallpaperDescription,
+            )
+
+        assertThat(wallpaperInfo.component).isEqualTo(componentName)
+    }
+
+    @Test
+    fun createWallpaperInfoFromDescription_emptyPackageName_succeeds() {
+        setupResolveInfo()
+        val componentName = ComponentName("", PACKAGE_NAME + "/" + CLASS_NAME)
+        val wallpaperDescription =
+            WallpaperDescription.Builder().setComponent(componentName).build()
+
+        val wallpaperInfo =
+            WallpaperDescriptionUtils.createWallpaperInfoFromDescription(
+                context,
+                wallpaperDescription,
+            )
+
+        assertThat(wallpaperInfo.component).isEqualTo(ComponentName(PACKAGE_NAME, CLASS_NAME))
+    }
+
+    @Test
+    fun createWallpaperInfoFromDescription_invalidComponentName_throwsException() {
+        setupResolveInfo()
+        val wallpaperDescription = WallpaperDescription.Builder().build()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            WallpaperDescriptionUtils.createWallpaperInfoFromDescription(
+                context,
+                wallpaperDescription,
+            )
+        }
+    }
+
+    @Test
+    fun createWallpaperInfoFromDescription_serviceNotFound_throwsException() {
+        val componentName = ComponentName(PACKAGE_NAME, CLASS_NAME)
+        val wallpaperDescription =
+            WallpaperDescription.Builder().setComponent(componentName).build()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            WallpaperDescriptionUtils.createWallpaperInfoFromDescription(
+                context,
+                wallpaperDescription,
+            )
+        }
+    }
+
+    @Test
+    fun createWallpaperInfoFromDescription_invalidServiceName_throwsException() {
+        setupResolveInfo()
+        val componentName = ComponentName("", "invalidName")
+        val wallpaperDescription =
+            WallpaperDescription.Builder().setComponent(componentName).build()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            WallpaperDescriptionUtils.createWallpaperInfoFromDescription(
+                context,
+                wallpaperDescription,
+            )
+        }
+    }
+
+    // Sets up the ResolveInfo for the given component name. This is needed for
+    // context.packageManager.queryIntentServices() to return the ResolveInfo
+    // for WallpaperInfo creation.
+    private fun setupResolveInfo() {
+        val componentName = ComponentName(PACKAGE_NAME, CLASS_NAME)
+        val resolveInfo =
+            ResolveInfo().apply {
+                serviceInfo = ServiceInfo()
+                serviceInfo.packageName = PACKAGE_NAME
+                serviceInfo.name = CLASS_NAME
+                serviceInfo.flags = PackageManager.GET_META_DATA
+            }
+        val pm = shadowOf(context.packageManager)
+        val intent =
+            Intent(WallpaperService.SERVICE_INTERFACE).apply { setComponent(componentName) }
+        pm.addResolveInfoForIntent(intent, resolveInfo)
+    }
+
+    companion object {
+        private const val PACKAGE_NAME = "package"
+        private const val CLASS_NAME = "class"
     }
 }

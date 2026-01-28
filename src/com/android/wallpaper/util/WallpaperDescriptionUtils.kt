@@ -16,15 +16,21 @@
 
 package com.android.wallpaper.util
 
+import android.app.WallpaperInfo
 import android.app.wallpaper.WallpaperDescription
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.PersistableBundle
+import android.text.TextUtils
 import androidx.core.net.toUri
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.updateMetadata
+import android.service.wallpaper.WallpaperService
 
 /**
  * Utilities for [WallpaperDescription], such as manipulating picker-specific metadata in the
@@ -74,6 +80,42 @@ class WallpaperDescriptionUtils {
 
         fun getEffects(content: PersistableBundle): String? {
             return content.getString(CONTENT_KEY_EFFECTS)
+        }
+
+        fun createWallpaperInfoFromDescription(
+            context: Context,
+            description: WallpaperDescription,
+        ): WallpaperInfo {
+            val componentName = description.component ?: throw IllegalArgumentException(
+                    "Must be valid live wallpaper, component name is null"
+                )
+            var packageName: String = componentName.packageName
+            var serviceName: String = componentName.className
+            if (TextUtils.isEmpty(packageName)) {
+                val parts : List<String> = serviceName.split("/")
+                if (parts != null && parts.size == 2) {
+                    packageName = parts[0]
+                    serviceName = parts[1]
+                } else {
+                    throw IllegalArgumentException(
+                        "Must be valid live wallpaper, service name is invalid"
+                    )
+                }
+            }
+            val intent: Intent = Intent(WallpaperService.SERVICE_INTERFACE)
+            intent.setClassName(packageName!!, serviceName)
+            val resolveInfos: List<ResolveInfo> =
+                context.packageManager.queryIntentServices(intent, PackageManager.GET_META_DATA)
+            if (resolveInfos.isEmpty()) {
+                throw IllegalArgumentException("Must be valid live wallpaper, service is not found")
+            }
+            try {
+                return WallpaperInfo(context, resolveInfos.get(0))
+            } catch (e: Exception) {
+                throw IllegalArgumentException(
+                    "Must be valid live wallpaper, failed to create WallpaperInfo"
+                )
+            }
         }
     }
 }
