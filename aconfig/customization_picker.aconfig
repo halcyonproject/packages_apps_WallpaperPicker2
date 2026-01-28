@@ -122,4 +122,14 @@ flag {
     bug: "475397703"
 }
 
+flag {
+    name: "enable_ai_clocks"
+    namespace: "customization_picker"
+    description: "Enables AI clocks functionality"
+    bug: "479587332"
+    metadata {
+            purpose: PURPOSE_FEATURE
+    }
+}
+
 
