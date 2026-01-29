@@ -229,7 +229,10 @@ object OptionItemBinder2 {
                             viewModel.onClicked.collect { onClicked ->
                                 view.setOnClickListener(
                                     if (onClicked != null) {
-                                        View.OnClickListener { onClicked.invoke() }
+                                        View.OnClickListener {
+                                            onClicked.invoke()
+                                            view.requestFocus()
+                                        }
                                     } else {
                                         null
                                     }
