@@ -64,6 +64,7 @@ import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.SurfaceViewUtils
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import com.android.wallpaper.util.WallpaperCropUtils
+import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnection
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils.Companion.shouldEnforceSingleEngine
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -413,7 +414,7 @@ object PreviewBinder {
         onWallpaperColorsChanged:
             (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): WallpaperSurfaceControl.Live? {
-        val engine =
+        val connection: LiveWallpaperConnection =
             liveWallpaperConnectionUtils.connect(
                 context = context,
                 wallpaperModel = wallpaperModel,
@@ -426,8 +427,8 @@ object PreviewBinder {
                 onEngineReady = onEngineReady,
                 onWallpaperColorsChanged = onWallpaperColorsChanged,
             )
-        return engine.mirrorSurfaceControl()?.let { surfaceControl ->
-            WallpaperSurfaceControl.Live(surfaceControl, engine)
+        return connection.wallpaperEngine.get()?.mirrorSurfaceControl()?.let {
+            WallpaperSurfaceControl.Live(it)
         }
     }
 
@@ -694,14 +695,8 @@ object PreviewBinder {
     sealed class WallpaperSurfaceControl {
         abstract fun release()
 
-        /**
-         * @param engine We need to keep the reference of the engine to set visibility when surface
-         *   is created and destroyed.
-         */
-        data class Live(
-            val liveWallpaperSurfaceControl: SurfaceControl,
-            val engine: IWallpaperEngine,
-        ) : WallpaperSurfaceControl() {
+        data class Live(val liveWallpaperSurfaceControl: SurfaceControl) :
+            WallpaperSurfaceControl() {
             override fun release() {
                 liveWallpaperSurfaceControl.release()
             }
