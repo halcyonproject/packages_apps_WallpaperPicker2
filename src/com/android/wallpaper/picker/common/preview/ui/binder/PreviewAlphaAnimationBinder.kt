@@ -77,15 +77,15 @@ object PreviewAlphaAnimationBinder {
                             }
                         }
                         if (shouldAnimate) {
-                            lockPreviewLabel.visibility = View.VISIBLE
-                            lockPreviewLabel.animateToAlpha(labelAlpha) {
-                                lockPreviewLabel.visibility = labelVisibility
+                            lockPreviewLabelContainer.visibility = View.VISIBLE
+                            lockPreviewLabelContainer.animateToAlpha(labelAlpha) {
+                                lockPreviewLabelContainer.visibility = labelVisibility
                             }
                             lockPreviewShade.animateToAlpha(shadeAlpha)
                         } else {
-                            lockPreviewLabel.alpha = labelAlpha
+                            lockPreviewLabelContainer.alpha = labelAlpha
                             lockPreviewShade.alpha = shadeAlpha
-                            lockPreviewLabel.visibility = labelVisibility
+                            lockPreviewLabelContainer.visibility = labelVisibility
                         }
                     }
                 }
@@ -109,15 +109,15 @@ object PreviewAlphaAnimationBinder {
                             }
                         }
                         if (shouldAnimate) {
-                            homePreviewLabel.visibility = View.VISIBLE
-                            homePreviewLabel.animateToAlpha(labelAlpha) {
-                                homePreviewLabel.visibility = labelVisibility
+                            homePreviewLabelContainer.visibility = View.VISIBLE
+                            homePreviewLabelContainer.animateToAlpha(labelAlpha) {
+                                homePreviewLabelContainer.visibility = labelVisibility
                             }
                             homePreviewShade.animateToAlpha(shadeAlpha)
                         } else {
-                            homePreviewLabel.alpha = labelAlpha
+                            homePreviewLabelContainer.alpha = labelAlpha
                             homePreviewShade.alpha = shadeAlpha
-                            homePreviewLabel.visibility = labelVisibility
+                            homePreviewLabelContainer.visibility = labelVisibility
                         }
                     }
                 }
