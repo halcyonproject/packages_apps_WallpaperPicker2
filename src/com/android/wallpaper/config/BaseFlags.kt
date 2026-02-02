@@ -41,6 +41,7 @@ import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.google.android.desktop.personalization.flags.Flags.desktopSpecificWallpaperCollections
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -143,6 +144,10 @@ abstract class BaseFlags {
                 flag.name == Contract.FlagsTable.FLAG_NAME_WALLPAPER_PICKER_PREVIEW_ANIMATION
             }
             ?.value == true
+    }
+
+    open fun isDesktopSpecificWallpaperCollectionsEnabled(): Boolean {
+        return desktopSpecificWallpaperCollections()
     }
 
     private fun getCustomizationProviderClient(context: Context): CustomizationProviderClient {
