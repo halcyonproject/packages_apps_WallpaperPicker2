@@ -425,6 +425,7 @@ class CustomizationPickerFragment2 :
                 )
 
             view.post {
+                if (this@CustomizationPickerFragment2.view == null) return@post
                 // Post to wait for the essential view dimensions to be obtained, to further
                 // calculate the motion scene dimensions.
                 if (!isDesktopUi) {
