@@ -201,13 +201,38 @@ class CustomizationPickerActivity2 :
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         configuration?.let {
-            val diff = it.diff(newConfig)
+            val diff: Int = it.diff(newConfig)
+
             val isAssetsPathsChange = diff and ActivityInfo.CONFIG_ASSETS_PATHS != 0
             val isUiModeChange = diff and ActivityInfo.CONFIG_UI_MODE != 0
+            val isScreenSizeChange = diff and ActivityInfo.CONFIG_SCREEN_SIZE != 0
+
             if (isUiModeChange) {
                 colorUpdateViewModel.updateDarkModeAndColors()
             } else if (isAssetsPathsChange) {
                 colorUpdateViewModel.updateColors()
+            } else if (isScreenSizeChange) {
+                val fragment =
+                    supportFragmentManager.findFragmentByTag(CUSTOMIZATION_PICKER_FRAGMENT_TAG)
+                if (fragment is CustomizationPickerFragment2 && fragment.isAdded) {
+                    // Manually trigger CustomizationPickerFragment2 recreation to refresh the UI.
+                    // Since this Activity handles configuration changes manually, the Fragment's
+                    // view hierarchy isn't automatically destroyed. We must force a remove/add
+                    // cycle to trigger onCreateView, ensuring the wallpaper preview and other
+                    // UI elements recalculate their dimensions for the new screen size.
+                    val savedState = supportFragmentManager.saveFragmentInstanceState(fragment)
+                    supportFragmentManager.beginTransaction().remove(fragment).commitNow()
+                    val newFragment =
+                        CustomizationPickerFragment2().apply { setInitialSavedState(savedState) }
+                    supportFragmentManager
+                        .beginTransaction()
+                        .add(
+                            R.id.fragment_container,
+                            newFragment,
+                            CUSTOMIZATION_PICKER_FRAGMENT_TAG,
+                        )
+                        .commitNow()
+                }
             }
         }
         configuration?.setTo(newConfig)
