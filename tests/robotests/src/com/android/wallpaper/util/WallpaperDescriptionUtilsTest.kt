@@ -24,13 +24,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
+import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
 import android.os.PersistableBundle
 import android.service.wallpaper.WallpaperService
 import androidx.test.core.app.ApplicationProvider
+import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.testing.ShadowWallpaperInfo
+import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.WallpaperInfoUtils
 import com.android.wallpaper.testing.WallpaperModelUtils
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getCollectionId
@@ -39,21 +42,33 @@ import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getPlaceHo
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getUniqueId
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.updateMetadata
 import com.google.common.truth.Truth.assertThat
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.Assert.assertThrows
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
+@HiltAndroidTest
 @Config(shadows = [ShadowWallpaperInfo::class])
 @RunWith(RobolectricTestRunner::class)
 class WallpaperDescriptionUtilsTest {
+    @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
+    @Inject lateinit var testInjector: TestInjector
+
     lateinit var context: Context
 
     @Before
     fun setUp() {
+        hiltRule.inject()
+        InjectorProvider.setInjector(testInjector)
+
         context = ApplicationProvider.getApplicationContext()
     }
 
@@ -282,6 +297,47 @@ class WallpaperDescriptionUtilsTest {
                 wallpaperDescription,
             )
         }
+    }
+
+    @Test
+    fun wallpaperDesctiptionToLiveWallpaperModel_succeeds() {
+        setupResolveInfo()
+        val componentName = ComponentName(PACKAGE_NAME, CLASS_NAME)
+        val wallpaperDescription =
+            WallpaperDescription.Builder()
+                .setComponent(componentName)
+                .setId("id")
+                .setContent(PersistableBundle().apply { putString("EffectName", "effect") })
+                .build()
+
+        var liveWallpaperModel = wallpaperDescription.toLiveWallpaperModel(context)
+
+        assertThat(liveWallpaperModel).isNotNull()
+        liveWallpaperModel = liveWallpaperModel!!
+        assertThat(liveWallpaperModel.commonWallpaperData.id.componentName).isEqualTo(componentName)
+        assertThat(liveWallpaperModel.commonWallpaperData.id.uniqueId)
+            .isEqualTo(CLASS_NAME + "_" + "id")
+        assertThat(liveWallpaperModel.commonWallpaperData.id.collectionId)
+            .isEqualTo("image_wallpapers")
+        assertThat(liveWallpaperModel.commonWallpaperData.title).isEqualTo("null")
+        assertThat(liveWallpaperModel.commonWallpaperData.attributions).isEqualTo(listOf("null"))
+        assertThat(liveWallpaperModel.commonWallpaperData.exploreActionUrl).isNull()
+        assertThat(liveWallpaperModel.commonWallpaperData.placeholderColorInfo.wallpaperColors)
+            .isNull()
+        assertThat(liveWallpaperModel.commonWallpaperData.placeholderColorInfo.placeholderColor)
+            .isEqualTo(Color.TRANSPARENT)
+        assertThat(liveWallpaperModel.liveWallpaperData.groupName).isEqualTo("")
+        assertThat(liveWallpaperModel.liveWallpaperData.systemWallpaperInfo.component)
+            .isEqualTo(componentName)
+        assertThat(liveWallpaperModel.liveWallpaperData.isTitleVisible).isFalse()
+        assertThat(liveWallpaperModel.liveWallpaperData.isApplied).isFalse()
+        assertThat(liveWallpaperModel.liveWallpaperData.isEffectWallpaper).isFalse()
+        assertThat(liveWallpaperModel.liveWallpaperData.effectNames).isEqualTo("effect")
+        assertThat(liveWallpaperModel.liveWallpaperData.contextDescription).isNull()
+        assertThat(liveWallpaperModel.liveWallpaperData.description).isEqualTo(wallpaperDescription)
+        assertThat(liveWallpaperModel.liveWallpaperData.supportsMultipleEngines).isFalse()
+        assertThat(liveWallpaperModel.creativeWallpaperData).isNull()
+        assertThat(liveWallpaperModel.internalLiveWallpaperData).isNull()
     }
 
     // Sets up the ResolveInfo for the given component name. This is needed for
