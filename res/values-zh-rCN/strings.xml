@@ -35,11 +35,11 @@
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"制作壁纸"</string>
     <string name="wallpaper_studio_title" msgid="4521517442580329214">"壁纸工作室"</string>
     <string name="home_screen_message" msgid="106444102822522813">"主屏幕"</string>
-    <string name="lock_screen_message" msgid="1534506081955058013">"锁定屏幕"</string>
+    <string name="lock_screen_message" msgid="1534506081955058013">"锁屏界面"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"主屏幕和锁定屏幕"</string>
     <string name="set_wallpaper_dialog_message" msgid="2110475703996853076">"为以下屏幕设置壁纸："</string>
     <string name="set_wallpaper_home_screen_destination" msgid="7315594722013109354">"主屏幕"</string>
-    <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"锁定屏幕"</string>
+    <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"锁屏界面"</string>
     <string name="set_wallpaper_both_destination" msgid="2536004558738350775">"主屏幕和锁屏"</string>
     <string name="no_backup_image_wallpaper_label" msgid="6316627676107284851">"轮换展示图片壁纸"</string>
     <string name="permission_needed_explanation" msgid="139166837541426823">"要在这里显示当前壁纸，<xliff:g id="APP_NAME">%1$s</xliff:g>需要访问您设备的存储空间。"</string>
@@ -96,7 +96,7 @@
     <string name="preview" msgid="1774602101743861071">"预览"</string>
     <string name="tab_info" msgid="818614080690111416">"信息"</string>
     <string name="tab_customize" msgid="2533745409174959960">"自定义"</string>
-    <string name="tab_effects" msgid="3213606157589233901">"效果"</string>
+    <string name="tab_effects" msgid="3213606157589233901">"特效"</string>
     <string name="tab_share" msgid="6676269624804601227">"分享"</string>
     <string name="my_photos" msgid="8613021349284084982">"我的照片"</string>
     <string name="configure_wallpaper" msgid="849882179182976621">"设置…"</string>
