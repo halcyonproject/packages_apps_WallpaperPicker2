@@ -138,16 +138,7 @@ constructor(
             val firstEntry = groupedWallpapers.keys.firstOrNull()
 
             val templates = buildList {
-                if (
-                    firstEntry != null &&
-                        firstEntry != DEFAULT_GROUP &&
-                        (groupedWallpapers[firstEntry]?.get(0)
-                            is WallpaperModel.LiveWallpaperModel) &&
-                        (groupedWallpapers[firstEntry]?.get(0)
-                                as? WallpaperModel.LiveWallpaperModel)
-                            ?.creativeWallpaperData != null &&
-                        (groupedWallpapers[firstEntry]?.size ?: 0) > 1
-                ) {
+                if (firstEntry != null && isTemplateGroup(firstEntry, groupedWallpapers)) {
                     add(CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory(firstEntry))
                     val items =
                         groupedWallpapers[firstEntry]?.map {
@@ -261,6 +252,22 @@ constructor(
                 dismissScreen = { _dismissScreenEvent.emit(Unit) },
             )
         }
+
+    /** This method identifies whether the group of wallpapers are templates */
+    private fun isTemplateGroup(
+        groupId: String?,
+        groupedWallpapers: Map<String, List<WallpaperModel>>,
+    ): Boolean {
+        if (groupId == null || groupId == DEFAULT_GROUP) return false
+
+        val groupList = groupedWallpapers[groupId] ?: return false
+
+        // Check if the group has multiple items and the first item is a new creative template
+        val firstItem = groupList.firstOrNull() as? WallpaperModel.LiveWallpaperModel
+        val isNewCreative = firstItem?.creativeWallpaperData?.isNewCreativeWallpaper == true
+
+        return groupList.size > 1 && isNewCreative
+    }
 
     /**
      * A [Flow] that emits the loading state for fetching wallpapers of the currently selected
