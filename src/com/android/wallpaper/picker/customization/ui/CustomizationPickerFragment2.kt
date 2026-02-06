@@ -630,7 +630,9 @@ class CustomizationPickerFragment2 :
             (pickerMotionContainer.height -
                     wallpaperPickerEntryExpandedHeight -
                     bottomInset -
-                    resources.getDimensionPixelSize(R.dimen.customization_option_entry_height) / 2)
+                    resources.getDimensionPixelSize(R.dimen.customization_option_entry_height) *
+                        1.5)
+                .toInt()
                 .coerceAtMost(maxExpandedPagerHeight)
                 .coerceAtLeast(minExpandedPagerHeight)
         pickerMotionContainer

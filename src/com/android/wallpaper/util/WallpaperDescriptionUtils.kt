@@ -229,7 +229,6 @@ fun WallpaperDescription.toLiveWallpaperModel(context: Context): LiveWallpaperMo
                     listOf(this.title.toString()) +
                         this.description.map { description -> description.toString() },
                 exploreActionUrl = this.contextUri?.toString(),
-                // TODO(b/465821481): Use ContentUriAsset for thumbAsset.
                 thumbAsset = LiveWallpaperThumbAsset(context, wallpaperInfo),
                 placeholderColorInfo =
                     ColorInfo(
