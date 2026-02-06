@@ -28,6 +28,7 @@ import com.android.wallpaper.Flags.collapsableReorderedAiWallpapersScreen
 import com.android.wallpaper.Flags.colorPickerUpdateFlag
 import com.android.wallpaper.Flags.composeRefactorFlag
 import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
+import com.android.wallpaper.Flags.enableAiClocks
 import com.android.wallpaper.Flags.enableAndroidPhotopicker
 import com.android.wallpaper.Flags.enablePackThemeEntry
 import com.android.wallpaper.Flags.enableRecentWallpaperDeletion
@@ -51,6 +52,8 @@ import kotlinx.coroutines.runBlocking
 abstract class BaseFlags {
     private var customizationProviderClient: CustomizationProviderClient? = null
     private var cachedFlags: List<CustomizationProviderClient.Flag>? = null
+
+    open fun isAiClocksEnabled() = enableAiClocks()
 
     // local flag to gate the entry points for magic portrait
     open fun isMagicPortraitEntryPointsEnabled() = true

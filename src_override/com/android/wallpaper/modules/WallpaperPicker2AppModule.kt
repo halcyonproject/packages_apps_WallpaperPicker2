@@ -15,6 +15,8 @@
  */
 package com.android.wallpaper.modules
 
+import com.android.customization.picker.clock.ai.ClockStyleViewUtil
+import com.android.customization.picker.clock.ai.DefaultClockStyleViewUtil
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.DefaultEffectsController
 import com.android.wallpaper.effects.EffectsController
@@ -214,6 +216,10 @@ abstract class WallpaperPicker2AppModule {
     abstract fun bindRotationInitializerFactory(
         impl: DefaultRotationInitializerFactory
     ): RotationInitializerFactory
+
+    @Binds
+    @Singleton
+    abstract fun bindClockStyleViewUtil(impl: DefaultClockStyleViewUtil): ClockStyleViewUtil
 
     companion object {
 
