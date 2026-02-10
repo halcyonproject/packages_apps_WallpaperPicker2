@@ -299,7 +299,8 @@ class WallpaperPreviewActivity :
     }
 
     override fun isUpArrowSupported(): Boolean {
-        return !ActivityUtils.isSUWMode(baseContext)
+        return BaseFlags.get(baseContext).shouldShowDesktopUi(baseContext) ||
+            !ActivityUtils.isSUWMode(baseContext)
     }
 
     override fun onResume() {
