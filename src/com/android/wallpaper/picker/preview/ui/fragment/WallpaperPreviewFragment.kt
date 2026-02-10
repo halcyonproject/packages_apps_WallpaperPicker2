@@ -34,7 +34,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -93,13 +96,33 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @AndroidEntryPoint(AppbarFragment::class)
 class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
 
+    enum class SceneIdentity {
+        SmallPreview,
+        FullLockPreview,
+        FullLockUnfoldedPreview,
+        FullHomePreview,
+        FullHomeUnfoldedPreview,
+        ApplyWallpaper,
+    }
+
     object Scenes {
-        val SmallPreview = SceneKey(debugName = "SmallPreviewScene")
-        val FullLockPreview = SceneKey(debugName = "FullLockPreviewScene")
-        val FullLockUnfoldedPreview = SceneKey(debugName = "FullLockUnfoldedPreviewScene")
-        val FullHomePreview = SceneKey(debugName = "FullHomePreviewScene")
-        val FullHomeUnfoldedPreview = SceneKey(debugName = "FullHomeUnfoldedPreviewScene")
-        val ApplyWallpaper = SceneKey(debugName = "ApplyWallpaperScene")
+        val SmallPreview = SceneKey(debugName = "SmallPreviewScene", SceneIdentity.SmallPreview)
+        val FullLockPreview =
+            SceneKey(debugName = "FullLockPreviewScene", SceneIdentity.FullLockPreview)
+        val FullLockUnfoldedPreview =
+            SceneKey(
+                debugName = "FullLockUnfoldedPreviewScene",
+                SceneIdentity.FullLockUnfoldedPreview,
+            )
+        val FullHomePreview =
+            SceneKey(debugName = "FullHomePreviewScene", SceneIdentity.FullHomePreview)
+        val FullHomeUnfoldedPreview =
+            SceneKey(
+                debugName = "FullHomeUnfoldedPreviewScene",
+                SceneIdentity.FullHomeUnfoldedPreview,
+            )
+        val ApplyWallpaper =
+            SceneKey(debugName = "ApplyWallpaperScene", SceneIdentity.ApplyWallpaper)
     }
 
     object Elements {
@@ -363,11 +386,22 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         extendedWallpaperEffectActivityLauncher: ActivityResultLauncher<Intent>,
         modifier: Modifier = Modifier,
     ) {
+        var initialSceneIdentity by rememberSaveable { mutableStateOf(SceneIdentity.SmallPreview) }
+        val initialScene =
+            getInitialScene(initialSceneIdentity, activity?.isInMultiWindowMode == true)
         val sceneState =
             rememberMutableSceneTransitionLayoutState(
-                initialScene = Scenes.SmallPreview,
+                initialScene = initialScene,
                 transitions = remember { sceneTransitions(isFoldable) },
             )
+
+        LaunchedEffect(sceneState.currentScene) {
+            initialSceneIdentity = sceneState.currentScene.identity as SceneIdentity
+            wallpaperPreviewViewModel.setShouldForceDesktopFullscreen(
+                !isSceneCompatibleWithWindowedMode(sceneState.currentScene)
+            )
+        }
+
         // Pager state needs to be outside the scope of the SceneTransitionLayout so that after
         // transitioning back to the small preview scene, the selected page index can be retained.
         val pagerState: PagerState =
@@ -614,7 +648,39 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         }
     }
 
+    private fun getInitialScene(
+        sceneIdentity: SceneIdentity,
+        isInMultiWindowMode: Boolean,
+    ): SceneKey {
+        val sceneKey = getSceneKeyFromSceneIdentity(sceneIdentity)
+        if (!isInMultiWindowMode) {
+            return sceneKey
+        }
+        return if (isSceneCompatibleWithWindowedMode(sceneKey)) sceneKey else Scenes.SmallPreview
+    }
+
+    private fun getSceneKeyFromSceneIdentity(sceneIdentity: SceneIdentity): SceneKey {
+        return when (sceneIdentity) {
+            SceneIdentity.SmallPreview -> Scenes.SmallPreview
+            SceneIdentity.ApplyWallpaper -> Scenes.ApplyWallpaper
+            SceneIdentity.FullLockPreview -> Scenes.FullLockPreview
+            SceneIdentity.FullLockUnfoldedPreview -> Scenes.FullLockUnfoldedPreview
+            SceneIdentity.FullHomePreview -> Scenes.FullHomePreview
+            SceneIdentity.FullHomeUnfoldedPreview -> Scenes.FullHomeUnfoldedPreview
+        }
+    }
+
     companion object {
         const val ARG_EDIT_INTENT = "arg_edit_intent"
+
+        fun isSceneCompatibleWithWindowedMode(sceneKey: SceneKey): Boolean {
+            return when (sceneKey) {
+                Scenes.FullLockPreview,
+                Scenes.FullLockUnfoldedPreview,
+                Scenes.FullHomePreview,
+                Scenes.FullHomeUnfoldedPreview -> false
+                else -> true
+            }
+        }
     }
 }
