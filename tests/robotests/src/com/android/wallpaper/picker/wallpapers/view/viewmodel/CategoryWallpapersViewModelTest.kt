@@ -129,7 +129,7 @@ class CategoryWallpapersViewModelTest {
                 contentDescription = null,
                 isCurrent = false,
                 creativeWallpaperEffectsData = null,
-                isNewCreativeWallpaper = false,
+                isNewCreativeWallpaper = true,
             )
 
         val wallpaperInfo = WallpaperInfo(appContext, resolveInfo)
@@ -215,7 +215,7 @@ class CategoryWallpapersViewModelTest {
                 contentDescription = null,
                 isCurrent = false,
                 creativeWallpaperEffectsData = null,
-                isNewCreativeWallpaper = false,
+                isNewCreativeWallpaper = true,
             )
 
         val wallpaperInfo = WallpaperInfo(appContext, resolveInfo)
@@ -386,5 +386,123 @@ class CategoryWallpapersViewModelTest {
         // verify that thumbnails are resizeable
         assertThat(thumbnailsCategory.areTilesLarge).isTrue()
         assertThat(thumbnailsCategory.thumbnails.size).isEqualTo(3)
+    }
+
+    @Test
+    fun sections_verifyMixOfTemplateAndNonTemplateCreativesWallpapers() = runTest {
+        val resolveInfo =
+            ResolveInfo().apply {
+                serviceInfo = ServiceInfo()
+                serviceInfo.packageName = "com.google.android.apps.wallpaper.nexus"
+                serviceInfo.splitName = "wallpaper_cities_ny"
+                serviceInfo.name = "NewYorkWallpaper"
+                serviceInfo.flags = PackageManager.GET_META_DATA
+            }
+        val creativeWallpaperDataTemplate =
+            CreativeWallpaperData(
+                configPreviewUri = null,
+                cleanPreviewUri = null,
+                deleteUri = Uri.parse("https://www.hello.com"),
+                thumbnailUri = null,
+                shareUri = null,
+                author = "fake",
+                description = "fake",
+                contentDescription = null,
+                isCurrent = false,
+                creativeWallpaperEffectsData = null,
+                isNewCreativeWallpaper = true,
+            )
+
+        val creativeWallpaperDataStandard =
+            CreativeWallpaperData(
+                configPreviewUri = null,
+                cleanPreviewUri = null,
+                deleteUri = Uri.parse("https://www.hello.com"),
+                thumbnailUri = null,
+                shareUri = null,
+                author = "fake",
+                description = "fake",
+                contentDescription = null,
+                isCurrent = false,
+                creativeWallpaperEffectsData = null,
+                isNewCreativeWallpaper = false,
+            )
+
+        val wallpaperInfo = WallpaperInfo(appContext, resolveInfo)
+
+        fakeCategoryWallpapersInteractor.setWallpapers(
+            listOf(
+                WallpaperModelUtils.getLiveWallpaperModel(
+                    wallpaperId = "testWallpaperId",
+                    collectionId = "testCollection",
+                    systemWallpaperInfo = wallpaperInfo,
+                    isApplied = false,
+                    groupName = "templates",
+                    creativeWallpaperData = creativeWallpaperDataTemplate,
+                ),
+                WallpaperModelUtils.getLiveWallpaperModel(
+                    wallpaperId = "testWallpaperId",
+                    collectionId = "testCollection",
+                    systemWallpaperInfo = wallpaperInfo,
+                    isApplied = false,
+                    groupName = "templates",
+                    creativeWallpaperData = creativeWallpaperDataTemplate,
+                ),
+                WallpaperModelUtils.getLiveWallpaperModel(
+                    wallpaperId = "testWallpaperId",
+                    collectionId = "testCollection",
+                    systemWallpaperInfo = wallpaperInfo,
+                    isApplied = false,
+                    groupName = "standard",
+                    creativeWallpaperData = creativeWallpaperDataStandard,
+                ),
+                WallpaperModelUtils.getLiveWallpaperModel(
+                    wallpaperId = "testWallpaperId",
+                    collectionId = "testCollection",
+                    systemWallpaperInfo = wallpaperInfo,
+                    isApplied = false,
+                    groupName = "standard",
+                    creativeWallpaperData = creativeWallpaperDataStandard,
+                ),
+            )
+        )
+
+        val sections =
+            collectLastValue(categoryWallpapersViewModel.categoryWallpapersContentViewModel)()
+        assertThat(sections?.wallpaperItems?.size).isEqualTo(4)
+
+        // verify there is a primary header
+        assertThat(
+                (sections?.wallpaperItems?.get(0)
+                        as? CategoryWallpapersItemViewModel.PrimaryHeaderViewModelCategory)
+                    ?.title
+            )
+            .isEqualTo("templates")
+
+        // verify that there are 2 template thumbnails
+        assertThat(
+                (sections?.wallpaperItems?.get(1)
+                        as? CategoryWallpapersItemViewModel.TemplateThumbnailsViewModelCategory)
+                    ?.thumbnailAssets
+                    ?.size
+            )
+            .isEqualTo(2)
+
+        // verify there is a secondary header
+        assertThat(
+                (sections?.wallpaperItems?.get(2)
+                        as? CategoryWallpapersItemViewModel.SecondaryHeaderViewModelCategory)
+                    ?.title
+            )
+            .isEqualTo("standard")
+
+        // verify that there are 2 standard thumbnails
+        assertThat(
+                (sections?.wallpaperItems?.get(3)
+                        as? CategoryWallpapersItemViewModel.PlainThumbnailsViewModelCategory)
+                    ?.thumbnails
+                    ?.size
+            )
+            .isEqualTo(2)
     }
 }
