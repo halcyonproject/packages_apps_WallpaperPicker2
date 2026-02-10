@@ -171,6 +171,8 @@ abstract class BaseFlags {
         return context.resources.getBoolean(R.bool.isDesktopUi)
     }
 
+    open fun isDesktopSpecificWallpaperCollectionsEnabled() = false
+
     open fun isHideAppLabelEnabled(): Boolean = workspaceItemsLabelHidden()
 
     @EntryPoint
