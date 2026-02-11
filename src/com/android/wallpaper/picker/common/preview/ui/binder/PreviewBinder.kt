@@ -28,6 +28,7 @@ import android.os.RemoteException
 import android.service.wallpaper.IWallpaperEngine
 import android.util.Log
 import android.view.Display
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
@@ -42,6 +43,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.FOLDED
@@ -453,29 +455,42 @@ object PreviewBinder {
         hostToken: IBinder,
         onDispatchTouchEventReady: (onDispatchTouchEvent: (event: MotionEvent) -> Unit) -> Unit,
     ): WallpaperSurfaceControl.Static {
-        val scaleImageView =
-            SubsamplingScaleImageView(applicationContext).apply {
-                setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM)
-                setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
-
-                if (viewModel.wallpaper.value?.isCroppable() == true) {
-                    initCrop(
-                        applicationContext = applicationContext,
-                        viewModel = viewModel,
-                        displaySize = displaySize,
-                    )
-                    onDispatchTouchEventReady.invoke(getOnDispatchTouchEvent(this))
+        val scale: Float = WallpaperCropUtils.getSystemWallpaperMaximumScale(applicationContext)
+        val scaleImageViewSize =
+            Point((displaySize.x * scale).toInt(), (displaySize.y * scale).toInt())
+        val staticWallpaperPreview =
+            LayoutInflater.from(applicationContext).inflate(R.layout.static_wallpaper_preview, null)
+        val scaleImageView: SubsamplingScaleImageView =
+            staticWallpaperPreview.requireViewById(R.id.static_image_view)
+        scaleImageView.apply {
+            layoutParams =
+                scaleImageView.layoutParams.apply {
+                    width = scaleImageViewSize.x
+                    height = scaleImageViewSize.y
                 }
+            setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM)
+            setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
+
+            if (viewModel.wallpaper.value?.isCroppable() == true) {
+                initCrop(
+                    applicationContext = applicationContext,
+                    viewModel = viewModel,
+                    displaySize = displaySize,
+                    scaleImageViewSize = scaleImageViewSize,
+                )
+                onDispatchTouchEventReady.invoke(getOnDispatchTouchEvent(this))
             }
+        }
         val surfaceControlViewHost =
             SurfaceControlViewHost(applicationContext, display, hostToken).apply {
-                setView(scaleImageView, displaySize.x, displaySize.y)
+                setView(staticWallpaperPreview, displaySize.x, displaySize.y)
             }
         StaticWallpaperPreviewBinder2.bind(
             applicationContext = applicationContext,
             scaleImageView = scaleImageView,
             viewModel = viewModel.staticWallpaperPreviewViewModel,
             displaySize = displaySize,
+            scaleImageViewSize = scaleImageViewSize,
             lifecycleOwner = lifecycleOwner,
         )
         // TODO(b/423956081): PreviewEffectsLoadingBinder to bind loading effect
@@ -486,18 +501,17 @@ object PreviewBinder {
         applicationContext: Context,
         viewModel: WallpaperPreviewViewModel,
         displaySize: Point,
+        scaleImageViewSize: Point,
     ) {
         this.doOnLayout {
-            val imageSize = Point(this.width, this.height)
-            val cropImageSize =
+            val cropImageSize: Point =
                 WallpaperCropUtils.calculateCropSurfaceSize(
                     applicationContext.resources,
-                    max(imageSize.x, imageSize.y),
-                    min(imageSize.x, imageSize.y),
-                    imageSize.x,
-                    imageSize.y,
+                    max(scaleImageViewSize.x, scaleImageViewSize.y),
+                    min(scaleImageViewSize.x, scaleImageViewSize.y),
+                    scaleImageViewSize.x,
+                    scaleImageViewSize.y,
                 )
-
             this.setOnNewCropListener { crop, zoom ->
                 viewModel.staticWallpaperPreviewViewModel.fullPreviewCropModels[displaySize] =
                     FullPreviewCropModel(
@@ -505,7 +519,7 @@ object PreviewBinder {
                         cropSizeModel =
                             CropSizeModel(
                                 wallpaperZoom = zoom,
-                                hostViewSize = imageSize,
+                                hostViewSize = scaleImageViewSize,
                                 cropViewSize = cropImageSize,
                             ),
                     )
