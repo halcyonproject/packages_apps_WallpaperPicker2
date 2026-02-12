@@ -28,6 +28,7 @@ import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
 import androidx.annotation.VisibleForTesting
+import com.android.wallpaper.R
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
@@ -83,7 +84,6 @@ object CurrentWallpaperModelUtils {
                     WallpaperManager.FLAG_SYSTEM,
                 )
         } else {
-            // TODO(b/452460147): Handle LiveWallpaper (Home)
             homeWallpaperModel =
                 createCurrentLiveWallpaperModelFromInstance(
                     context,
@@ -100,13 +100,17 @@ object CurrentWallpaperModelUtils {
         val isLockStatic = (lockWallpaperInstance.info == null)
         val lockDescription = lockWallpaperInstance.description
         if (isLockStatic) {
-            // TODO(b/452460147): Handle built-in Lock wallpaper
-            lockWallpaperModel =
-                createCurrentStaticWallpaperModelFromDescription(
-                    context,
-                    lockDescription,
-                    WallpaperManager.FLAG_LOCK,
-                )
+            if (isLockWallpaperBuiltIn(wallpaperManager)) {
+                lockWallpaperModel =
+                    createBuiltInStaticWallpaperModel(context, WallpaperManager.FLAG_LOCK)
+            } else {
+                lockWallpaperModel =
+                    createCurrentStaticWallpaperModelFromDescription(
+                        context,
+                        lockDescription,
+                        WallpaperManager.FLAG_LOCK,
+                    )
+            }
         } else {
             // TODO(b/452460147): Handle LiveWallpaper (Lock)
             lockWallpaperModel = null
@@ -120,17 +124,10 @@ object CurrentWallpaperModelUtils {
         wallpaperDescription: WallpaperDescription,
         @SetWallpaperFlags wallpaperManagerDestinationFlag: Int,
     ): WallpaperModel {
-        val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
-        val displayUtils = entryPoint.getDisplayUtils()
-        val wallpaperClient = entryPoint.getWallpaperClient()
-
         val uniqueId = WallpaperDescriptionUtils.getUniqueId(wallpaperDescription.content) ?: ""
         val collectionId =
             WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
 
-        val displaySizes = displayUtils.getInternalDisplaySizes(allDimensions = true)
-        val cropHints =
-            wallpaperClient.getCurrentCropHints(displaySizes, wallpaperManagerDestinationFlag)
         val wallpaperId =
             WallpaperId(
                 componentName = ComponentName(STATIC_WALLPAPER_PACKAGE, STATIC_WALLPAPER_CLASS),
@@ -143,6 +140,7 @@ object CurrentWallpaperModelUtils {
             } else {
                 Destination.APPLIED_TO_LOCK
             }
+        val cropHints = getCurrentCropHints(context, wallpaperManagerDestinationFlag)
         return WallpaperModel.StaticWallpaperModel(
             commonWallpaperData =
                 CommonWallpaperData(
@@ -294,6 +292,47 @@ object CurrentWallpaperModelUtils {
         )
     }
 
+    @VisibleForTesting
+    fun createBuiltInStaticWallpaperModel(
+        context: Context,
+        wallpaperManagerDestinationFlag: Int,
+    ): WallpaperModel {
+        val wallpaperId =
+            WallpaperId(
+                componentName = ComponentName(STATIC_WALLPAPER_PACKAGE, STATIC_WALLPAPER_CLASS),
+                uniqueId = "built-in-wallpaper",
+                collectionId = context.getString(R.string.on_device_wallpaper_collection_id),
+            )
+        val destination =
+            if (wallpaperManagerDestinationFlag == WallpaperManager.FLAG_SYSTEM) {
+                Destination.APPLIED_TO_SYSTEM
+            } else {
+                Destination.APPLIED_TO_LOCK
+            }
+        val asset = BuiltInWallpaperAsset(context)
+        return WallpaperModel.StaticWallpaperModel(
+            commonWallpaperData =
+                CommonWallpaperData(
+                    id = wallpaperId,
+                    title = null,
+                    attributions = emptyList(),
+                    exploreActionUrl = null,
+                    thumbAsset = asset,
+                    placeholderColorInfo =
+                        ColorInfo(wallpaperColors = null, placeholderColor = Color.TRANSPARENT),
+                    destination = destination,
+                ),
+            staticWallpaperData =
+                StaticWallpaperData(
+                    asset = asset,
+                    cropHints = getCurrentCropHints(context, wallpaperManagerDestinationFlag),
+                ),
+            downloadableWallpaperData = null,
+            networkWallpaperData = null,
+            imageWallpaperData = null,
+        )
+    }
+
     private fun isCreative(context: Context, wallpaperInfo: WallpaperInfo): Boolean {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
         return entryPoint.getWallpaperModelConversionHelper().isCreative(wallpaperInfo)
@@ -366,6 +405,25 @@ object CurrentWallpaperModelUtils {
 
         return if (isSystemBuiltIn) BuiltInWallpaperAsset(context)
         else CurrentWallpaperAsset(context, flag, /* getCropped= */ !getFullAsset)
+    }
+
+    private fun isLockWallpaperBuiltIn(manager: WallpaperManager): Boolean {
+        return manager.lockScreenWallpaperExists() &&
+            manager.getWallpaperInfo(WallpaperManager.FLAG_LOCK) == null &&
+            manager.getWallpaperFile(WallpaperManager.FLAG_LOCK) == null
+    }
+
+    private fun getCurrentCropHints(
+        context: Context,
+        wallpaperManagerDestinationFlag: Int,
+    ): Map<Point, Rect> {
+        val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
+
+        val displaySizes =
+            entryPoint.getDisplayUtils().getInternalDisplaySizes(allDimensions = true)
+        return entryPoint
+            .getWallpaperClient()
+            .getCurrentCropHints(displaySizes, wallpaperManagerDestinationFlag)
     }
 
     @EntryPoint
