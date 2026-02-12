@@ -223,65 +223,66 @@ class WallpaperPreviewActivity :
             }
         }
 
-        if (BaseFlags.get(this).isFullscreenPreviewFlowFixEnabled(this)) {
-            lifecycleScope.launch {
-                wallpaperPreviewViewModel.previousAndCurrentPreviewScreen.collect { screens ->
-                    when (screens.first to screens.second) {
-                        null to PreviewScreen.FULL_PREVIEW -> {
-                            if (isInMultiWindowMode) {
-                                // Wallpaper preview was dragged from fullscreen FULL_PREVIEW back
-                                // to desktop. Go back to SMALL_PREVIEW.
-                                wallpaperPreviewViewModel.handleBackPressed()
-                                navController.popBackStack()
-                            }
+        val baseFlags = BaseFlags.get(this)
+        if (baseFlags.isFullscreenPreviewFlowFixEnabled(this)) {
+            if (baseFlags.isRefactorWallpaperPreviewScreenEnabled()) {
+                lifecycleScope.launch {
+                    wallpaperPreviewViewModel.shouldForceDesktopFullscreen.collect {
+                        if (it && isInMultiWindowMode) {
+                            requestFullscreen(FULLSCREEN_MODE_REQUEST_ENTER)
+                        } else if (!it && !isInMultiWindowMode) {
+                            requestFullscreen(FULLSCREEN_MODE_REQUEST_EXIT)
                         }
-                        PreviewScreen.SMALL_PREVIEW to PreviewScreen.FULL_PREVIEW -> {
-                            if (isInMultiWindowMode) {
-                                // User started FULL_PREVIEW while in desktop windowing.
-                                requestFullscreenMode(
-                                    FULLSCREEN_MODE_REQUEST_ENTER,
-                                    object : OutcomeReceiver<Void, Throwable> {
-                                        override fun onResult(result: Void) {
-                                            Log.v(
-                                                TAG,
-                                                "requestFullscreenMode for FULL_PREVIEW" +
-                                                    " success",
-                                            )
-                                        }
-
-                                        override fun onError(t: Throwable) {
-                                            Log.e(
-                                                TAG,
-                                                "Error requesting FULL_PREVIEW fullscreen" +
-                                                    " mode",
-                                                t,
-                                            )
-                                        }
-                                    },
-                                )
+                    }
+                }
+            } else {
+                lifecycleScope.launch {
+                    wallpaperPreviewViewModel.previousAndCurrentPreviewScreen.collect { screens ->
+                        when (screens.first to screens.second) {
+                            null to PreviewScreen.FULL_PREVIEW -> {
+                                if (isInMultiWindowMode) {
+                                    // Wallpaper preview was dragged from fullscreen FULL_PREVIEW
+                                    // back
+                                    // to desktop. Go back to SMALL_PREVIEW.
+                                    wallpaperPreviewViewModel.handleBackPressed()
+                                    navController.popBackStack()
+                                }
                             }
-                        }
-                        PreviewScreen.FULL_PREVIEW to PreviewScreen.SMALL_PREVIEW -> {
-                            if (!isInMultiWindowMode) {
-                                // User finished FULL_PREVIEW and should go back to desktop.
-                                requestFullscreenMode(
-                                    FULLSCREEN_MODE_REQUEST_EXIT,
-                                    object : OutcomeReceiver<Void, Throwable> {
-                                        override fun onResult(result: Void) {
-                                            Log.v(TAG, "requestFullscreenMode exit success")
-                                        }
 
-                                        override fun onError(t: Throwable) {
-                                            Log.e(TAG, "Error exiting fullscreen mode", t)
-                                        }
-                                    },
-                                )
+                            PreviewScreen.SMALL_PREVIEW to PreviewScreen.FULL_PREVIEW -> {
+                                if (isInMultiWindowMode) {
+                                    // User started FULL_PREVIEW while in desktop windowing.
+                                    requestFullscreen(FULLSCREEN_MODE_REQUEST_ENTER)
+                                }
+                            }
+
+                            PreviewScreen.FULL_PREVIEW to PreviewScreen.SMALL_PREVIEW -> {
+                                if (!isInMultiWindowMode) {
+                                    // User finished FULL_PREVIEW and should go back to desktop.
+                                    requestFullscreen(FULLSCREEN_MODE_REQUEST_EXIT)
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun requestFullscreen(request: Int, onError: ((Throwable) -> Unit)? = null) {
+        requestFullscreenMode(
+            request,
+            object : OutcomeReceiver<Void, Throwable> {
+                override fun onResult(result: Void) {
+                    Log.v(TAG, "requestFullscreenMode $request success")
+                }
+
+                override fun onError(t: Throwable) {
+                    Log.e(TAG, "Error requesting fullscreen mode $request", t)
+                    onError?.invoke(t)
+                }
+            },
+        )
     }
 
     override fun onEnterAnimationComplete() {
@@ -317,19 +318,7 @@ class WallpaperPreviewActivity :
                 return
             }
             if (isFirstRun && isFullscreenPreviewEnabled()) {
-                requestFullscreenMode(
-                    FULLSCREEN_MODE_REQUEST_ENTER,
-                    object : OutcomeReceiver<Void, Throwable> {
-                        override fun onResult(result: Void) {
-                            Log.v(TAG, "requestFullscreenMode success")
-                        }
-
-                        override fun onError(t: Throwable) {
-                            Log.e(TAG, "Error requesting fullscreen mode", t)
-                            showToastAndFinish()
-                        }
-                    },
-                )
+                requestFullscreen(FULLSCREEN_MODE_REQUEST_ENTER) { showToastAndFinish() }
                 // Don't dismiss the preview right away while it is still switching to fullscreen.
                 return
             }
