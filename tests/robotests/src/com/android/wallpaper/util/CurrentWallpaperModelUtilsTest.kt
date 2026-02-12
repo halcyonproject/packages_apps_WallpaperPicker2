@@ -107,6 +107,10 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(wallpaperModels.first).isNotNull()
         assertThat(wallpaperModels.second).isNotNull()
         assertThat(wallpaperModels.first).isEqualTo(wallpaperModels.second)
+        assertThat(wallpaperModels.first)
+            .isInstanceOf(WallpaperModel.StaticWallpaperModel::class.java)
+        assertThat(wallpaperModels.second)
+            .isInstanceOf(WallpaperModel.StaticWallpaperModel::class.java)
     }
 
     @Test
@@ -153,6 +157,10 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(wallpaperModels.first).isNotNull()
         assertThat(wallpaperModels.second).isNotNull()
         assertThat(wallpaperModels.first).isNotEqualTo(wallpaperModels.second)
+        assertThat(wallpaperModels.first)
+            .isInstanceOf(WallpaperModel.StaticWallpaperModel::class.java)
+        assertThat(wallpaperModels.second)
+            .isInstanceOf(WallpaperModel.StaticWallpaperModel::class.java)
     }
 
     @Test
@@ -176,6 +184,91 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(wallpaperModels.first).isNotEqualTo(wallpaperModels.second)
         assertThat(wallpaperModels.second?.commonWallpaperData?.thumbAsset)
             .isInstanceOf(BuiltInWallpaperAsset::class.java)
+    }
+
+    @Test
+    fun getCurrentWallpaperModels_homeAndLockLiveSame() {
+        val sourceInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+        val homeDescription: WallpaperDescription =
+            WallpaperDescription.Builder()
+                .setId("id")
+                .setTitle("title")
+                .setDescription(listOf("line1", "line2"))
+                .setContextUri(Uri.parse("uri://context"))
+                .setContent(
+                    PersistableBundle().apply {
+                        putString("picker_metadata_unique_id", "uniqueId")
+                        putString("picker_metadata_collection_id", "collectionId")
+                        putInt("picker_metadata_placeholder_color", 250)
+                        putString("picker_metadata_effects", "someEffect")
+                    }
+                )
+                .build()
+        val homeInstance = WallpaperInstance(sourceInfo, homeDescription, null)
+        `when`(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM))
+            .thenReturn(homeInstance)
+        `when`(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_LOCK)).thenReturn(null)
+
+        val wallpaperModels = CurrentWallpaperModelUtils.getCurrentWallpaperModels(context)
+
+        assertThat(wallpaperModels.first).isNotNull()
+        assertThat(wallpaperModels.second).isNotNull()
+        assertThat(wallpaperModels.first).isEqualTo(wallpaperModels.second)
+        assertThat(wallpaperModels.first)
+            .isInstanceOf(WallpaperModel.LiveWallpaperModel::class.java)
+        assertThat(wallpaperModels.second)
+            .isInstanceOf(WallpaperModel.LiveWallpaperModel::class.java)
+    }
+
+    @Test
+    fun getCurrentWallpaperModels_homeAndLockLiveDifferent() {
+        val sourceInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+        val homeDescription: WallpaperDescription =
+            WallpaperDescription.Builder()
+                .setId("id1")
+                .setTitle("title1")
+                .setDescription(listOf("line1", "line2"))
+                .setContextUri(Uri.parse("uri://context"))
+                .setContent(
+                    PersistableBundle().apply {
+                        putString("picker_metadata_unique_id", "uniqueId1")
+                        putString("picker_metadata_collection_id", "collectionId")
+                        putInt("picker_metadata_placeholder_color", 250)
+                        putString("picker_metadata_effects", "someEffect")
+                    }
+                )
+                .build()
+        val lockDescription: WallpaperDescription =
+            WallpaperDescription.Builder()
+                .setId("id2")
+                .setTitle("title2")
+                .setDescription(listOf("line1", "line2"))
+                .setContextUri(Uri.parse("uri://context"))
+                .setContent(
+                    PersistableBundle().apply {
+                        putString("picker_metadata_unique_id", "uniqueId2")
+                        putString("picker_metadata_collection_id", "collectionId")
+                        putInt("picker_metadata_placeholder_color", 250)
+                        putString("picker_metadata_effects", "someEffect")
+                    }
+                )
+                .build()
+        val homeInstance = WallpaperInstance(sourceInfo, homeDescription, null)
+        val lockInstance = WallpaperInstance(sourceInfo, lockDescription, null)
+        `when`(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM))
+            .thenReturn(homeInstance)
+        `when`(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_LOCK))
+            .thenReturn(lockInstance)
+
+        val wallpaperModels = CurrentWallpaperModelUtils.getCurrentWallpaperModels(context)
+
+        assertThat(wallpaperModels.first).isNotNull()
+        assertThat(wallpaperModels.second).isNotNull()
+        assertThat(wallpaperModels.first).isNotEqualTo(wallpaperModels.second)
+        assertThat(wallpaperModels.first)
+            .isInstanceOf(WallpaperModel.LiveWallpaperModel::class.java)
+        assertThat(wallpaperModels.second)
+            .isInstanceOf(WallpaperModel.LiveWallpaperModel::class.java)
     }
 
     @Test
