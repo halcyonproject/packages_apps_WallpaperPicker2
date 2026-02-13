@@ -19,11 +19,13 @@ package com.android.customization.picker.icon.ui.util
 import android.view.View
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.RecyclerView
 import com.android.customization.picker.icon.shared.model.IconStyle
 import com.android.customization.picker.icon.shared.model.IconStyleModel
 import com.android.customization.picker.icon.ui.viewmodel.ShapeIconViewModel
 import com.android.wallpaper.picker.common.icon.ui.viewmodel.Icon
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
+import com.android.wallpaper.picker.option.ui.viewmodel.OptionItemViewModel2
 import kotlinx.coroutines.DisposableHandle
 
 interface IconStyleViewUtil : DefaultLifecycleObserver {
@@ -66,4 +68,10 @@ interface IconStyleViewUtil : DefaultLifecycleObserver {
      * @param shapePath the shape path to crop the icon, crops to the default circle shape if null
      */
     fun getIcon(iconStyleModel: IconStyleModel?, shapePath: String? = null): Icon?
+
+    fun bindListDivider(
+        options: List<OptionItemViewModel2<IconStyleModel>>,
+        list: RecyclerView,
+        optionIconHeightPx: Int?,
+    )
 }
