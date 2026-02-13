@@ -112,8 +112,12 @@ object CurrentWallpaperModelUtils {
                     )
             }
         } else {
-            // TODO(b/452460147): Handle LiveWallpaper (Lock)
-            lockWallpaperModel = null
+            lockWallpaperModel =
+                createCurrentLiveWallpaperModelFromInstance(
+                    context,
+                    lockWallpaperInstance,
+                    WallpaperManager.FLAG_LOCK,
+                )
         }
         return Pair(homeWallpaperModel, lockWallpaperModel)
     }
