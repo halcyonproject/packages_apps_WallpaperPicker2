@@ -47,8 +47,6 @@ public class TrampolinePickerActivity extends FragmentActivity {
                 /* requestCode= */ 0
         );
         finish();
-        // TODO (b/444241867): Remove CustomizationPickerActivity and
-        //  PassThroughCustomizationPickerActivity
     }
 }
 
