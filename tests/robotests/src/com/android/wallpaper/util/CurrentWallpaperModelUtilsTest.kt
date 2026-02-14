@@ -22,6 +22,7 @@ import android.app.wallpaper.WallpaperDescription
 import android.app.wallpaper.WallpaperInstance
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.os.PersistableBundle
 import androidx.test.core.app.ApplicationProvider
@@ -152,6 +153,29 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(wallpaperModels.first).isNotNull()
         assertThat(wallpaperModels.second).isNotNull()
         assertThat(wallpaperModels.first).isNotEqualTo(wallpaperModels.second)
+    }
+
+    @Test
+    fun getCurrentWallpaperModels_builtInLock_homeAndLockStaticDifferent() {
+        val homeDescription: WallpaperDescription = WallpaperDescription.Builder().build()
+        val lockDescription: WallpaperDescription = WallpaperDescription.Builder().build()
+        val homeInstance = WallpaperInstance(null, homeDescription, null)
+        val lockInstance = WallpaperInstance(null, lockDescription, null)
+        `when`(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM))
+            .thenReturn(homeInstance)
+        `when`(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_LOCK))
+            .thenReturn(lockInstance)
+        `when`(wallpaperManager.lockScreenWallpaperExists()).thenReturn(true)
+        `when`(wallpaperManager.getWallpaperInfo(WallpaperManager.FLAG_LOCK)).thenReturn(null)
+        `when`(wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_LOCK)).thenReturn(null)
+
+        val wallpaperModels = CurrentWallpaperModelUtils.getCurrentWallpaperModels(context)
+
+        assertThat(wallpaperModels.first).isNotNull()
+        assertThat(wallpaperModels.second).isNotNull()
+        assertThat(wallpaperModels.first).isNotEqualTo(wallpaperModels.second)
+        assertThat(wallpaperModels.second?.commonWallpaperData?.thumbAsset)
+            .isInstanceOf(BuiltInWallpaperAsset::class.java)
     }
 
     @Test
@@ -353,5 +377,36 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(creativeWallpaperData.isCurrent).isTrue()
         assertThat(creativeWallpaperData.creativeWallpaperEffectsData).isNull()
         assertThat(creativeWallpaperData.isNewCreativeWallpaper).isFalse()
+    }
+
+    @Test
+    fun createBuiltinWallpaperModel_applyToLock() {
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createBuiltInStaticWallpaperModel(
+                context,
+                WallpaperManager.FLAG_LOCK,
+            ) as WallpaperModel.StaticWallpaperModel
+
+        assertThat(wallpaperModel.commonWallpaperData.id.uniqueId).isEqualTo("built-in-wallpaper")
+        assertThat(wallpaperModel.commonWallpaperData.id.componentName)
+            .isEqualTo(ComponentName("StaticWallpaperPackage", "StaticWallpaperClass"))
+        assertThat(wallpaperModel.commonWallpaperData.id.collectionId)
+            .isEqualTo("on_device_wallpapers")
+        assertThat(wallpaperModel.commonWallpaperData.title).isNull()
+        assertThat(wallpaperModel.commonWallpaperData.attributions).isEmpty()
+        assertThat(wallpaperModel.commonWallpaperData.exploreActionUrl).isNull()
+        assertThat(wallpaperModel.commonWallpaperData.placeholderColorInfo.wallpaperColors).isNull()
+        assertThat(wallpaperModel.commonWallpaperData.placeholderColorInfo.placeholderColor)
+            .isEqualTo(Color.TRANSPARENT)
+        assertThat(wallpaperModel.commonWallpaperData.destination)
+            .isEqualTo(Destination.APPLIED_TO_LOCK)
+        assertThat(wallpaperModel.commonWallpaperData.thumbAsset)
+            .isInstanceOf(BuiltInWallpaperAsset::class.java)
+        assertThat(wallpaperModel.staticWallpaperData.asset)
+            .isInstanceOf(BuiltInWallpaperAsset::class.java)
+        assertThat(wallpaperModel.staticWallpaperData.cropHints).isEmpty()
+        assertThat(wallpaperModel.downloadableWallpaperData).isNull()
+        assertThat(wallpaperModel.networkWallpaperData).isNull()
+        assertThat(wallpaperModel.imageWallpaperData).isNull()
     }
 }
