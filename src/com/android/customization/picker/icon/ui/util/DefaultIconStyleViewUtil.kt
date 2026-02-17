@@ -18,11 +18,13 @@ package com.android.customization.picker.icon.ui.util
 
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.RecyclerView
 import com.android.customization.picker.icon.shared.model.IconStyle
 import com.android.customization.picker.icon.shared.model.IconStyleModel
 import com.android.customization.picker.icon.ui.viewmodel.ShapeIconViewModel
 import com.android.wallpaper.picker.common.icon.ui.viewmodel.Icon
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
+import com.android.wallpaper.picker.option.ui.viewmodel.OptionItemViewModel2
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 import kotlinx.coroutines.DisposableHandle
@@ -65,6 +67,14 @@ class DefaultIconStyleViewUtil @Inject constructor() : IconStyleViewUtil {
     }
 
     override fun getIcon(iconStyleModel: IconStyleModel?, shapePath: String?): Icon? {
+        TODO("Not yet implemented")
+    }
+
+    override fun bindListDivider(
+        options: List<OptionItemViewModel2<IconStyleModel>>,
+        list: RecyclerView,
+        optionIconHeightPx: Int?,
+    ) {
         TODO("Not yet implemented")
     }
 }
