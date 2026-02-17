@@ -35,11 +35,11 @@
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"နောက်ခံလုပ်ရန်"</string>
     <string name="wallpaper_studio_title" msgid="4521517442580329214">"နောက်ခံပုံ စတူဒီယို"</string>
     <string name="home_screen_message" msgid="106444102822522813">"ပင်မစာမျက်နှာ"</string>
-    <string name="lock_screen_message" msgid="1534506081955058013">"လော့ခ်မျက်နှာပြင်"</string>
+    <string name="lock_screen_message" msgid="1534506081955058013">"လော့ခ်စခရင်"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"ပင်မနှင့် လော့ခ်မျက်နှာပြင်"</string>
     <string name="set_wallpaper_dialog_message" msgid="2110475703996853076">"နောက်ခံ သတ်မှတ်ရန်"</string>
     <string name="set_wallpaper_home_screen_destination" msgid="7315594722013109354">"ပင်မစာမျက်နှာ"</string>
-    <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"လော့ခ်မျက်နှာပြင်"</string>
+    <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"လော့ခ်စခရင်"</string>
     <string name="set_wallpaper_both_destination" msgid="2536004558738350775">"ပင်မစာမျက်နှာနှင့် လော့ခ်မျက်နှာပြင်"</string>
     <string name="no_backup_image_wallpaper_label" msgid="6316627676107284851">"နောက်ခံပုံကို လှည့်နေသည်"</string>
     <string name="permission_needed_explanation" msgid="139166837541426823">"ဤနေရာတွင် လက်ရှိနောက်ခံကို ပြသရန်အတွက် <xliff:g id="APP_NAME">%1$s</xliff:g> သည် သင့်စက်၏ သိုလှောင်ခန်းကို အသုံးပြုခွင့်လိုအပ်သည်။"</string>
@@ -143,7 +143,7 @@
     <string name="settings_snackbar_description" msgid="890168814524778486">"ဆက်တင်များတွင် Files နှင့် မီဒီယာကို ဖွင့်ပါ။"</string>
     <string name="settings_snackbar_enable" msgid="5992112808061426068">"ဖွင့်ရန်"</string>
     <string name="open_my_photos" msgid="4107196465713868381">"ဓာတ်ပုံများဖွင့်ရန်"</string>
-    <string name="lock_screen_tab" msgid="6672930765010407652">"လော့ခ်မျက်နှာပြင်"</string>
+    <string name="lock_screen_tab" msgid="6672930765010407652">"လော့ခ်စခရင်"</string>
     <string name="home_screen_tab" msgid="1080445697837877526">"ပင်မစာမျက်နှာ"</string>
     <string name="reset" msgid="4945445169532850631">"ပြင်ဆင်ရန်"</string>
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"အပြောင်းအလဲများ ပြန်သတ်မှတ်မလား။"</string>
