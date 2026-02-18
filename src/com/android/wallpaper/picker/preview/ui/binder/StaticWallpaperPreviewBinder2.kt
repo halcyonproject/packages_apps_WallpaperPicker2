@@ -24,7 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.TraceUtils.trace
 import com.android.wallpaper.picker.preview.shared.model.CropSizeModel
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
-import com.android.wallpaper.picker.preview.ui.util.FullResImageViewUtil2
+import com.android.wallpaper.picker.preview.ui.util.FullResImageViewUtil
 import com.android.wallpaper.picker.preview.ui.viewmodel.StaticWallpaperPreviewViewModel
 import com.android.wallpaper.util.RtlUtils
 import com.android.wallpaper.util.WallpaperCropUtils
@@ -37,26 +37,27 @@ import kotlinx.coroutines.launch
 object StaticWallpaperPreviewBinder2 {
 
     fun bind(
+        applicationContext: Context,
         scaleImageView: SubsamplingScaleImageView,
         viewModel: StaticWallpaperPreviewViewModel,
-        applicationContext: Context,
         displaySize: Point,
+        scaleImageViewSize: Point,
         lifecycleOwner: LifecycleOwner,
     ) {
-        // TODO(b/423956081): Implement panning to zoom of SubsamplingScaleImageView when fullscreen
         lifecycleOwner.lifecycleScope.launch {
             launch {
                 viewModel.subsamplingScaleImageViewModel.collect { imageModel ->
                     trace(TAG) {
-                        val cropHint = imageModel.fullPreviewCropModels?.get(displaySize)?.cropHint
+                        val cropHint: Rect? =
+                            imageModel.fullPreviewCropModels?.get(displaySize)?.cropHint
                         scaleImageView.setImage(
-                            ImageSource.cachedBitmap(imageModel.rawWallpaperBitmap),
-                            imageModel.rawWallpaperSize,
-                            displaySize,
-                            cropHint,
-                            RtlUtils.isRtl(applicationContext),
+                            imageSource = ImageSource.cachedBitmap(imageModel.rawWallpaperBitmap),
+                            rawWallpaperSize = imageModel.rawWallpaperSize,
+                            displaySize = displaySize,
+                            scaleImageViewSize = scaleImageViewSize,
+                            cropHint = cropHint,
+                            isRtl = RtlUtils.isRtl(applicationContext),
                         )
-
                         // Initialize the preview crop, so that we can extract the color from the
                         // wallpaper. The color is essential to render the workspace preview.
                         viewModel.updateDefaultPreviewCropModel(
@@ -65,23 +66,23 @@ object StaticWallpaperPreviewBinder2 {
                                 cropHint =
                                     WallpaperCropUtils.calculateVisibleRect(
                                         imageModel.rawWallpaperSize,
-                                        displaySize,
+                                        scaleImageViewSize,
                                     ),
                                 cropSizeModel =
                                     CropSizeModel(
                                         wallpaperZoom =
                                             WallpaperCropUtils.calculateMinZoom(
                                                 imageModel.rawWallpaperSize,
-                                                displaySize,
+                                                scaleImageViewSize,
                                             ),
-                                        hostViewSize = displaySize,
+                                        hostViewSize = scaleImageViewSize,
                                         cropViewSize =
                                             WallpaperCropUtils.calculateCropSurfaceSize(
                                                 scaleImageView.resources,
-                                                max(displaySize.x, displaySize.y),
-                                                min(displaySize.x, displaySize.y),
-                                                displaySize.x,
-                                                displaySize.y,
+                                                max(scaleImageViewSize.x, scaleImageViewSize.y),
+                                                min(scaleImageViewSize.x, scaleImageViewSize.y),
+                                                scaleImageViewSize.x,
+                                                scaleImageViewSize.y,
                                             ),
                                     ),
                             ),
@@ -96,21 +97,20 @@ object StaticWallpaperPreviewBinder2 {
         imageSource: ImageSource,
         rawWallpaperSize: Point,
         displaySize: Point,
+        scaleImageViewSize: Point,
         cropHint: Rect?,
         isRtl: Boolean,
     ) {
-        val scale: Float = WallpaperCropUtils.getSystemWallpaperMaximumScale(context)
         // Set the full res image
         setImage(imageSource)
         // Calculate the scale and the center point for the full res image
         doOnLayout {
-            FullResImageViewUtil2.getScaleAndCenter(
-                    displaySize,
-                    rawWallpaperSize,
-                    displaySize,
-                    cropHint,
-                    isRtl,
-                    systemScale = scale,
+            FullResImageViewUtil.getScaleAndCenterF(
+                    rawWallpaperSize = rawWallpaperSize,
+                    displaySize = displaySize,
+                    scaleImageViewSize = scaleImageViewSize,
+                    cropRect = cropHint,
+                    isRtl = isRtl,
                 )
                 .let { scaleAndCenter ->
                     minScale = scaleAndCenter.minScale
