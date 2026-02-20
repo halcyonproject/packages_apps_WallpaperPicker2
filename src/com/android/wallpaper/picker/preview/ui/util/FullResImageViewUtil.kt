@@ -18,7 +18,7 @@ package com.android.wallpaper.picker.preview.ui.util
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
-import com.android.wallpaper.picker.preview.ui.util.CropSizeUtil.fitCropRectToLayoutDirection
+import android.graphics.RectF
 import com.android.wallpaper.util.WallpaperCropUtils
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 
@@ -50,7 +50,7 @@ object FullResImageViewUtil {
         val defaultRawWallpaperRect =
             WallpaperCropUtils.calculateVisibleRect(rawWallpaperSize, viewSize)
         val visibleRawWallpaperRect =
-            cropRect?.let { fitCropRectToLayoutDirection(it, displaySize, isRtl) }
+            cropRect?.let { CropSizeUtil.fitCropRectToLayoutDirection(it, displaySize, isRtl) }
                 ?: defaultRawWallpaperRect
 
         val centerPosition =
@@ -75,6 +75,88 @@ object FullResImageViewUtil {
             visibleWallpaperZoom,
             centerPosition,
         )
+    }
+
+    /**
+     * Calculates the scale and center point for a wallpaper preview with floating-point precision.
+     *
+     * This is the high-precision counterpart to [getScaleAndCenter].
+     */
+    fun getScaleAndCenterF(
+        rawWallpaperSize: Point,
+        displaySize: Point,
+        scaleImageViewSize: Point,
+        cropRect: Rect?,
+        isRtl: Boolean,
+    ): ScaleAndCenter {
+        // defaultRawWallpaperRect represents a brand new wallpaper preview with no crop hints.
+        val defaultRawWallpaperRect: RectF =
+            calculateVisibleRect(rawWallpaperSize, scaleImageViewSize)
+        val visibleRawWallpaperRect: RectF =
+            cropRect?.let { fitCropRectToLayoutDirection(it, displaySize, isRtl) }
+                ?: defaultRawWallpaperRect
+
+        val centerPosition =
+            PointF(visibleRawWallpaperRect.centerX(), visibleRawWallpaperRect.centerY())
+        val defaultWallpaperZoom =
+            calculateMinZoom(
+                PointF(defaultRawWallpaperRect.width(), defaultRawWallpaperRect.height()),
+                PointF(scaleImageViewSize.x.toFloat(), scaleImageViewSize.y.toFloat()),
+            )
+        val visibleWallpaperZoom =
+            calculateMinZoom(
+                PointF(visibleRawWallpaperRect.width(), visibleRawWallpaperRect.height()),
+                PointF(scaleImageViewSize.x.toFloat(), scaleImageViewSize.y.toFloat()),
+            )
+
+        return ScaleAndCenter(
+            defaultWallpaperZoom,
+            defaultWallpaperZoom.coerceAtLeast(DEFAULT_WALLPAPER_MAX_ZOOM),
+            visibleWallpaperZoom,
+            centerPosition,
+        )
+    }
+
+    private fun calculateVisibleRect(outer: Point, inner: Point): RectF {
+        val visibleRectCenter = PointF(outer.x / 2f, outer.y / 2f)
+        if (inner.x / inner.y.toFloat() > outer.x / outer.y.toFloat()) {
+            val minZoom = inner.x / outer.x.toFloat()
+            val visibleRectHeight = inner.y / minZoom
+            return RectF(
+                0f,
+                visibleRectCenter.y - visibleRectHeight / 2,
+                outer.x.toFloat(),
+                visibleRectCenter.y + visibleRectHeight / 2,
+            )
+        } else {
+            val minZoom = inner.y / outer.y.toFloat()
+            val visibleRectWidth = inner.x / minZoom
+            return RectF(
+                visibleRectCenter.x - visibleRectWidth / 2,
+                0f,
+                visibleRectCenter.x + visibleRectWidth / 2,
+                outer.y.toFloat(),
+            )
+        }
+    }
+
+    private fun fitCropRectToLayoutDirection(
+        cropRect: Rect,
+        displaySize: Point,
+        isRtl: Boolean,
+    ): RectF {
+        val parallax = cropRect.width() - displaySize.x * cropRect.height() / displaySize.y
+        return RectF(cropRect).apply { if (isRtl) left += parallax else right -= parallax }
+    }
+
+    private fun calculateMinZoom(outer: PointF, inner: PointF): Float {
+        val minZoom =
+            if (inner.x / inner.y > outer.x / outer.y) {
+                inner.x / outer.x
+            } else {
+                inner.y / outer.y
+            }
+        return minZoom
     }
 
     fun SubsamplingScaleImageView.getCropRect() = Rect().apply { visibleFileRect(this) }
