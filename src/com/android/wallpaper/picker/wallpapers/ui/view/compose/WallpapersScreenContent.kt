@@ -367,12 +367,7 @@ fun TopToolbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
-        Box(
-            modifier =
-                Modifier.clickable { /* Handle back */ }
-                    .padding(vertical = 4.dp)
-                    .padding(end = 16.dp)
-        ) {
+        Box(modifier = Modifier.padding(vertical = 4.dp).padding(end = 16.dp)) {
             IconButton(
                 modifier = Modifier.size(40.dp),
                 onClick = { activity.onBackPressedDispatcher.onBackPressed() },
