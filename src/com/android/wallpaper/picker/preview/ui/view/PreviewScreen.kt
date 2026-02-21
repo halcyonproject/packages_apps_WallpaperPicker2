@@ -48,9 +48,17 @@ fun PreviewScreen(
     viewModel: WallpaperPreviewViewModel,
     previewTarget: PreviewTarget,
     modifier: Modifier,
+    applyRoundedCorner: Boolean = true,
 ) {
     // TODO (b/465178380): Use the real corner radius according to DeviceDisplayType
-    Box(modifier = modifier.clip(RoundedCornerShape(percent = 10))) {
+    Box(
+        modifier =
+            if (applyRoundedCorner) {
+                modifier.clip(RoundedCornerShape(percent = 10))
+            } else {
+                modifier
+            }
+    ) {
         AndroidView(modifier = Modifier.fillMaxSize(), factory = { preview })
 
         PreviewShade(

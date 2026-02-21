@@ -144,7 +144,7 @@
     <string name="settings_snackbar_enable" msgid="5992112808061426068">"አንቃ"</string>
     <string name="open_my_photos" msgid="4107196465713868381">"የእኔ ፎቶዎችን ክፈት"</string>
     <string name="lock_screen_tab" msgid="6672930765010407652">"ማያ ገጽ ቁልፍ"</string>
-    <string name="home_screen_tab" msgid="1080445697837877526">"መነሻ ማያ ገፅ"</string>
+    <string name="home_screen_tab" msgid="1080445697837877526">"መነሻ ማያ ገጽ"</string>
     <string name="reset" msgid="4945445169532850631">"ዳግም አስጀምር"</string>
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"ለውጦች ዳግም ይጀመሩ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"የእርስዎ ለውጦች አይቀመጡም"</string>

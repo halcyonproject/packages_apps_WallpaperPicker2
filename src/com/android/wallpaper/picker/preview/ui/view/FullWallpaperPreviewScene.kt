@@ -164,6 +164,7 @@ fun ContentScope.FullWallpaperPreviewScene(
                         viewModel = viewModel,
                         previewTarget = previewTarget,
                         modifier = Modifier.fillMaxSize(),
+                        applyRoundedCorner = !viewModel.isDesktopUi,
                     )
                 }
             }
