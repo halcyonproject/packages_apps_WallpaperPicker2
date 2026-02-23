@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/creativeEditPreviewFragment"
-        android:name="com.android.wallpaper.picker.preview.ui.fragment.CreativeEditPreviewFragment">
+        android:name="com.android.wallpaper.picker.preview.ui.fragment.CreativeEditPreviewFragment2">
         <action
             android:id="@+id/action_creativeEditPreviewFragment_to_wallpaperPreviewFragment"
             app:destination="@+id/wallpaperPreviewFragment" />

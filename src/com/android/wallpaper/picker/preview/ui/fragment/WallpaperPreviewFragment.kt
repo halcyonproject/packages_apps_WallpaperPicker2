@@ -235,6 +235,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        postponeEnterTransition()
         val isFoldable = displayUtils.hasMultiInternalDisplays()
 
         val displaySizes: DisplaySizes = wallpaperPreviewViewModel.displaySizes.value
