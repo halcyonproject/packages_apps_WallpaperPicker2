@@ -39,6 +39,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -393,14 +394,19 @@ object PreviewBinder {
                                     }
                                     .also { surfaceViewCallback = it }
                             )
-
-                            // This is a workaround to force trigger a surfaceCreated from the
-                            // SurfaceView, where the reparent transactions can work the most
-                            // reliably.
-                            val parentView: ViewGroup? = preview.parent as? ViewGroup
-                            parentView?.let {
-                                it.removeView(preview)
-                                it.addView(preview)
+                            if (!preview.isVisible) {
+                                // When SurfaceView turns from not visible to visible,
+                                // it will trigger surfaceCreated.
+                                preview.isVisible = true
+                            } else {
+                                // This is a workaround to force trigger a surfaceCreated from the
+                                // SurfaceView, where the reparent transactions can work the most
+                                // reliably.
+                                val parentView: ViewGroup? = preview.parent as? ViewGroup
+                                parentView?.let {
+                                    it.removeView(preview)
+                                    it.addView(preview)
+                                }
                             }
                         }
                 }
