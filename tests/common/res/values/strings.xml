@@ -24,4 +24,22 @@
     <drawable name="wallpaper1">@drawable/wallpaper</drawable>
     <drawable name="wallpaper1_small">@drawable/wallpaper_thumb</drawable>
 
+    <!-- Sample category data used in LegacyWallpaperClientImplTests -->
+    <!-- Array of static category names -->
+    <string-array name="static_categories">
+        <item>test_static_category</item>
+    </string-array>
+
+    <!-- Title for the category -->
+    <string name="test_static_category_title">Test Static Category</string>
+
+    <!-- Featured image resource name -->
+    <string name="test_static_category_featured_image">wallpaper_1</string>
+
+    <!-- The actual list of wallpapers in this category -->
+    <string-array name="test_static_category_wallpapers">
+        <item>wallpaper_1</item>
+        <item>wallpaper_2</item>
+    </string-array>
+
 </resources>
