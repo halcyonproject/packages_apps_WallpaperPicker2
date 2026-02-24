@@ -20,6 +20,7 @@ import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.app.wallpaper.WallpaperDescription
 import android.content.Context
+import android.graphics.Matrix
 import android.graphics.Point
 import android.os.Bundle
 import android.os.IBinder
@@ -297,6 +298,7 @@ object PreviewBinder {
                                     context = applicationContext,
                                     wallpaperModel = wallpaper,
                                     forceSingleEngine = forceSingleEngine,
+                                    displaySize = displaySize,
                                     engineDisplaySize =
                                         displaySizes.getEngineDisplaySize(
                                             displayType = previewTarget.deviceDisplayType,
@@ -419,6 +421,7 @@ object PreviewBinder {
         context: Context,
         wallpaperModel: LiveWallpaperModel,
         forceSingleEngine: Boolean,
+        displaySize: Point,
         engineDisplaySize: Point,
         whichPreview: WhichPreview,
         windowToken: IBinder,
@@ -442,7 +445,12 @@ object PreviewBinder {
                 onWallpaperColorsChanged = onWallpaperColorsChanged,
             )
         return connection.wallpaperEngine.get()?.mirrorSurfaceControl()?.let {
-            WallpaperSurfaceControl.Live(it)
+            WallpaperSurfaceControl.Live(
+                liveWallpaperSurfaceControl = it,
+                forceSingleEngine = forceSingleEngine,
+                displaySize = displaySize,
+                engineDisplaySize = engineDisplaySize,
+            )
         }
     }
 
@@ -644,7 +652,12 @@ object PreviewBinder {
     private fun SurfaceView.reparentWallpaper(wallpaperSurfaceControl: WallpaperSurfaceControl) {
         when (wallpaperSurfaceControl) {
             is WallpaperSurfaceControl.Live -> {
-                reparentLiveWallpaper(wallpaperSurfaceControl.liveWallpaperSurfaceControl)
+                reparentLiveWallpaper(
+                    surfaceControl = wallpaperSurfaceControl.liveWallpaperSurfaceControl,
+                    forceSingleEngine = wallpaperSurfaceControl.forceSingleEngine,
+                    displaySize = wallpaperSurfaceControl.displaySize,
+                    engineDisplaySize = wallpaperSurfaceControl.engineDisplaySize,
+                )
             }
             is WallpaperSurfaceControl.Static -> {
                 reparentStaticWallpaper(
@@ -654,7 +667,12 @@ object PreviewBinder {
         }
     }
 
-    private fun SurfaceView.reparentLiveWallpaper(surfaceControl: SurfaceControl) {
+    private fun SurfaceView.reparentLiveWallpaper(
+        surfaceControl: SurfaceControl,
+        forceSingleEngine: Boolean,
+        displaySize: Point,
+        engineDisplaySize: Point,
+    ) {
         val surfaceViewRootSurfaceControl = this.rootSurfaceControl
         if (surfaceViewRootSurfaceControl == null) {
             Log.w(
@@ -664,12 +682,32 @@ object PreviewBinder {
             )
             return
         }
+        val reparentScale: FloatArray = getReparentScale(displaySize, engineDisplaySize)
         val transaction =
             SurfaceControl.Transaction()
+                .setMatrix(
+                    surfaceControl,
+                    if (forceSingleEngine) reparentScale[Matrix.MSCALE_Y]
+                    else reparentScale[Matrix.MSCALE_X],
+                    reparentScale[Matrix.MSKEW_X],
+                    reparentScale[Matrix.MSKEW_Y],
+                    reparentScale[Matrix.MSCALE_Y],
+                )
                 .reparent(surfaceControl, this.surfaceControl)
                 .setLayer(surfaceControl, 0)
                 .show(surfaceControl)
         surfaceViewRootSurfaceControl.applyTransactionOnDraw(transaction)
+    }
+
+    private fun getReparentScale(displaySize: Point, engineDisplaySize: Point): FloatArray {
+        val metrics = Matrix()
+        val values = FloatArray(9)
+        metrics.postScale(
+            displaySize.x.toFloat() / engineDisplaySize.x,
+            displaySize.y.toFloat() / engineDisplaySize.y,
+        )
+        metrics.getValues(values)
+        return values
     }
 
     private fun SurfaceView.reparentStaticWallpaper(
@@ -721,8 +759,12 @@ object PreviewBinder {
     sealed class WallpaperSurfaceControl {
         abstract fun release()
 
-        data class Live(val liveWallpaperSurfaceControl: SurfaceControl) :
-            WallpaperSurfaceControl() {
+        data class Live(
+            val liveWallpaperSurfaceControl: SurfaceControl,
+            val forceSingleEngine: Boolean,
+            val displaySize: Point,
+            val engineDisplaySize: Point,
+        ) : WallpaperSurfaceControl() {
             override fun release() {
                 liveWallpaperSurfaceControl.release()
             }
