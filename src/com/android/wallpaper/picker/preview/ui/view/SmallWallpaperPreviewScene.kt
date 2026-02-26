@@ -22,7 +22,6 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -345,12 +344,7 @@ private fun SmallPreviewTopToolbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
-        Box(
-            modifier =
-                Modifier.clickable { /* Handle back */ }
-                    .padding(vertical = 4.dp)
-                    .padding(end = 16.dp)
-        ) {
+        Box(modifier = Modifier.padding(vertical = 4.dp).padding(end = 16.dp)) {
             IconButton(
                 modifier = Modifier.size(40.dp),
                 onClick = { backDispatcher?.onBackPressed() },

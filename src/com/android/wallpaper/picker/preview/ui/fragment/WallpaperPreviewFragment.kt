@@ -42,6 +42,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.findNavController
@@ -234,13 +235,16 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        postponeEnterTransition()
         val isFoldable = displayUtils.hasMultiInternalDisplays()
 
         val displaySizes: DisplaySizes = wallpaperPreviewViewModel.displaySizes.value
-        val lockScreenPreview = SurfaceView(context)
-        val homeScreenPreview = SurfaceView(context)
-        val lockScreenUnfoldedPreview: SurfaceView? = if (isFoldable) SurfaceView(context) else null
-        val homeScreenUnfoldedPreview: SurfaceView? = if (isFoldable) SurfaceView(context) else null
+        val lockScreenPreview = SurfaceView(context).apply { init() }
+        val homeScreenPreview = SurfaceView(context).apply { init() }
+        val lockScreenUnfoldedPreview: SurfaceView? =
+            if (isFoldable) SurfaceView(context).apply { init() } else null
+        val homeScreenUnfoldedPreview: SurfaceView? =
+            if (isFoldable) SurfaceView(context).apply { init() } else null
         val onDispatchTouchEventReady:
             (
                 previewTarget: PreviewTarget, onDispatchTouchEvent: (event: MotionEvent) -> Unit,
@@ -681,6 +685,28 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                 Scenes.FullHomeUnfoldedPreview -> false
                 else -> true
             }
+        }
+
+        // Z-order of the surface view. -1 positions the surface view immediately behind the
+        // application's main window.
+        private const val SURFACE_VIEW_ORDER_FRONT: Int = -1
+        // Z-order of the surface view. -2 positions the surface view behind the one of composition
+        // order -1.
+        private const val SURFACE_VIEW_ORDER_BACK: Int = -2
+
+        fun SurfaceView.init() {
+            compositionOrder = SURFACE_VIEW_ORDER_FRONT
+            isVisible = false
+        }
+
+        // Bring the surface view to the composition order of -1
+        fun SurfaceView.toFront() {
+            compositionOrder = SURFACE_VIEW_ORDER_FRONT
+        }
+
+        // Bring the surface view to the composition order of -2
+        fun SurfaceView.toBack() {
+            compositionOrder = SURFACE_VIEW_ORDER_BACK
         }
     }
 }

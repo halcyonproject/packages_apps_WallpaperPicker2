@@ -262,6 +262,14 @@ constructor(
         }
     }
 
+    // Set readiness to false for all previews.
+    fun resetPreviews() {
+        isLockPreviewReady.value = false
+        isLockUnfoldedPreviewReady.value = false
+        isHomePreviewReady.value = false
+        isHomeUnfoldedPreviewReady.value = false
+    }
+
     private val lockPreviewShadeAlpha: StateFlow<Float> =
         combine(isLockPreviewReady, previewActionsViewModel.isDownloading) {
                 isLockPreviewReady,

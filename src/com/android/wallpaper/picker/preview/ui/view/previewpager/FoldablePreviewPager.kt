@@ -53,6 +53,8 @@ import com.android.wallpaper.model.wallpaper.DeviceDisplayType
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.FOLDED
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.SINGLE
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.UNFOLDED
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Companion.toBack
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Companion.toFront
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Elements
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
@@ -106,14 +108,6 @@ fun ContentScope.FoldablePreviewPager(
     val unfoldedRatio: Float = displaySizes.unfolded.x.toFloat() / displaySizes.unfolded.y.toFloat()
     val combinedRatio: Float = foldedRatio + unfoldedRatio
 
-    // Bring the surface view to the composition order of -1
-    fun SurfaceView.toFront() {
-        compositionOrder = -1
-    }
-    // Bring the surface view to the composition order of -2
-    fun SurfaceView.toBack() {
-        compositionOrder = -2
-    }
     // This function will move the selected surface view to the top among all surface views. In the
     // case of overlapping, the animated, selected surface will be always on top.
     fun moveSurfaceViewToTop(previewTarget: PreviewTarget) {

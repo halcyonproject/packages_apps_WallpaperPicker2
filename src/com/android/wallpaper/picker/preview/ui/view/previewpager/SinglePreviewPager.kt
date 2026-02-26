@@ -39,6 +39,8 @@ import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType.SINGLE
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Companion.toBack
+import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Companion.toFront
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.Scenes
 import com.android.wallpaper.picker.preview.ui.fragment.WallpaperPreviewFragment.SharedElements
 import com.android.wallpaper.picker.preview.ui.view.PreviewScreen
@@ -51,7 +53,6 @@ import kotlinx.coroutines.launch
 
 private val MIN_HORIZONTAL_PADDING = 48.dp
 private val MIN_VERTICAL_PADDING = 8.dp
-private val SPACE_BETWEEN_PREVIEWS = 8.dp
 private val PAGE_SPACING = 12.dp
 
 /**
@@ -72,14 +73,6 @@ fun ContentScope.SinglePreviewPager(
 
     val previewRatio: Float = displaySizes.single.x.toFloat() / displaySizes.single.y.toFloat()
 
-    // Bring the surface view to the composition order of -1
-    fun SurfaceView.toFront() {
-        compositionOrder = -1
-    }
-    // Bring the surface view to the composition order of -2
-    fun SurfaceView.toBack() {
-        compositionOrder = -2
-    }
     // This function will move the selected surface view to the top among all surface views. In the
     // case of overlapping, the animated, selected surface will be always on top.
     fun moveSurfaceViewToTop(screen: Screen) {

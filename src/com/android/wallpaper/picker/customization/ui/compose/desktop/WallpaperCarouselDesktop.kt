@@ -37,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.integerResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -122,7 +124,8 @@ fun WallpaperItem(
         modifier =
             modifier
                 .height(dimensionResource(id = R.dimen.curated_photo_desktop_height))
-                .clip(RoundedCornerShape(cornerRadius)),
+                .clip(RoundedCornerShape(cornerRadius))
+                .semantics { contentDescription = item.contentDescription ?: "" },
         shape = RoundedCornerShape(cornerRadius),
         onClick = onClick,
         elevation = CardDefaults.cardElevation(0.dp),
@@ -131,7 +134,7 @@ fun WallpaperItem(
             factory = {
                 ImageView(it).apply {
                     scaleType = ImageView.ScaleType.CENTER_CROP
-                    contentDescription = item.contentDescription
+                    importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 }
             },
             modifier = Modifier.fillMaxSize(),

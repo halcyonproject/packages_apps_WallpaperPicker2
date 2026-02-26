@@ -40,6 +40,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -80,6 +81,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -244,7 +246,7 @@ object PreviewBinder {
         )
     }
 
-    private fun bind(
+    fun bind(
         preview: SurfaceView,
         viewModel: WallpaperPreviewViewModel,
         applicationContext: Context,
@@ -256,6 +258,7 @@ object PreviewBinder {
         windowToken: IBinder,
         liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils,
         onDispatchTouchEventReady: (onDispatchTouchEvent: (event: MotionEvent) -> Unit) -> Unit,
+        wallpaperPreviewOnly: Boolean = false,
     ): PreviewBinding {
         var workspaceCallback: Message? = null
         val wallpaperSurfaceControl: MutableStateFlow<WallpaperSurfaceControl?> =
@@ -315,15 +318,17 @@ object PreviewBinder {
                                             .addOnWindowVisibilityChangeListener { visibility ->
                                                 engine.trySetIsVisible(visibility == View.VISIBLE)
                                             }
-                                        // Set up on dispatch touch event
-                                        onDispatchTouchEventReady.invoke(
-                                            getOnDispatchTouchEventForLiveWallpapers(engine)
-                                        )
-                                        // Set up on apply live wallpaper callback
-                                        setOnApplyLiveWallpaper(
-                                            viewModel = viewModel,
-                                            engine = engine,
-                                        )
+                                        if (!wallpaperPreviewOnly) {
+                                            // Set up on dispatch touch event
+                                            onDispatchTouchEventReady.invoke(
+                                                getOnDispatchTouchEventForLiveWallpapers(engine)
+                                            )
+                                            // Set up on apply live wallpaper callback
+                                            setOnApplyLiveWallpaper(
+                                                viewModel = viewModel,
+                                                engine = engine,
+                                            )
+                                        }
                                     },
                                     onWallpaperColorsChanged = { colors, displayId, persistedColors
                                         ->
@@ -377,7 +382,8 @@ object PreviewBinder {
                 launch {
                     combine(
                             wallpaperSurfaceControl.filterNotNull(),
-                            workspaceSurfaceControl.filterNotNull(),
+                            if (wallpaperPreviewOnly) flowOf(null)
+                            else workspaceSurfaceControl.filterNotNull(),
                             ::Pair,
                         )
                         .collect { (wallpaperSurfaceControl, workspaceSurfaceControl) ->
@@ -386,7 +392,9 @@ object PreviewBinder {
                                 object : SurfaceViewUtils.SurfaceCallback {
                                         override fun surfaceCreated(holder: SurfaceHolder) {
                                             preview.reparentWallpaper(wallpaperSurfaceControl)
-                                            preview.reparentWorkspace(workspaceSurfaceControl)
+                                            if (workspaceSurfaceControl != null) {
+                                                preview.reparentWorkspace(workspaceSurfaceControl)
+                                            }
                                             viewModel.setPreviewReady2(
                                                 previewTarget = previewTarget,
                                                 isReady = true,
@@ -395,14 +403,19 @@ object PreviewBinder {
                                     }
                                     .also { surfaceViewCallback = it }
                             )
-
-                            // This is a workaround to force trigger a surfaceCreated from the
-                            // SurfaceView, where the reparent transactions can work the most
-                            // reliably.
-                            val parentView: ViewGroup? = preview.parent as? ViewGroup
-                            parentView?.let {
-                                it.removeView(preview)
-                                it.addView(preview)
+                            if (!preview.isVisible) {
+                                // When SurfaceView turns from not visible to visible,
+                                // it will trigger surfaceCreated.
+                                preview.isVisible = true
+                            } else {
+                                // This is a workaround to force trigger a surfaceCreated from the
+                                // SurfaceView, where the reparent transactions can work the most
+                                // reliably.
+                                val parentView: ViewGroup? = preview.parent as? ViewGroup
+                                parentView?.let {
+                                    it.removeView(preview)
+                                    it.addView(preview)
+                                }
                             }
                         }
                 }
