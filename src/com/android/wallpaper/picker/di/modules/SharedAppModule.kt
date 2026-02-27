@@ -26,7 +26,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process
-import android.util.Log
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.CreativeHelper
 import com.android.wallpaper.module.DefaultCreativeHelper
@@ -188,7 +187,6 @@ abstract class SharedAppModule {
         @Retention(AnnotationRetention.RUNTIME)
         annotation class BroadcastRunning
 
-        const val TAG = "SharedAppModule"
         const val BROADCAST_SLOW_DISPATCH_THRESHOLD = 1000L
         const val BROADCAST_SLOW_DELIVERY_THRESHOLD = 1000L
 
@@ -268,15 +266,9 @@ abstract class SharedAppModule {
             @ApplicationContext context: Context,
             baseFlags: BaseFlags,
         ): ThemeManager? {
-            var themeManager: ThemeManager? = null
-            if (baseFlags.isThemeServiceEnabled()) {
-                try {
-                    themeManager = context.getSystemService(ThemeManager::class.java)
-                } catch (e: RuntimeException) {
-                    Log.e(TAG, "Cannot provide theme manager", e)
-                }
-            }
-            return themeManager
+            return if (baseFlags.isThemeServiceEnabled()) {
+                context.getSystemService(ThemeManager::class.java)
+            } else null
         }
     }
 }
