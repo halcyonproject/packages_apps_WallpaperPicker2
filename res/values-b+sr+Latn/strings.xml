@@ -111,7 +111,7 @@
     <string name="bottom_action_bar_apply" msgid="2983308349819178932">"Primeni"</string>
     <string name="accessibility_preview_pager" msgid="1839869637405028575">"<xliff:g id="ID_1">%1$d</xliff:g>. stranica od <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="next_page_content_description" msgid="6268461446679584152">"Dalje"</string>
-    <string name="previous_page_content_description" msgid="1138597031571078429">"Prethodna"</string>
+    <string name="previous_page_content_description" msgid="1138597031571078429">"Nazad"</string>
     <string name="wallpaper_title" msgid="6754214682228331092">"Pozadina"</string>
     <string name="wallpaper_preview_card_content_description" msgid="6049261033541034584">"Pregled pozadine"</string>
     <string name="wallpaper_preview_card_content_description_editable" msgid="8147628993184862003">"Pregled pozadine: %1$s – %2$s. Dvaput dodirnite da biste izmenili sliku"</string>
