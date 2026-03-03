@@ -50,7 +50,9 @@ import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerF
 import com.android.wallpaper.picker.category.ui.view.providers.implementation.DefaultIndividualPickerFactory
 import com.android.wallpaper.picker.category.wrapper.DefaultWallpaperCategoryWrapper
 import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper
+import com.android.wallpaper.picker.common.preview.ui.binder.DefaultWorkspaceBinder
 import com.android.wallpaper.picker.common.preview.ui.binder.DefaultWorkspaceCallbackBinder
+import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceBinder
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.DefaultCustomizationOptionsBinder
@@ -192,6 +194,10 @@ abstract class WallpaperPicker2AppModule {
     @Binds
     @Singleton
     abstract fun bindWallpaperPreferences(impl: DefaultWallpaperPreferences): WallpaperPreferences
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkspaceBinder(impl: DefaultWorkspaceBinder): WorkspaceBinder
 
     @Binds
     @Singleton

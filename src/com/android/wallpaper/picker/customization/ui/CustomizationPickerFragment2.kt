@@ -73,7 +73,7 @@ import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerF
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder
 import com.android.wallpaper.picker.common.preview.ui.binder.PreviewAlphaAnimationBinder
-import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceCallbackBinder
+import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceBinder
 import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2.ActivityEnterAnimationCallback
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
@@ -121,7 +121,7 @@ class CustomizationPickerFragment2 :
     @Inject lateinit var toolbarBinder: ToolbarBinder
     @Inject lateinit var colorUpdateViewModel: ColorUpdateViewModel
     @Inject lateinit var clockViewFactory: ClockViewFactory
-    @Inject lateinit var workspaceCallbackBinder: WorkspaceCallbackBinder
+    @Inject lateinit var workspaceBinder: WorkspaceBinder
     @Inject lateinit var displayUtils: DisplayUtils
     @Inject lateinit var wallpaperConnectionUtils: WallpaperConnectionUtils
     @Inject lateinit var persistentWallpaperModelRepository: PersistentWallpaperModelRepository
@@ -1106,7 +1106,7 @@ class CustomizationPickerFragment2 :
             view = previewCard,
             viewModel = customizationPickerViewModel,
             colorUpdateViewModel = colorUpdateViewModel,
-            workspaceCallbackBinder = workspaceCallbackBinder,
+            workspaceBinder = workspaceBinder,
             screen = screen,
             deviceDisplayType = displayUtils.getCurrentDisplayType(activity),
             displaySize =
