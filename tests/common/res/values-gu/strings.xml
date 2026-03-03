@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  ~ Copyright (C) 2024 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+   -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string-array name="static_categories">
+    <item msgid="5092070044447886617">"test_static_category"</item>
+  </string-array>
+    <string name="test_static_category_title" msgid="8585314655621724953">"સ્થિર વૉલપેપરની કૅટેગરીનું પરીક્ષણ કરો"</string>
+    <string name="test_static_category_featured_image" msgid="291151624965018502">"wallpaper_1"</string>
+  <string-array name="test_static_category_wallpapers">
+    <item msgid="5474351135968515357">"wallpaper_1"</item>
+    <item msgid="465973659389590643">"wallpaper_2"</item>
+  </string-array>
+  <string-array name="pixel_live_categories">
+    <item msgid="2692875444708366823">"test_category_pixel"</item>
+  </string-array>
+    <string name="test_category_pixel_title" msgid="9092267566097001506">"Pixelના લાઇવ વૉલપેપરની કૅટેગરી"</string>
+    <string name="test_category_pixel_package_name" msgid="4338341305968930235">"com.google.pixel.livewallpaper"</string>
+    <string name="test_category_pixel_featured_service_name" msgid="2761964518969814817">"com.google.pixel.livewallpaper.split.FeatureActivity"</string>
+  <string-array name="test_category_pixel_service_names">
+    <item msgid="4372967450477312062">"com.google.pixel.livewallpaper.split.FeatureActivity"</item>
+  </string-array>
+</resources>
