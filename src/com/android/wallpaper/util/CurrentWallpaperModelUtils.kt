@@ -204,7 +204,13 @@ object CurrentWallpaperModelUtils {
         val wallpaperDescription: WallpaperDescription = wallpaperInstance.description
         val uniqueId: String = wallpaperInfo.serviceName
         val collectionId: String =
-            WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
+            if (isCreative(context, wallpaperInfo)) {
+                WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content)
+                    ?: wallpaperInfo.packageName
+            } else {
+                WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content)
+                    ?: context.getString(R.string.live_wallpaper_collection_id)
+            }
 
         val wallpaperId: WallpaperId =
             WallpaperId(
