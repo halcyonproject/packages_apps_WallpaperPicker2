@@ -139,3 +139,10 @@ flag {
     description: "Enables effect for the cat smile project"
     bug: "479401365"
 }
+
+flag {
+    name: "proactive_suggestions"
+    namespace: "customization_picker"
+    description: "Suggested actions for selected wallpapers"
+    bug: "450082207"
+}
