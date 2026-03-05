@@ -169,7 +169,10 @@ fun ContentScope.FoldablePreviewPager(
                 }
             val onClick: (() -> Unit)? by
                 viewModel
-                    .onSmallPreviewClicked(previewTarget.screen, previewTarget.deviceDisplayType) {
+                    .onSmallPreviewClicked(
+                        screen = previewTarget.screen,
+                        deviceDisplayType = previewTarget.deviceDisplayType,
+                    ) {
                         if (enableNavToFullPreview) {
                             moveSurfaceViewToTop(previewTarget)
                             sceneState.setTargetScene(
@@ -185,7 +188,10 @@ fun ContentScope.FoldablePreviewPager(
                     .collectAsStateWithLifecycle(null)
             val onClickUnfolded by
                 viewModel
-                    .onSmallPreviewClicked(previewTarget.screen, previewTarget.deviceDisplayType) {
+                    .onSmallPreviewClicked(
+                        screen = previewTargetUnfolded.screen,
+                        deviceDisplayType = previewTargetUnfolded.deviceDisplayType,
+                    ) {
                         if (enableNavToFullPreview) {
                             moveSurfaceViewToTop(previewTargetUnfolded)
                             sceneState.setTargetScene(

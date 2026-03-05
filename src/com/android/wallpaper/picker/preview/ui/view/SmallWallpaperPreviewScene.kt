@@ -56,8 +56,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -370,12 +373,16 @@ private fun SmallPreviewTopToolbar(
             fontSize = 20.sp,
             color = colorScheme.onSurface,
         )
+
         if (isNextButtonVisible) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Box(modifier = Modifier.padding(vertical = 4.dp)) {
                 Button(
-                    modifier = Modifier.height(40.dp),
+                    modifier =
+                        Modifier.height(40.dp)
+                            .semantics { testTagsAsResourceId = true }
+                            .testTag(NEXT_BUTTON_TEST_RES_ID),
                     onClick = {
                         onNextButtonClicked?.invoke()
                         sceneState.setTargetScene(
@@ -464,3 +471,5 @@ private fun ActionButtonWithLabel(
         }
     }
 }
+
+private const val NEXT_BUTTON_TEST_RES_ID = "com.google.android.apps.wallpaper:id/button_next"
