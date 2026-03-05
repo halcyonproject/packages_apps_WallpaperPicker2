@@ -817,7 +817,7 @@ class CustomizationPickerFragment2 :
                     activity = requireActivity(),
                     isCreativeCategories = false,
                     shouldNavigateToExtendedWallpaperEffects = false,
-                    isViewAsHome = true,
+                    isViewAsHome = !isDesktopUi,
                     requestCode =
                         CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                     isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
