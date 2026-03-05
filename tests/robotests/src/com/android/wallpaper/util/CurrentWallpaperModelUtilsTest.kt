@@ -26,6 +26,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.PersistableBundle
 import androidx.test.core.app.ApplicationProvider
+import com.android.wallpaper.R
 import com.android.wallpaper.asset.BuiltInWallpaperAsset
 import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.module.InjectorProvider
@@ -470,6 +471,43 @@ class CurrentWallpaperModelUtilsTest {
         assertThat(creativeWallpaperData.isCurrent).isTrue()
         assertThat(creativeWallpaperData.creativeWallpaperEffectsData).isNull()
         assertThat(creativeWallpaperData.isNewCreativeWallpaper).isFalse()
+    }
+
+    @Test
+    fun createLiveWallpaperModelFromWallpaperInstance_defaultCollectionId() {
+        val sourceInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+        val sourceDescription =
+            WallpaperDescription.Builder().setId("id").setComponent(sourceInfo.component).build()
+        val sourceInstance = WallpaperInstance(sourceInfo, sourceDescription)
+
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createCurrentLiveWallpaperModelFromInstance(
+                context,
+                sourceInstance,
+                WallpaperManager.FLAG_SYSTEM,
+            ) as WallpaperModel.LiveWallpaperModel
+
+        assertThat(wallpaperModel.commonWallpaperData.id.collectionId)
+            .isEqualTo(context.getString(R.string.live_wallpaper_collection_id))
+    }
+
+    @Test
+    fun createLiveWallpaperModelFromWallpaperInstance_creative_defaultCollectionId() {
+        (wallpaperModelConversionHelper as FakeWallpaperModelConversionHelper).isCreative = true
+        val sourceInfo = WallpaperInfoUtils.createWallpaperInfo(context)
+        val sourceDescription =
+            WallpaperDescription.Builder().setId("id").setComponent(sourceInfo.component).build()
+        val sourceInstance = WallpaperInstance(sourceInfo, sourceDescription)
+
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createCurrentLiveWallpaperModelFromInstance(
+                context,
+                sourceInstance,
+                WallpaperManager.FLAG_SYSTEM,
+            ) as WallpaperModel.LiveWallpaperModel
+
+        assertThat(wallpaperModel.commonWallpaperData.id.collectionId)
+            .isEqualTo(WallpaperInfoUtils.STUB_PACKAGE)
     }
 
     @Test
