@@ -20,6 +20,7 @@ import android.app.WallpaperInfo
 import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import com.android.wallpaper.asset.Asset
+import com.android.wallpaper.picker.data.ImageWallpaperData
 import com.android.wallpaper.picker.data.InternalLiveWallpaperData
 import com.android.wallpaper.picker.data.WallpaperModel
 
@@ -35,4 +36,7 @@ interface WallpaperModelConversionHelper {
 
     /** Creates the [InternalLiveWallpaperData] for the given [WallpaperModel]. */
     fun getInternalLiveWallpaperData(wallpaperInfo: WallpaperInfo): InternalLiveWallpaperData?
+
+    /** Creates the [ImageWallpaperData] for the given [WallpaperModel]. */
+    fun getImageWallpaperData(wallpaperDescription: WallpaperDescription): ImageWallpaperData?
 }

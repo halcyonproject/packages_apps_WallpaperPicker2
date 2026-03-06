@@ -17,8 +17,11 @@
 package com.android.wallpaper.testing
 
 import android.app.WallpaperInfo
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
+import android.net.Uri
 import com.android.wallpaper.asset.Asset
+import com.android.wallpaper.picker.data.ImageWallpaperData
 import com.android.wallpaper.picker.data.InternalLiveWallpaperData
 import com.android.wallpaper.util.WallpaperModelConversionHelper
 import javax.inject.Inject
@@ -28,6 +31,7 @@ import javax.inject.Singleton
 class FakeWallpaperModelConversionHelper @Inject constructor() : WallpaperModelConversionHelper {
 
     var isCreative: Boolean = false
+    var imageUrl: String? = null
 
     override fun getLiveWallpaperThumbAssets(
         context: Context,
@@ -44,6 +48,12 @@ class FakeWallpaperModelConversionHelper @Inject constructor() : WallpaperModelC
         wallpaperInfo: WallpaperInfo
     ): InternalLiveWallpaperData? {
         return null
+    }
+
+    override fun getImageWallpaperData(
+        wallpaperDescription: WallpaperDescription
+    ): ImageWallpaperData? {
+        return imageUrl?.let { ImageWallpaperData(Uri.parse(it)) } ?: null
     }
 
     companion object {
