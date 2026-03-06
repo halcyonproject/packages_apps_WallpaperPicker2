@@ -128,6 +128,8 @@ object CurrentWallpaperModelUtils {
         wallpaperDescription: WallpaperDescription,
         @SetWallpaperFlags wallpaperManagerDestinationFlag: Int,
     ): WallpaperModel {
+        val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
+
         val uniqueId = WallpaperDescriptionUtils.getUniqueId(wallpaperDescription.content) ?: ""
         val collectionId =
             WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
@@ -184,7 +186,10 @@ object CurrentWallpaperModelUtils {
                 ),
             downloadableWallpaperData = null,
             networkWallpaperData = null,
-            imageWallpaperData = null,
+            imageWallpaperData =
+                entryPoint
+                    .getWallpaperModelConversionHelper()
+                    .getImageWallpaperData(wallpaperDescription),
         )
     }
 
