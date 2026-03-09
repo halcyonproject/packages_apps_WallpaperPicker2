@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.util
 
+import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.android.wallpaper.asset.LiveWallpaperThumbAsset
@@ -76,6 +77,14 @@ class DefaultWallpaperModelConversionHelperTest {
         val wallpaperInfo = WallpaperInfoUtils.createWallpaperInfo(context)
 
         assertThat(wallpaperModelConversionHelper.getInternalLiveWallpaperData(wallpaperInfo))
+            .isNull()
+    }
+
+    @Test
+    fun getImageWallpaperData_alwaysReturnsNull() {
+        val wallpaperDescription = WallpaperDescription.Builder().build()
+
+        assertThat(wallpaperModelConversionHelper.getImageWallpaperData(wallpaperDescription))
             .isNull()
     }
 }

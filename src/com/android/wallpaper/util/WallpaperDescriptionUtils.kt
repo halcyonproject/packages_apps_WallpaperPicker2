@@ -57,6 +57,7 @@ class WallpaperDescriptionUtils {
         private const val CONTENT_KEY_PLACEHOLDER_COLOR = "picker_metadata_placeholder_color"
         private const val CONTENT_KEY_UNIQUE_ID = "picker_metadata_unique_id"
         private const val CONTENT_KEY_EFFECTS = "picker_metadata_effects"
+        private const val CONTENT_KEY_IMAGE_URL = "picker_metadata_image_url"
 
         /**
          * Updates the content bundle with picker-specific metadata.
@@ -69,12 +70,14 @@ class WallpaperDescriptionUtils {
             placeHolderColor: Int?,
             uniqueId: String?,
             effects: String?,
+            imageUrl: String? = null,
         ): PersistableBundle {
             return content.apply {
                 putString(CONTENT_KEY_COLLECTION_ID, collectionId)
                 putString(CONTENT_KEY_UNIQUE_ID, uniqueId)
                 placeHolderColor?.let { putInt(CONTENT_KEY_PLACEHOLDER_COLOR, it) }
                 effects?.let { putString(CONTENT_KEY_EFFECTS, it) }
+                imageUrl?.let { putString(CONTENT_KEY_IMAGE_URL, it) }
             }
         }
 
@@ -94,6 +97,10 @@ class WallpaperDescriptionUtils {
 
         fun getEffects(content: PersistableBundle): String? {
             return content.getString(CONTENT_KEY_EFFECTS)
+        }
+
+        fun getImageUrl(content: PersistableBundle): String? {
+            return content.getString(CONTENT_KEY_IMAGE_URL)
         }
 
         fun createWallpaperInfoFromDescription(
@@ -139,11 +146,11 @@ class WallpaperDescriptionUtils {
 fun LiveWallpaperModel.toDescription(): WallpaperDescription {
     val content =
         updateMetadata(
-            liveWallpaperData.description.content,
-            commonWallpaperData.id.collectionId,
-            commonWallpaperData.placeholderColorInfo.placeholderColor,
-            commonWallpaperData.id.uniqueId,
-            liveWallpaperData.effectNames,
+            content = liveWallpaperData.description.content,
+            collectionId = commonWallpaperData.id.collectionId,
+            placeHolderColor = commonWallpaperData.placeholderColorInfo.placeholderColor,
+            uniqueId = commonWallpaperData.id.uniqueId,
+            effects = liveWallpaperData.effectNames,
         )
     val attribs = commonWallpaperData.attributions
     val title = attribs?.getOrNull(0)
@@ -165,11 +172,12 @@ fun StaticWallpaperModel.toDescription(
 ): WallpaperDescription {
     val content =
         updateMetadata(
-            PersistableBundle(),
-            commonWallpaperData.id.collectionId,
-            commonWallpaperData.placeholderColorInfo.placeholderColor,
-            commonWallpaperData.id.uniqueId,
-            null,
+            content = PersistableBundle(),
+            collectionId = commonWallpaperData.id.collectionId,
+            placeHolderColor = commonWallpaperData.placeholderColorInfo.placeholderColor,
+            uniqueId = commonWallpaperData.id.uniqueId,
+            effects = null,
+            imageUrl = imageWallpaperData?.uri?.toString(),
         )
     val attribs = commonWallpaperData.attributions
     val title = attribs?.getOrNull(0)

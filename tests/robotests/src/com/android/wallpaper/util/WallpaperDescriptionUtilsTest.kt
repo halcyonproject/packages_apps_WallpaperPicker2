@@ -41,6 +41,7 @@ import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getEffects
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getPlaceHolderColor
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getUniqueId
 import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.updateMetadata
+import com.android.wallpaper.util.WallpaperDescriptionUtils.Companion.getImageUrl
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -79,16 +80,19 @@ class WallpaperDescriptionUtilsTest {
         val placeHolderColor = 12345678
         val uniqueId = "uniqueId"
         val effects = "effects"
+        val imageUrl = "imageUrl"
         assertThat(getCollectionId(content)).isNull()
         assertThat(getPlaceHolderColor(content)).isNull()
         assertThat(getEffects(content)).isNull()
+        assertThat(getImageUrl(content)).isNull()
 
-        updateMetadata(content, collectionId, placeHolderColor, uniqueId, effects)
+        updateMetadata(content, collectionId, placeHolderColor, uniqueId, effects, imageUrl)
 
         assertThat(getCollectionId(content)).isEqualTo(collectionId)
         assertThat(getPlaceHolderColor(content)).isEqualTo(placeHolderColor)
         assertThat(getUniqueId(content)).isEqualTo(uniqueId)
         assertThat(getEffects(content)).isEqualTo(effects)
+        assertThat(getImageUrl(content)).isEqualTo(imageUrl)
     }
 
     @Test
@@ -100,21 +104,25 @@ class WallpaperDescriptionUtilsTest {
                 placeHolderColor = -1,
                 uniqueId = "",
                 effects = "bogus",
+                imageUrl = null,
             )
         val collectionId = "collectionId"
         val placeHolderColor = 12345678
         val uniqueId = "uniqueId"
         val effects = "effects"
+        val imageUrl = "imageUrl"
         assertThat(getCollectionId(content)).isNotNull()
         assertThat(getPlaceHolderColor(content)).isNotNull()
         assertThat(getEffects(content)).isNotNull()
+        assertThat(getImageUrl(content)).isNull()
 
-        updateMetadata(content, collectionId, placeHolderColor, uniqueId, effects)
+        updateMetadata(content, collectionId, placeHolderColor, uniqueId, effects, imageUrl)
 
         assertThat(getCollectionId(content)).isEqualTo(collectionId)
         assertThat(getPlaceHolderColor(content)).isEqualTo(placeHolderColor)
         assertThat(getUniqueId(content)).isEqualTo(uniqueId)
         assertThat(getEffects(content)).isEqualTo(effects)
+        assertThat(getImageUrl(content)).isEqualTo(imageUrl)
     }
 
     @Test
@@ -207,6 +215,7 @@ class WallpaperDescriptionUtilsTest {
                 placeholderColor = 123,
                 attribution = listOf("title", "line1", "line2"),
                 actionUrl = contextUri.toString(),
+                imageWallpaperUri = Uri.parse("uri://image"),
             )
 
         val description =
@@ -217,6 +226,7 @@ class WallpaperDescriptionUtilsTest {
         assertThat(description.component).isEqualTo(null)
         assertThat(getCollectionId(description.content)).isEqualTo("collectionId")
         assertThat(getPlaceHolderColor(description.content)).isEqualTo(123)
+        assertThat(getImageUrl(description.content)).isEqualTo("uri://image")
         assertThat(description.title).isEqualTo("title")
         assertThat(description.description).containsExactly("line1", "line2").inOrder()
         assertThat(description.contextUri).isEqualTo(contextUri)
