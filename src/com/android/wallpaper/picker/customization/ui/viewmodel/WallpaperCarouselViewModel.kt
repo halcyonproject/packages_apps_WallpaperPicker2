@@ -31,6 +31,7 @@ import com.android.wallpaper.picker.category.ui.viewmodel.TileViewModel
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.util.PhotoMediaUtils
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.category.CategoryModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -159,10 +160,7 @@ constructor(
                             CategoryType.CreativeCategories,
                         )
                     } else {
-                        navigateToWallpaperCollection(
-                            category.commonCategoryData.collectionId,
-                            CategoryType.CreativeCategories,
-                        )
+                        navigateToWallpaperCollection(category, CategoryType.CreativeCategories)
                     }
                 }
             }
@@ -245,10 +243,13 @@ constructor(
         }
     }
 
-    private fun navigateToWallpaperCollection(collectionId: String, categoryType: CategoryType) {
+    private fun navigateToWallpaperCollection(
+        categoryModel: CategoryModel,
+        categoryType: CategoryType,
+    ) {
         viewModelScope.launch {
             _navigationEvents.emit(
-                NavigationEvent.NavigateToWallpaperCollection(collectionId, categoryType)
+                NavigationEvent.NavigateToWallpaperCollection(categoryModel, categoryType)
             )
         }
     }
@@ -273,7 +274,7 @@ constructor(
         ) : NavigationEvent()
 
         data class NavigateToWallpaperCollection(
-            val categoryId: String,
+            val categoryModel: CategoryModel,
             val categoryType: CategoryType,
         ) : NavigationEvent()
 
