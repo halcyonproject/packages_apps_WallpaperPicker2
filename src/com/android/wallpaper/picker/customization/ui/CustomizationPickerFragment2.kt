@@ -97,6 +97,8 @@ import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.di.modules.MainDispatcher
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
+import com.android.wallpaper.picker.wallpapers.ui.view.CategoryWallpapersFragment
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.android.wallpaper.util.DisplayUtils
@@ -133,6 +135,7 @@ class CustomizationPickerFragment2 :
     @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
     @Inject lateinit var myPhotosStarterImpl: MyPhotosStarterImpl
     @Inject lateinit var iconStyleViewUtil: IconStyleViewUtil
+    @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
 
     private val customizationPickerViewModel: CustomizationPickerViewModel2 by viewModels()
 
@@ -828,14 +831,19 @@ class CustomizationPickerFragment2 :
             navigateToScreenSaverSettingsActivity = {
                 activity?.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))
             },
-            navigateToWallpaperCollectionScreen = { categoryId, categoryType ->
-                switchFragment(
-                    individualPickerFactory.getIndividualPickerInstance(
-                        categoryId,
-                        categoryType,
-                        customizationPickerViewModel.selectedPreviewScreen.value,
+            navigateToWallpaperCollectionScreen = { categoryModel, categoryType ->
+                if (BaseFlags.get(requireContext()).isWallpapersFragmentEnabled()) {
+                    categoryWallpapersRepository.setSelectedCategory(category = categoryModel)
+                    switchFragment(CategoryWallpapersFragment())
+                } else {
+                    switchFragment(
+                        individualPickerFactory.getIndividualPickerInstance(
+                            categoryModel.commonCategoryData.collectionId,
+                            categoryType,
+                            customizationPickerViewModel.selectedPreviewScreen.value,
+                        )
                     )
-                )
+                }
             },
             navigateToExtendedWallpaperEffects = {
                 if (BaseFlags.get(pickerMotionContainer.context).isPhotoPickerEnabled()) {

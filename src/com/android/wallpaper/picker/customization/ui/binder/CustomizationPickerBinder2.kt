@@ -41,6 +41,7 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPick
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.PickerScreen.CUSTOMIZATION_OPTION
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.PickerScreen.MAIN
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ object CustomizationPickerBinder2 {
         navigateToPackThemeActivity: (Intent) -> Unit,
         navigateToScreenSaverSettingsActivity: () -> Unit,
         navigateToWallpaperCollectionScreen:
-            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+            ((categoryModel: CategoryModel, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
         packThemeSuggestedChip: PackThemeSuggestedChip?,
         packThemeSuggestedEntryBinder: PackThemeSuggestedEntryBinder,
