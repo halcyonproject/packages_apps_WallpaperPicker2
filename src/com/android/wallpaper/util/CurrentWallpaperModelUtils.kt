@@ -54,6 +54,9 @@ object CurrentWallpaperModelUtils {
     private const val STATIC_WALLPAPER_PACKAGE = "StaticWallpaperPackage"
     private const val STATIC_WALLPAPER_CLASS = "StaticWallpaperClass"
 
+    private const val UNKNOWN_CURRENT_WALLPAPER_ID = "unknown_current_wallpaper_id"
+    private const val UNKNOWN_COLLECTION_ID = "unknown_collection_id"
+
     private const val MULTIPLE_ENGINE_METADATA_NAME: String =
         "com.android.wallpaper.supports_multiple_engines"
 
@@ -130,9 +133,12 @@ object CurrentWallpaperModelUtils {
     ): WallpaperModel {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
 
-        val uniqueId = WallpaperDescriptionUtils.getUniqueId(wallpaperDescription.content) ?: ""
+        val uniqueId =
+            WallpaperDescriptionUtils.getUniqueId(wallpaperDescription.content)
+                ?: UNKNOWN_CURRENT_WALLPAPER_ID + wallpaperManagerDestinationFlag
         val collectionId =
-            WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
+            WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content)
+                ?: UNKNOWN_COLLECTION_ID
 
         val wallpaperId =
             WallpaperId(
