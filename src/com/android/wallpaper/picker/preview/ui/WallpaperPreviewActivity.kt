@@ -54,6 +54,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewMod
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.Companion.PreviewScreen
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.WallpaperConnection
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
@@ -407,6 +408,7 @@ class WallpaperPreviewActivity :
             hideInfoSheet: Boolean,
             shouldNavigateToExtendedWallpaperEffects: Boolean,
             @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
+            wallpaperLaunchSource: String?,
         ): Intent {
 
             val intent = Intent(context.applicationContext, WallpaperPreviewActivity::class.java)
@@ -433,6 +435,7 @@ class WallpaperPreviewActivity :
                 shouldNavigateToExtendedWallpaperEffects,
             )
             intent.putExtra(WALLPAPER_ENTRYPOINT, setWallpaperEntryPoint)
+            intent.putExtra(WALLPAPER_LAUNCH_SOURCE, wallpaperLaunchSource)
 
             return intent
         }
@@ -464,6 +467,7 @@ class WallpaperPreviewActivity :
             private var shouldCategoryRefresh: Boolean = false
             private var hideInfoSheet: Boolean = false
             private var shouldNavigateToExtendedWallpaperEffects: Boolean = false
+            private var wallpaperLaunchSource: String? = null
             private var setWallpaperEntryPoint: Int =
                 StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW
 
@@ -493,6 +497,10 @@ class WallpaperPreviewActivity :
                 this.setWallpaperEntryPoint = entryPoint
             }
 
+            fun wallpaperLaunchSource(source: String?) = apply {
+                this.wallpaperLaunchSource = source
+            }
+
             /** Constructs the final [Intent] with the specified configuration. */
             fun build(): Intent {
                 // Create ImageWallpaperInfo if the intent is from a content URI,
@@ -513,6 +521,7 @@ class WallpaperPreviewActivity :
                     shouldNavigateToExtendedWallpaperEffects =
                         shouldNavigateToExtendedWallpaperEffects,
                     setWallpaperEntryPoint = setWallpaperEntryPoint,
+                    wallpaperLaunchSource = wallpaperLaunchSource,
                 )
             }
         }

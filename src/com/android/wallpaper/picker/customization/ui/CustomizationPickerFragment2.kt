@@ -102,6 +102,7 @@ import com.android.wallpaper.picker.wallpapers.ui.view.CategoryWallpapersFragmen
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.android.wallpaper.util.DisplayUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.WallpaperConnection
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
@@ -207,6 +208,8 @@ class CustomizationPickerFragment2 :
                                     multiPanesChecker.isMultiPanesEnabled(requireContext()),
                                 setWallpaperEntryPoint =
                                     StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+                                wallpaperLaunchSource =
+                                    arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
                             )
                         }
                     }
@@ -799,7 +802,9 @@ class CustomizationPickerFragment2 :
             navigateToWallpaperCategoriesScreen = { _ ->
                 switchFragment(
                     CategoriesFragment.newInstance(
-                        destinationScreen = customizationPickerViewModel.selectedPreviewScreen.value
+                        destinationScreen =
+                            customizationPickerViewModel.selectedPreviewScreen.value,
+                        wallpaperLaunchSource = arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
                     )
                 )
             },
@@ -825,6 +830,7 @@ class CustomizationPickerFragment2 :
                         CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                     isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
                     setWallpaperEntryPoint = setEntryPoint,
+                    wallpaperLaunchSource = arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
                 )
             },
             navigateToPackThemeActivity = { intent -> context?.startActivity(intent) },
@@ -849,7 +855,9 @@ class CustomizationPickerFragment2 :
                 if (BaseFlags.get(pickerMotionContainer.context).isPhotoPickerEnabled()) {
                     switchFragment(
                         PhotoPickerFragment.newInstance(
-                            shouldNavigateToExtendedWallpaperEffects = true
+                            shouldNavigateToExtendedWallpaperEffects = true,
+                            wallpaperLaunchSource =
+                                arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
                         )
                     )
                 } else {
@@ -1136,6 +1144,7 @@ class CustomizationPickerFragment2 :
                         // Hide info sheet for current wallpapers because attribution is not
                         // updated when language updates, see b/418619944
                         .hideInfoSheet(true)
+                        .wallpaperLaunchSource(arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "")
                         .build()
                 )
             },
