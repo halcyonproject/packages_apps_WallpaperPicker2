@@ -113,6 +113,7 @@ object ActivityUtils {
         isViewAsHome: Boolean,
         requestCode: Int,
         isMultiPanesEnabled: Boolean,
+        wallpaperLaunchSource: String,
         @UserEventLogger.SetWallpaperEntryPoint setWallpaperEntryPoint: Int,
     ) {
         val context = activity.applicationContext
@@ -124,6 +125,7 @@ object ActivityUtils {
                 .refreshCategory(isCreativeCategories)
                 .navigateToExtendedEffects(shouldNavigateToExtendedWallpaperEffects)
                 .entryPoint(setWallpaperEntryPoint)
+                .wallpaperLaunchSource(wallpaperLaunchSource)
                 .build()
 
         startActivityForResultSafely(activity, previewIntent, requestCode)

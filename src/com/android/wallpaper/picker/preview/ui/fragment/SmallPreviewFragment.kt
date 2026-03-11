@@ -71,7 +71,6 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewMod
 import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
-import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_SETTINGS_HOMEPAGE
 import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.wallpaperconnection.WallpaperConnectionUtils
@@ -258,15 +257,14 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
             if (activityReference != null) {
                 if (wallpaperPreviewViewModel.isNewTask) {
                     activityReference.window?.exitTransition = Slide(Gravity.END)
+                    val launchSource =
+                        activityReference.intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE)
+                            ?: LAUNCH_SOURCE_SETTINGS_HOMEPAGE
                     val intent = Intent(activityReference, TrampolinePickerActivity::class.java)
                     intent.setFlags(
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     )
-                    intent.putExtra(
-                        WALLPAPER_LAUNCH_SOURCE,
-                        if (wallpaperPreviewViewModel.isViewAsHome) LAUNCH_SOURCE_LAUNCHER
-                        else LAUNCH_SOURCE_SETTINGS_HOMEPAGE,
-                    )
+                    intent.putExtra(WALLPAPER_LAUNCH_SOURCE, launchSource)
                     activityReference.startActivity(
                         intent,
                         ActivityOptions.makeSceneTransitionAnimation(activityReference).toBundle(),
@@ -319,8 +317,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
                         lifecycleOwner = viewLifecycleOwner,
                         wallpaperPreviewViewModel = wallpaperPreviewViewModel,
                         context = context,
-                        exitActivityOnCancel =
-                            wallpaperPreviewViewModel.launchedForWallpaperEffects,
+                        exitActivityOnCancel = wallpaperPreviewViewModel.launchedForWallpaperEffects,
                     )
                     .let { launcher ->
                         arguments?.clear()

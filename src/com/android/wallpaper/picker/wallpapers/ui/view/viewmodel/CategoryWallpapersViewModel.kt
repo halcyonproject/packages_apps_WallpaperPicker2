@@ -24,6 +24,7 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.ArraySet
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.wallpaper.config.BaseFlags
@@ -35,6 +36,7 @@ import com.android.wallpaper.picker.common.preview.data.repository.PersistentWal
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -59,8 +61,11 @@ constructor(
     private val wallpaperManager: WallpaperManager,
     private val wallpaperPreferences: WallpaperPreferences,
     private val multiPanesChecker: MultiPanesChecker,
+    savedStateHandle: SavedStateHandle,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
+
+    private val launchSource: String? = savedStateHandle[WALLPAPER_LAUNCH_SOURCE]
 
     private val _showRotationDialog = MutableStateFlow(false)
     /**
@@ -153,6 +158,7 @@ constructor(
                                             .refreshCategory(true)
                                             .newTask(multiPanesChecker.isMultiPanesEnabled(context))
                                             .navigateToExtendedEffects(false)
+                                            .wallpaperLaunchSource(launchSource)
                                             .build()
                                     return@ThumbnailsViewModelCategory previewIntent
                                 },
@@ -204,6 +210,7 @@ constructor(
                                             .refreshCategory(true)
                                             .newTask(multiPanesChecker.isMultiPanesEnabled(context))
                                             .navigateToExtendedEffects(false)
+                                            .wallpaperLaunchSource(launchSource)
                                             .build()
                                     return@ThumbnailsViewModelCategory previewIntent
                                 },
