@@ -20,6 +20,7 @@ import android.view.SurfaceView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,12 +31,15 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,17 +48,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -99,8 +104,8 @@ fun ContentScope.ApplyWallpaperScene(
 ) {
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
     val systemBarPadding: PaddingValues = WindowInsets.systemBars.asPaddingValues()
-    val windowSize: IntSize = LocalWindowInfo.current.containerSize
-    val phoneAspectRatio: Float = windowSize.width.toFloat() / windowSize.height.toFloat()
+    val displaySize = displaySizes.single
+    val phoneAspectRatio: Float = displaySize.x.toFloat() / displaySize.y.toFloat()
 
     val isLockScreenChecked: Boolean by
         viewModel.isLockCheckBoxChecked.collectAsStateWithLifecycle(false)
@@ -113,125 +118,153 @@ fun ContentScope.ApplyWallpaperScene(
     val isApplyWallpaperProgressDialogVisible: Boolean by
         viewModel.isSetWallpaperProgressBarVisible.collectAsStateWithLifecycle(false)
 
+    val context = LocalContext.current
+    val shouldShowDesktopUi = remember { BaseFlags.get(context).shouldShowDesktopUi(context) }
+
     Box(
         modifier =
-            Modifier.padding(
-                top = systemBarPadding.calculateTopPadding(),
-                bottom = systemBarPadding.calculateBottomPadding(),
-            )
+            Modifier.fillMaxSize()
+                .padding(
+                    top = systemBarPadding.calculateTopPadding(),
+                    bottom = systemBarPadding.calculateBottomPadding(),
+                )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier.element(Elements.ApplyWallpaperTitle).height(140.dp),
-                contentAlignment = Alignment.BottomCenter,
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val windowHeight = maxHeight
+            Column(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = windowHeight)
             ) {
+                Spacer(modifier = Modifier.weight(1f))
+
                 Box(
                     modifier =
-                        Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 24.dp),
+                        Modifier.element(Elements.ApplyWallpaperTitle)
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp, horizontal = 24.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = stringResource(R.string.apply_wallpaper_title_text),
-                        fontSize = 44.sp,
+                        fontSize = 36.sp,
+                        lineHeight = 44.sp,
                         color = colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
                     )
                 }
-            }
 
-            Box(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (isFoldable) {
-                    FoldablePreviewPager(
-                        viewModel = viewModel,
-                        sceneState = sceneState,
-                        pagerState = checkNotNull(foldablePreviewPagerState),
-                        lockScreenPreview = lockScreenPreview,
-                        lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
-                        homeScreenPreview = homeScreenPreview,
-                        homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
-                        displaySizes = displaySizes,
-                        enableNavToFullPreview = false,
-                        pagerCheckBoxViewModel =
-                            PagerCheckBoxViewModel(
-                                isLockScreenChecked = isLockScreenChecked,
-                                isHomeScreenChecked = isHomeScreenChecked,
-                                onCheckChanged = { screen ->
-                                    when (screen) {
-                                        LOCK_SCREEN -> onLockScreenCheckChanged?.invoke()
-                                        HOME_SCREEN -> onHomeScreenCheckChanged?.invoke()
+                Spacer(modifier = Modifier.weight(1f))
+
+                Box(
+                    modifier = Modifier.fillMaxWidth().clipToBounds(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isFoldable) {
+                        FoldablePreviewPager(
+                            viewModel = viewModel,
+                            sceneState = sceneState,
+                            pagerState = checkNotNull(foldablePreviewPagerState),
+                            lockScreenPreview = lockScreenPreview,
+                            lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
+                            homeScreenPreview = homeScreenPreview,
+                            homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
+                            displaySizes = displaySizes,
+                            enableNavToFullPreview = false,
+                            pagerCheckBoxViewModel =
+                                PagerCheckBoxViewModel(
+                                    isLockScreenChecked = isLockScreenChecked,
+                                    isHomeScreenChecked = isHomeScreenChecked,
+                                    onCheckChanged = { screen ->
+                                        when (screen) {
+                                            LOCK_SCREEN -> onLockScreenCheckChanged?.invoke()
+                                            HOME_SCREEN -> onHomeScreenCheckChanged?.invoke()
+                                        }
+                                    },
+                                ),
+                        )
+                    } else {
+                        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                            // Lock screen preview group
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                MovableElement(
+                                    key = SharedElements.LockScreen,
+                                    modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                                ) {
+                                    content {
+                                        PreviewScreen(
+                                            preview = lockScreenPreview,
+                                            viewModel = viewModel,
+                                            previewTarget = PreviewTarget(LOCK_SCREEN, SINGLE),
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
                                     }
-                                },
-                            ),
-                    )
-                } else {
-                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            MovableElement(
-                                key = SharedElements.LockScreen,
-                                modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
-                            ) {
-                                content {
-                                    PreviewScreen(
-                                        preview = lockScreenPreview,
-                                        viewModel = viewModel,
-                                        previewTarget = PreviewTarget(LOCK_SCREEN, SINGLE),
-                                        modifier = Modifier.fillMaxSize(),
-                                    )
                                 }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                LabelCheckbox(
+                                    modifier =
+                                        Modifier.element(Elements.ApplyWallpaperLockScreenCheckbox),
+                                    isChecked = isLockScreenChecked,
+                                    onCheckedChange = { onLockScreenCheckChanged?.invoke() },
+                                    text = stringResource(R.string.lock_screen_tab),
+                                )
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            LabelCheckbox(
-                                modifier =
-                                    Modifier.element(Elements.ApplyWallpaperLockScreenCheckbox),
-                                isChecked = isLockScreenChecked,
-                                onCheckedChange = { onLockScreenCheckChanged?.invoke() },
-                                text = stringResource(R.string.lock_screen_tab),
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Column(Modifier.weight(1f)) {
-                            MovableElement(
-                                key = SharedElements.HomeScreen,
-                                modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                            // Home screen preview group
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
-                                content {
-                                    PreviewScreen(
-                                        preview = homeScreenPreview,
-                                        viewModel = viewModel,
-                                        previewTarget = PreviewTarget(HOME_SCREEN, SINGLE),
-                                        modifier = Modifier.fillMaxSize(),
-                                    )
+                                MovableElement(
+                                    key = SharedElements.HomeScreen,
+                                    modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                                ) {
+                                    content {
+                                        PreviewScreen(
+                                            preview = homeScreenPreview,
+                                            viewModel = viewModel,
+                                            previewTarget = PreviewTarget(HOME_SCREEN, SINGLE),
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
+                                    }
                                 }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                LabelCheckbox(
+                                    modifier =
+                                        Modifier.element(Elements.ApplyWallpaperHomeScreenCheckbox),
+                                    isChecked = isHomeScreenChecked,
+                                    onCheckedChange = { onHomeScreenCheckChanged?.invoke() },
+                                    text = stringResource(R.string.home_screen_tab),
+                                )
                             }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            LabelCheckbox(
-                                modifier =
-                                    Modifier.element(Elements.ApplyWallpaperHomeScreenCheckbox),
-                                isChecked = isHomeScreenChecked,
-                                onCheckedChange = { onHomeScreenCheckChanged?.invoke() },
-                                text = stringResource(R.string.home_screen_tab),
-                            )
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                ApplyWallpaperButtons(
+                    viewModel,
+                    sceneState,
+                    onWallpaperApplied,
+                    shouldShowDesktopUi,
+                    Modifier.element(Elements.ApplyWallpaperBottomButtons),
+                )
+
+                if (shouldShowDesktopUi) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
-            ApplyWallpaperButtons(
-                viewModel,
-                sceneState,
-                onWallpaperApplied,
-                Modifier.element(Elements.ApplyWallpaperBottomButtons),
-            )
         }
 
         if (isApplyWallpaperProgressDialogVisible) {
@@ -247,6 +280,7 @@ fun ApplyWallpaperButtons(
     viewModel: WallpaperPreviewViewModel,
     sceneState: MutableSceneTransitionLayoutState,
     onWallpaperApplied: () -> Unit,
+    shouldShowDesktopUi: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -256,8 +290,6 @@ fun ApplyWallpaperButtons(
         viewModel.setWallpaperDialogOnConfirmButtonClicked.collectAsStateWithLifecycle(null)
 
     val colorScheme: ColorScheme = MaterialTheme.colorScheme
-    val shouldShowDesktopUi =
-        BaseFlags.get(LocalContext.current).shouldShowDesktopUi(LocalContext.current)
 
     val onApplyButtonClicked: () -> Unit = {
         coroutineScope.launch {
