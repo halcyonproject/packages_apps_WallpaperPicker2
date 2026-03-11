@@ -61,21 +61,18 @@ object CurrentWallpaperModelUtils {
         "com.android.wallpaper.supports_multiple_engines"
 
     // TODO(b/452460147): Make return type not null and handle nullness
-    fun getCurrentWallpaperModels(context: Context): Pair<WallpaperModel?, WallpaperModel?> {
-        var homeWallpaperModel: WallpaperModel?
-        var lockWallpaperModel: WallpaperModel?
+    fun getCurrentWallpaperModels(context: Context): Pair<WallpaperModel, WallpaperModel> {
+        var homeWallpaperModel: WallpaperModel
+        var lockWallpaperModel: WallpaperModel
 
         val wallpaperManager = WallpaperManager.getInstance(context)
 
         val homeWallpaperInstance =
-            wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM)
+            checkNotNull(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM)) {
+                "Home wallpaper instance should not be null"
+            }
         val lockWallpaperInstance =
             wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_LOCK)
-
-        // TODO(b/452460147): In fact homeWallpaperInstance should not be null
-        if (homeWallpaperInstance == null) {
-            return Pair(null, null)
-        }
 
         val isHomeStatic = (homeWallpaperInstance.info == null)
         val homeDescription = homeWallpaperInstance.description
