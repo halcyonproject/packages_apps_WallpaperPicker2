@@ -47,6 +47,7 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarousel
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToPreviewScreen
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToWallpaperCollection
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.CarouselSnapHelper
@@ -79,7 +80,7 @@ object WallpaperPickerEntryBinder {
         navigateToPreviewScreen:
             ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToWallpaperCollectionScreen:
-            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+            ((categoryModel: CategoryModel, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
         curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
         userEventLogger: UserEventLogger,
@@ -205,7 +206,7 @@ object WallpaperPickerEntryBinder {
         navigateToPreviewScreen:
             ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToWallpaperCollectionScreen:
-            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+            ((categoryModel: CategoryModel, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
     ) {
         lifecycleOwner.lifecycleScope.launch {
@@ -216,7 +217,7 @@ object WallpaperPickerEntryBinder {
                     when (navigationEvent) {
                         is NavigateToWallpaperCollection -> {
                             navigateToWallpaperCollectionScreen?.invoke(
-                                navigationEvent.categoryId,
+                                navigationEvent.categoryModel,
                                 navigationEvent.categoryType,
                             )
                         }

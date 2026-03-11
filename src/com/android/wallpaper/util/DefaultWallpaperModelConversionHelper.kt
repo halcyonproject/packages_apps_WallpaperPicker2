@@ -21,6 +21,7 @@ import android.app.wallpaper.WallpaperDescription
 import android.content.Context
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.LiveWallpaperThumbAsset
+import com.android.wallpaper.picker.data.ImageWallpaperData
 import com.android.wallpaper.picker.data.InternalLiveWallpaperData
 import com.android.wallpaper.picker.data.WallpaperModel
 import javax.inject.Inject
@@ -47,6 +48,12 @@ class DefaultWallpaperModelConversionHelper @Inject constructor() : WallpaperMod
     override fun getInternalLiveWallpaperData(
         wallpaperInfo: WallpaperInfo
     ): InternalLiveWallpaperData? {
+        return null
+    }
+
+    override fun getImageWallpaperData(
+        wallpaperDescription: WallpaperDescription
+    ): ImageWallpaperData? {
         return null
     }
 }
