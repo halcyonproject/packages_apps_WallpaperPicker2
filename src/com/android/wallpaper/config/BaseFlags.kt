@@ -36,6 +36,7 @@ import com.android.wallpaper.Flags.enableRecentsDeletionViaProvider
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
 import com.android.wallpaper.Flags.fullscreenPreviewFlowFix
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
+import com.android.wallpaper.Flags.proactiveSuggestions
 import com.android.wallpaper.Flags.refactorIndividualPickerFlag
 import com.android.wallpaper.Flags.refactorWallpaperInfoFlag
 import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
@@ -180,6 +181,8 @@ abstract class BaseFlags {
     open fun isDesktopSpecificWallpaperCollectionsEnabled() = false
 
     open fun isHideAppLabelEnabled(): Boolean = workspaceItemsLabelHidden()
+
+    open fun isProactiveSuggestionsEnabled(): Boolean = proactiveSuggestions()
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)

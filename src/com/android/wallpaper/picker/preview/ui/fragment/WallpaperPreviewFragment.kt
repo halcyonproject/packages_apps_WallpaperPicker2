@@ -15,10 +15,13 @@
  */
 package com.android.wallpaper.picker.preview.ui.fragment
 
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
+import android.transition.Slide
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.SurfaceView
@@ -79,7 +82,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewMod
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel.PreviewTarget
 import com.android.wallpaper.util.DisplayUtils
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
-import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
+import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_SETTINGS_HOMEPAGE
 import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.wallpaperconnection.LiveWallpaperConnectionUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -496,16 +499,22 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                             .show()
 
                         activity?.let { activityReference ->
+                            activityReference.window?.exitTransition = Slide(Gravity.END)
+                            val launchSource =
+                                activityReference.intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE)
+                                    ?: LAUNCH_SOURCE_SETTINGS_HOMEPAGE
                             val intent =
                                 Intent(activityReference, CustomizationPickerActivity2::class.java)
-                            // Clear the whole Activity stack and restart the
-                            // CustomizationPickerActivity2 to make sure to go back to the main
-                            // screen.
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            if (wallpaperPreviewViewModel.isViewAsHome) {
-                                intent.putExtra(WALLPAPER_LAUNCH_SOURCE, LAUNCH_SOURCE_LAUNCHER)
-                            }
-                            activityReference.startActivity(intent)
+                            intent.setFlags(
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            )
+
+                            intent.putExtra(WALLPAPER_LAUNCH_SOURCE, launchSource)
+                            activityReference.startActivity(
+                                intent,
+                                ActivityOptions.makeSceneTransitionAnimation(activityReference)
+                                    .toBundle(),
+                            )
                             activityReference.finish()
                         }
                     },

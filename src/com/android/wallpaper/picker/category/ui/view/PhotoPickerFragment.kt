@@ -46,6 +46,7 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewMo
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.preview.ui.WallpaperPreviewActivity
 import com.android.wallpaper.util.ActivityUtils
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.google.android.material.appbar.AppBarLayout
 import dagger.hilt.android.AndroidEntryPoint
@@ -232,6 +233,7 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
                 .newTask(isMultiPanel)
                 .refreshCategory(isCreativeCategories)
                 .navigateToExtendedEffects(navigateToExtendedWallpaperEffects ?: false)
+                .wallpaperLaunchSource(arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "")
                 .build()
         ActivityUtils.startActivityForResultSafely(
             activity,
@@ -254,13 +256,17 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         private const val ARG_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS =
             "navigate_to_extended_wallpaper_effects"
 
-        fun newInstance(shouldNavigateToExtendedWallpaperEffects: Boolean): PhotoPickerFragment {
+        fun newInstance(
+            shouldNavigateToExtendedWallpaperEffects: Boolean,
+            wallpaperLaunchSource: String,
+        ): PhotoPickerFragment {
             val fragment = PhotoPickerFragment()
             val args = Bundle()
             args.putBoolean(
                 ARG_NAVIGATE_TO_EXTENDED_WALLPAPER_EFFECTS,
                 shouldNavigateToExtendedWallpaperEffects,
             )
+            args.putString(WALLPAPER_LAUNCH_SOURCE, wallpaperLaunchSource)
             fragment.arguments = args
             return fragment
         }
