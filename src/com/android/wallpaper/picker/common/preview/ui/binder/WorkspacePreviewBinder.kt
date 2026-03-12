@@ -32,6 +32,7 @@ import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewC
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_INITIALLY_SELECTED_SLOT_ID
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
+import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder.WORKSPACE_SURFACE_LAYER
 import com.android.wallpaper.picker.common.preview.ui.viewmodel.BasePreviewViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
@@ -71,7 +72,7 @@ object WorkspacePreviewBinder {
                         lifecycleOwner = lifecycleOwner,
                         clockViewFactory = clockViewFactory,
                     )
-                surfaceView.setZOrderMediaOverlay(true)
+                surfaceView.compositionOrder = WORKSPACE_SURFACE_LAYER
                 surfaceView.holder.addCallback(surfaceCallback)
             }
             // When OnDestroy, release the surface
