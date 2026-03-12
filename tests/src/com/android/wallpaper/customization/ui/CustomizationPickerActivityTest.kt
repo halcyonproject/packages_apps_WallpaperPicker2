@@ -29,7 +29,7 @@ import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.module.InjectorProvider
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER
@@ -46,10 +46,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Tests for [CustomizationPickerActivity2] */
+/** Tests for [CustomizationPickerActivity] */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
-class CustomizationPickerActivity2Test {
+class CustomizationPickerActivityTest {
     @get:Rule var hiltRule = HiltAndroidRule(this)
 
     @Inject @ApplicationContext lateinit var context: Context
@@ -69,7 +69,7 @@ class CustomizationPickerActivity2Test {
 
     @Test
     fun launchSuccess() {
-        ActivityScenario.launch(CustomizationPickerActivity2::class.java)
+        ActivityScenario.launch(CustomizationPickerActivity::class.java)
 
         onView(withId(R.id.preview_header)).check(matches(isDisplayed()))
     }
@@ -77,10 +77,10 @@ class CustomizationPickerActivity2Test {
     @Test
     fun launchFromLauncher_showsHomeInPager() {
         val intent =
-            Intent(context, CustomizationPickerActivity2::class.java).apply {
+            Intent(context, CustomizationPickerActivity::class.java).apply {
                 putExtra(WALLPAPER_LAUNCH_SOURCE, LAUNCH_SOURCE_LAUNCHER)
             }
-        val scenario = ActivityScenario.launch<CustomizationPickerActivity2>(intent)
+        val scenario = ActivityScenario.launch<CustomizationPickerActivity>(intent)
 
         scenario.onActivity { activity ->
             val customizationPickerViewModel =
@@ -93,10 +93,10 @@ class CustomizationPickerActivity2Test {
     @Test
     fun launchFromSettings_showsLockInPager() {
         val intent =
-            Intent(context, CustomizationPickerActivity2::class.java).apply {
+            Intent(context, CustomizationPickerActivity::class.java).apply {
                 putExtra(WALLPAPER_LAUNCH_SOURCE, LAUNCH_SOURCE_SETTINGS)
             }
-        val scenario = ActivityScenario.launch<CustomizationPickerActivity2>(intent)
+        val scenario = ActivityScenario.launch<CustomizationPickerActivity>(intent)
 
         scenario.onActivity { activity ->
             val customizationPickerViewModel =

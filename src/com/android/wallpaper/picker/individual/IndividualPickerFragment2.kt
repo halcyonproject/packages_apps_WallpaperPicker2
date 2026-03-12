@@ -70,8 +70,8 @@ import com.android.wallpaper.picker.StartRotationDialogFragment
 import com.android.wallpaper.picker.StartRotationErrorDialogFragment
 import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.util.SizeCalculator
@@ -752,7 +752,7 @@ class IndividualPickerFragment2 :
                                     .beginTransaction()
                                     .replace(
                                         R.id.fragment_container, // containerViewId
-                                        CustomizationPickerFragment2(), // fragment
+                                        CustomizationPickerFragment(), // fragment
                                         CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
                                     )
                                     .commit()

@@ -35,8 +35,8 @@ import com.android.compose.theme.PlatformTheme
 import com.android.wallpaper.R
 import com.android.wallpaper.model.WallpaperRotationInitializer.NETWORK_PREFERENCE_WIFI_ONLY
 import com.android.wallpaper.picker.AppbarFragment
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment
 import com.android.wallpaper.picker.wallpapers.ui.view.compose.LoadingSpinner
 import com.android.wallpaper.picker.wallpapers.ui.view.compose.WallpapersScreenContent
 import com.android.wallpaper.picker.wallpapers.ui.view.viewmodel.CategoryWallpapersViewModel
@@ -68,7 +68,7 @@ class CategoryWallpapersFragment : Hilt_CategoryWallpapersFragment() {
                             .beginTransaction()
                             .replace(
                                 R.id.fragment_container,
-                                CustomizationPickerFragment2(),
+                                CustomizationPickerFragment(),
                                 CUSTOMIZATION_PICKER_FRAGMENT_TAG,
                             )
                             .commit()

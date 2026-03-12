@@ -72,7 +72,7 @@ import com.android.wallpaper.model.wallpaper.DeviceDisplayType.UNFOLDED
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.common.preview.ui.binder.PreviewBinder
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.preview.ui.util.AnimationUtil
 import com.android.wallpaper.picker.preview.ui.view.ApplyWallpaperScene
 import com.android.wallpaper.picker.preview.ui.view.FullWallpaperPreviewScene
@@ -504,7 +504,7 @@ class WallpaperPreviewFragment : Hilt_WallpaperPreviewFragment() {
                                 activityReference.intent.getStringExtra(WALLPAPER_LAUNCH_SOURCE)
                                     ?: LAUNCH_SOURCE_SETTINGS_HOMEPAGE
                             val intent =
-                                Intent(activityReference, CustomizationPickerActivity2::class.java)
+                                Intent(activityReference, CustomizationPickerActivity::class.java)
                             intent.setFlags(
                                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             )

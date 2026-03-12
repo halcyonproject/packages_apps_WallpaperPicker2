@@ -57,7 +57,7 @@ import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerF
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -268,7 +268,7 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
             isCreativeCategories = isCreativeCategories,
             shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
             isViewAsHome = isDestinationHome,
-            requestCode = CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+            requestCode = CustomizationPickerActivity.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
             isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
             setWallpaperEntryPoint = setWallpaperEntryPoint,
             wallpaperLaunchSource = arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
