@@ -32,7 +32,7 @@ import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -48,9 +48,9 @@ import kotlinx.coroutines.launch
 
 object CustomizationPickerBinder2 {
     /**
-     * @return Callback for the [CustomizationPickerActivity2] to set
+     * @return Callback for the [CustomizationPickerActivity] to set
      *   [CustomizationPickerViewModel2]'s screen state to null, which infers to the main screen. We
-     *   need this callback to handle the back navigation in [CustomizationPickerActivity2].
+     *   need this callback to handle the back navigation in [CustomizationPickerActivity].
      */
     fun bind(
         customizationOptionsData: CustomizationOptionsData,

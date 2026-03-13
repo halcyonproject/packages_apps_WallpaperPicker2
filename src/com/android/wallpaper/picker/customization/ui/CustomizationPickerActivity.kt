@@ -56,8 +56,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 
 @AndroidEntryPoint(AppCompatActivity::class)
-class CustomizationPickerActivity2 :
-    Hilt_CustomizationPickerActivity2(), AppbarFragment.AppbarFragmentHost {
+class CustomizationPickerActivity :
+    Hilt_CustomizationPickerActivity(), AppbarFragment.AppbarFragmentHost {
 
     interface ActivityEnterAnimationCallback {
         /**
@@ -138,7 +138,7 @@ class CustomizationPickerActivity2 :
             color = colorUpdateViewModel.colorSurfaceContainer,
             shouldAnimate = {
                 supportFragmentManager.findFragmentById(R.id.fragment_container) is
-                    CustomizationPickerFragment2
+                    CustomizationPickerFragment
             },
             lifecycleOwner = this,
         )
@@ -149,7 +149,7 @@ class CustomizationPickerActivity2 :
                 .beginTransaction()
                 .add(
                     R.id.fragment_container, // containerViewId
-                    CustomizationPickerFragment2().apply {
+                    CustomizationPickerFragment().apply {
                         arguments =
                             Bundle().apply {
                                 putString(
@@ -182,7 +182,7 @@ class CustomizationPickerActivity2 :
         if (isInitialCreation) {
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragment_container)
-                    as? CustomizationPickerFragment2
+                    as? CustomizationPickerFragment
             fragment?.onEnterAnimationCompleteAfterActivityCreated()
             isInitialCreation = false
         }
@@ -214,7 +214,7 @@ class CustomizationPickerActivity2 :
             } else if (isScreenSizeChange) {
                 val fragment =
                     supportFragmentManager.findFragmentByTag(CUSTOMIZATION_PICKER_FRAGMENT_TAG)
-                if (fragment is CustomizationPickerFragment2 && fragment.isAdded) {
+                if (fragment is CustomizationPickerFragment && fragment.isAdded) {
                     // Manually trigger CustomizationPickerFragment2 recreation to refresh the UI.
                     // Since this Activity handles configuration changes manually, the Fragment's
                     // view hierarchy isn't automatically destroyed. We must force a remove/add
@@ -223,7 +223,7 @@ class CustomizationPickerActivity2 :
                     val savedState = supportFragmentManager.saveFragmentInstanceState(fragment)
                     supportFragmentManager.beginTransaction().remove(fragment).commitNow()
                     val newFragment =
-                        CustomizationPickerFragment2().apply { setInitialSavedState(savedState) }
+                        CustomizationPickerFragment().apply { setInitialSavedState(savedState) }
                     supportFragmentManager
                         .beginTransaction()
                         .add(
@@ -261,7 +261,7 @@ class CustomizationPickerActivity2 :
                     .beginTransaction()
                     .replace(
                         R.id.fragment_container, // containerViewId
-                        CustomizationPickerFragment2(), // fragment
+                        CustomizationPickerFragment(), // fragment
                         CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
                     )
                     .commit()

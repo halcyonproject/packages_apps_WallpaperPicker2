@@ -23,7 +23,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2;
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity;
 
 /**
  *  Activity to relinquish task identity for multi-pane and prevent launching incorrect base intent
@@ -42,7 +42,7 @@ public class TrampolinePickerActivity extends FragmentActivity {
         bundle = (bundle == null) ? new Bundle() : bundle;
         startActivityForResultSafely(
                 /* activity= */ this,
-                new Intent(this, CustomizationPickerActivity2.class).putExtras(
+                new Intent(this, CustomizationPickerActivity.class).putExtras(
                         bundle),
                 /* requestCode= */ 0
         );

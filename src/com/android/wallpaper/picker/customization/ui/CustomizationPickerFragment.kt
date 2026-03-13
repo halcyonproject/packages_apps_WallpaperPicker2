@@ -74,7 +74,7 @@ import com.android.wallpaper.picker.common.preview.data.repository.PersistentWal
 import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder
 import com.android.wallpaper.picker.common.preview.ui.binder.PreviewAlphaAnimationBinder
 import com.android.wallpaper.picker.common.preview.ui.binder.WorkspaceBinder
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2.ActivityEnterAnimationCallback
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity.ActivityEnterAnimationCallback
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2
@@ -114,8 +114,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint(AppbarFragment::class)
-class CustomizationPickerFragment2 :
-    Hilt_CustomizationPickerFragment2(), ActivityEnterAnimationCallback {
+class CustomizationPickerFragment :
+    Hilt_CustomizationPickerFragment(), ActivityEnterAnimationCallback {
 
     @Inject lateinit var customizationOptionUtil: CustomizationOptionUtil
     @Inject lateinit var customizationOptionViewUtil: CustomizationOptionViewUtil
@@ -202,7 +202,7 @@ class CustomizationPickerFragment2 :
                                 shouldNavigateToExtendedWallpaperEffects = true,
                                 isViewAsHome = true,
                                 requestCode =
-                                    CustomizationPickerActivity2
+                                    CustomizationPickerActivity
                                         .VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                                 isMultiPanesEnabled =
                                     multiPanesChecker.isMultiPanesEnabled(requireContext()),
@@ -431,7 +431,7 @@ class CustomizationPickerFragment2 :
                 )
 
             view.post {
-                if (this@CustomizationPickerFragment2.view == null) return@post
+                if (this@CustomizationPickerFragment.view == null) return@post
                 // Post to wait for the essential view dimensions to be obtained, to further
                 // calculate the motion scene dimensions.
                 if (!isDesktopUi) {
@@ -827,7 +827,7 @@ class CustomizationPickerFragment2 :
                     shouldNavigateToExtendedWallpaperEffects = false,
                     isViewAsHome = !isDesktopUi,
                     requestCode =
-                        CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+                        CustomizationPickerActivity.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
                     isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
                     setWallpaperEntryPoint = setEntryPoint,
                     wallpaperLaunchSource = arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
