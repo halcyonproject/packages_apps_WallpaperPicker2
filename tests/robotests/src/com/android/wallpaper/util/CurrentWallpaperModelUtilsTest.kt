@@ -393,6 +393,35 @@ class CurrentWallpaperModelUtilsTest {
     }
 
     @Test
+    fun createStaticWallpaperModelFromWallpaperDescription_defaultId() {
+        val sourceDescription =
+            WallpaperDescription.Builder()
+                .setId("id")
+                .setTitle("title")
+                .setDescription(listOf("line1", "line2"))
+                .setContextUri(Uri.parse("uri://context"))
+                .setContent(
+                    PersistableBundle().apply {
+                        putInt("picker_metadata_placeholder_color", 250)
+                        putString("picker_metadata_effects", "someEffect")
+                    }
+                )
+                .build()
+
+        val wallpaperModel =
+            CurrentWallpaperModelUtils.createCurrentStaticWallpaperModelFromDescription(
+                context,
+                sourceDescription,
+                WallpaperManager.FLAG_SYSTEM,
+            ) as WallpaperModel.StaticWallpaperModel
+
+        assertThat(wallpaperModel.commonWallpaperData.id.uniqueId)
+            .isEqualTo("unknown_current_wallpaper_id" + WallpaperManager.FLAG_SYSTEM)
+        assertThat(wallpaperModel.commonWallpaperData.id.collectionId)
+            .isEqualTo("unknown_collection_id")
+    }
+
+    @Test
     fun createStaticWallpaperModelFromWallpaperDescription_applyToLock() {
         val sourceDescription =
             WallpaperDescription.Builder()
