@@ -23,7 +23,7 @@ import com.android.wallpaper.R
 import com.android.wallpaper.model.LiveWallpaperInfo
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.InjectorProvider
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.individual.CreativeCategoryAdapter
 import com.android.wallpaper.picker.individual.MarginItemDecoration
 
@@ -80,8 +80,8 @@ class CreativeCategoryHolder(
                 it.setViewAsHome(viewAsHome)
             },
             if (wallpaperInfo is LiveWallpaperInfo)
-                CustomizationPickerActivity2.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
-            else CustomizationPickerActivity2.PREVIEW_WALLPAPER_REQUEST_CODE,
+                CustomizationPickerActivity.PREVIEW_LIVE_WALLPAPER_REQUEST_CODE
+            else CustomizationPickerActivity.PREVIEW_WALLPAPER_REQUEST_CODE,
             true,
         )
     }

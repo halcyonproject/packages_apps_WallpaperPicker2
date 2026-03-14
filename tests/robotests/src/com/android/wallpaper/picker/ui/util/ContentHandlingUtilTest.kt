@@ -154,7 +154,7 @@ class ContentHandlingUtilTest {
         val commonData = newModel!!.commonWallpaperData
         assertThat(commonData.id.componentName).isEqualTo(component)
         assertThat(commonData.id.uniqueId).isEqualTo("${component.className}_$assetId")
-        assertThat(commonData.id.collectionId).isEqualTo(collectionId)
+        assertThat(commonData.id.collectionId).isEqualTo(component.packageName)
 
         val liveData = newModel.liveWallpaperData
         assertThat(liveData.systemWallpaperInfo.component).isEqualTo(component)

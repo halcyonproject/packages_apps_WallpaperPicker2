@@ -21,7 +21,7 @@
             android:resizeableActivity="false" />
 
         <activity
-            android:name="com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2"
+            android:name="com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity"
             android:resizeableActivity="false"
             android:theme="@style/WallpaperTheme.NoBackground" />
 

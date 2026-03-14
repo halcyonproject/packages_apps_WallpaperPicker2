@@ -54,25 +54,25 @@ object CurrentWallpaperModelUtils {
     private const val STATIC_WALLPAPER_PACKAGE = "StaticWallpaperPackage"
     private const val STATIC_WALLPAPER_CLASS = "StaticWallpaperClass"
 
+    private const val UNKNOWN_CURRENT_WALLPAPER_ID = "unknown_current_wallpaper_id"
+    private const val UNKNOWN_COLLECTION_ID = "unknown_collection_id"
+
     private const val MULTIPLE_ENGINE_METADATA_NAME: String =
         "com.android.wallpaper.supports_multiple_engines"
 
     // TODO(b/452460147): Make return type not null and handle nullness
-    fun getCurrentWallpaperModels(context: Context): Pair<WallpaperModel?, WallpaperModel?> {
-        var homeWallpaperModel: WallpaperModel?
-        var lockWallpaperModel: WallpaperModel?
+    fun getCurrentWallpaperModels(context: Context): Pair<WallpaperModel, WallpaperModel> {
+        var homeWallpaperModel: WallpaperModel
+        var lockWallpaperModel: WallpaperModel
 
         val wallpaperManager = WallpaperManager.getInstance(context)
 
         val homeWallpaperInstance =
-            wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM)
+            checkNotNull(wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_SYSTEM)) {
+                "Home wallpaper instance should not be null"
+            }
         val lockWallpaperInstance =
             wallpaperManager.getWallpaperInstance(WallpaperManager.FLAG_LOCK)
-
-        // TODO(b/452460147): In fact homeWallpaperInstance should not be null
-        if (homeWallpaperInstance == null) {
-            return Pair(null, null)
-        }
 
         val isHomeStatic = (homeWallpaperInstance.info == null)
         val homeDescription = homeWallpaperInstance.description
@@ -130,9 +130,12 @@ object CurrentWallpaperModelUtils {
     ): WallpaperModel {
         val entryPoint = EntryPoints.get(context, CurrentWallpaperModelUtilsEntryPoint::class.java)
 
-        val uniqueId = WallpaperDescriptionUtils.getUniqueId(wallpaperDescription.content) ?: ""
+        val uniqueId =
+            WallpaperDescriptionUtils.getUniqueId(wallpaperDescription.content)
+                ?: UNKNOWN_CURRENT_WALLPAPER_ID + wallpaperManagerDestinationFlag
         val collectionId =
-            WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content) ?: ""
+            WallpaperDescriptionUtils.getCollectionId(wallpaperDescription.content)
+                ?: UNKNOWN_COLLECTION_ID
 
         val wallpaperId =
             WallpaperId(

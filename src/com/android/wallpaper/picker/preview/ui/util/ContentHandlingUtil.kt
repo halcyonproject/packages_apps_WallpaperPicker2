@@ -160,7 +160,7 @@ object ContentHandlingUtil {
                             uniqueId =
                                 if (assetId != null) "${it.serviceName}_$assetId"
                                 else it.serviceName,
-                            collectionId = commonWallpaperData.id.collectionId,
+                            collectionId = componentName.packageName,
                         )
                 )
             val liveWallpaperData =

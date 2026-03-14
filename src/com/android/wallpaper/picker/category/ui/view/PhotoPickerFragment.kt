@@ -40,7 +40,7 @@ import com.android.wallpaper.model.ImageWallpaperInfo
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -238,7 +238,7 @@ class PhotoPickerFragment : Hilt_PhotoPickerFragment() {
         ActivityUtils.startActivityForResultSafely(
             activity,
             previewIntent,
-            CustomizationPickerActivity2.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+            CustomizationPickerActivity.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
         )
     }
 
