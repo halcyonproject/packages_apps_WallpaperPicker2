@@ -42,6 +42,7 @@ import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BitmapUtils
 import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.asset.StreamableAsset
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.LiveWallpaperPrefMetadata
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.StaticWallpaperPrefMetadata
@@ -62,6 +63,7 @@ import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.util.CurrentWallpaperInfoUtils.getCurrentWallpapers
+import com.android.wallpaper.util.CurrentWallpaperModelUtils
 import com.android.wallpaper.util.WallpaperCropUtils
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.toDescription
@@ -532,6 +534,12 @@ constructor(
     }
 
     override suspend fun getCurrentWallpaperModels(forceRefresh: Boolean): WallpaperModelsPair {
+        if (BaseFlags.get(context).isRefactorWallpaperInfoFlag()) {
+            Log.d(TAG, "Using CurrentWallpaperModelUtils")
+            val currentWallpaperModels =
+                CurrentWallpaperModelUtils.getCurrentWallpaperModels(context)
+            return WallpaperModelsPair(currentWallpaperModels.first, currentWallpaperModels.second)
+        }
         val currentWallpapers = getCurrentWallpapers(context, forceRefresh)
         val homeWallpaper = currentWallpapers.first
         val lockWallpaper = currentWallpapers.second
