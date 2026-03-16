@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content" />
         </FrameLayout>
 
-        <TextView
+        <Button
             android:id="@+id/more_wallpapers_button"
             android:background="@drawable/view_all_button_background"
             android:layout_width="@dimen/view_all_button_width"
@@ -71,11 +71,13 @@
             android:textSize="@dimen/wallpaper_header_text_size"
             android:maxLines="2"
             android:ellipsize="end"
+            app:elevation="0dp"
+            android:stateListAnimator="@null"
             app:layout_constraintTop_toTopOf="@+id/wallpaper_carousel_container"
             app:layout_constraintBottom_toBottomOf="@+id/wallpaper_carousel_container"
             app:layout_constraintEnd_toEndOf="parent"
             android:clickable="true"
-        />
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/wallpaper_picker_entry_title"

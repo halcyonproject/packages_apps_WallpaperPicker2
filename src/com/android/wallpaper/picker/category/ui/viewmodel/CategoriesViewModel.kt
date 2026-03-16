@@ -45,6 +45,7 @@ import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
+import com.android.wallpaper.picker.wallpapers.domain.interactor.CategoryWallpapersInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -67,6 +68,7 @@ constructor(
     private val curatedPhotosInteractor: CuratedPhotosInteractor,
     private val myPhotosInteractor: MyPhotosInteractor,
     private val thirdPartyCategoryInteractor: ThirdPartyCategoryInteractor,
+    private val categoryWallpapersInteractor: CategoryWallpapersInteractor,
     loadindStatusInteractor: CategoriesLoadingStatusInteractor,
     networkStatusInteractor: NetworkStatusInteractor,
     private val packageStatusNotifier: PackageStatusNotifier,
@@ -112,7 +114,10 @@ constructor(
             }
 
         bgScope.launch {
-            refetchCategoryReceiver.collect { creativeCategoryInteractor.updatePackThemeCategory() }
+            refetchCategoryReceiver.collect {
+                categoryWallpapersInteractor.refreshCategoryWallpapers("")
+                creativeCategoryInteractor.updatePackThemeCategory()
+            }
         }
     }
 
