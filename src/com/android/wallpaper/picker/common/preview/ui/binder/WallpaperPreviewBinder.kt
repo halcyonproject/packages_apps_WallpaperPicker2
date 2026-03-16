@@ -30,7 +30,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
-import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder.WALLPAPER_SURFACE_LAYER
+import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder.MEDIA_OVERLAY_SURFACE_LAYER
 import com.android.wallpaper.picker.common.preview.ui.viewmodel.BasePreviewViewModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperColorsModel
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -87,7 +87,7 @@ object WallpaperPreviewBinder {
                         onPreviewReady = onPreviewReady,
                         onPreviewSurfaceDestroyed = onPreviewSurfaceDestroyed,
                     )
-                surfaceView.compositionOrder = WALLPAPER_SURFACE_LAYER
+                surfaceView.compositionOrder = MEDIA_OVERLAY_SURFACE_LAYER
                 surfaceCallback?.let { surfaceView.holder.addCallback(it) }
             }
             // When OnDestroy, release the surface

@@ -51,9 +51,7 @@ import kotlinx.coroutines.launch
 object BasePreviewBinder {
 
     // Layer number for SurfaceView#compositionOrder, negative numbers are under the media window
-    const val WALLPAPER_SURFACE_LAYER = -3
-    const val WORKSPACE_SURFACE_LAYER = -2
-    const val POST_PROCESS_SURFACE_LAYER = -1
+    const val MEDIA_OVERLAY_SURFACE_LAYER = -1
 
     fun bind(
         applicationContext: Context,
