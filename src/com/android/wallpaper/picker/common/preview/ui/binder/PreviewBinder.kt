@@ -80,7 +80,9 @@ import kotlin.math.max
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -265,6 +267,16 @@ object PreviewBinder {
             MutableStateFlow(null)
         val workspaceSurfaceControl: MutableStateFlow<SurfaceControl?> = MutableStateFlow(null)
         var surfaceViewCallback: SurfaceViewUtils.SurfaceCallback? = null
+        /**
+         * This flag is used specifically for the case of rendering live wallpaper cycle when a
+         * surface is destroyed before.
+         *
+         * [renderLiveWallpaperPreview] will connect to an external wallpaper. In the case of
+         * surface is destroyed and created again by device screen of and on, if connecting to the
+         * external wallpaper too early before the surface is created, we will encounter a race
+         * condition and a potential black screen throttles for 5 seconds.
+         */
+        val surfaceDestroyed: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
         fun cleanupWorkspacePreview() {
             workspaceCallback?.sendMessage(MESSAGE_ID_DESTROY_PREVIEW, Bundle())
@@ -288,6 +300,10 @@ object PreviewBinder {
         // Make surface view's lifecycle follows attach and detach, instead of visibility
         preview.setSurfaceLifecycle(SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT)
 
+        suspend fun waitForSurfaceViewCreated() {
+            surfaceDestroyed.filter { destroyed -> !destroyed }.first()
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 launch {
@@ -295,6 +311,11 @@ object PreviewBinder {
                         val (wallpaper, whichPreview) = smallWallpaper
 
                         if (wallpaper is LiveWallpaperModel) {
+                            // If the surface is destroyed before, we only wait until the surface
+                            // is created to continue to render the live wallpaper preview.
+                            // See surfaceDestroyed for more details.
+                            waitForSurfaceViewCreated()
+
                             val forceSingleEngine = wallpaper.shouldEnforceSingleEngine()
                             val liveWallpaperSurfaceControl: WallpaperSurfaceControl.Live? =
                                 renderLiveWallpaperPreview(
@@ -311,18 +332,12 @@ object PreviewBinder {
                                     windowToken = windowToken,
                                     destinationFlag = previewTarget.screen.toFlag(),
                                     liveWallpaperConnectionUtils = liveWallpaperConnectionUtils,
-                                    onEngineReady = { engine ->
-                                        // Note that there will be only one engine created callback
-                                        // when forceSingleEngine is true
+                                    onEngineCreated = { engine ->
                                         preview.viewTreeObserver
                                             .addOnWindowVisibilityChangeListener { visibility ->
                                                 engine.trySetIsVisible(visibility == View.VISIBLE)
                                             }
                                         if (!wallpaperPreviewOnly) {
-                                            // Set up on dispatch touch event
-                                            onDispatchTouchEventReady.invoke(
-                                                getOnDispatchTouchEventForLiveWallpapers(engine)
-                                            )
                                             // Set up on apply live wallpaper callback
                                             setOnApplyLiveWallpaper(
                                                 viewModel = viewModel,
@@ -334,6 +349,9 @@ object PreviewBinder {
                                         ->
                                         // TODO(b/423956081): Handle color updates.
                                     },
+                                    onDispatchTouchEventReady =
+                                        if (wallpaperPreviewOnly) null
+                                        else onDispatchTouchEventReady,
                                 )
                             // Release before assigning a new surface control
                             wallpaperSurfaceControl.value?.release()
@@ -391,6 +409,7 @@ object PreviewBinder {
                             preview.holder.addCallback(
                                 object : SurfaceViewUtils.SurfaceCallback {
                                         override fun surfaceCreated(holder: SurfaceHolder) {
+                                            surfaceDestroyed.value = false
                                             preview.reparentWallpaper(wallpaperSurfaceControl)
                                             if (workspaceSurfaceControl != null) {
                                                 preview.reparentWorkspace(workspaceSurfaceControl)
@@ -399,6 +418,10 @@ object PreviewBinder {
                                                 previewTarget = previewTarget,
                                                 isReady = true,
                                             )
+                                        }
+
+                                        override fun surfaceDestroyed(holder: SurfaceHolder) {
+                                            surfaceDestroyed.value = true
                                         }
                                     }
                                     .also { surfaceViewCallback = it }
@@ -440,9 +463,10 @@ object PreviewBinder {
         windowToken: IBinder,
         destinationFlag: Int,
         liveWallpaperConnectionUtils: LiveWallpaperConnectionUtils,
-        onEngineReady: (engine: IWallpaperEngine) -> Unit,
+        onEngineCreated: (engine: IWallpaperEngine) -> Unit,
         onWallpaperColorsChanged:
             (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
+        onDispatchTouchEventReady: ((onDispatchTouchEvent: (event: MotionEvent) -> Unit) -> Unit)?,
     ): WallpaperSurfaceControl.Live? {
         val connection: LiveWallpaperConnection =
             liveWallpaperConnectionUtils.connect(
@@ -454,10 +478,16 @@ object PreviewBinder {
                 windowToken = windowToken,
                 displayId = 0, // TODO(b/423956081): give a proper ID here
                 whichPreview = whichPreview,
-                onEngineReady = onEngineReady,
+                onEngineCreated = onEngineCreated,
                 onWallpaperColorsChanged = onWallpaperColorsChanged,
             )
-        return connection.wallpaperEngine.get()?.mirrorSurfaceControl()?.let {
+        val engine: IWallpaperEngine? = connection.wallpaperEngine.get()
+        // Set up on dispatch touch event
+        engine?.let {
+            onDispatchTouchEventReady?.invoke(getOnDispatchTouchEventForLiveWallpapers(it))
+        }
+
+        return engine?.mirrorSurfaceControl()?.let {
             WallpaperSurfaceControl.Live(
                 liveWallpaperSurfaceControl = it,
                 forceSingleEngine = forceSingleEngine,
