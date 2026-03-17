@@ -39,7 +39,8 @@
             android:layout_height="match_parent"
             android:minHeight="48dp"
             android:minWidth="96dp"
-            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom">
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            android:accessibilityHeading="true">
             <TextView
                 android:id="@+id/lock_preview_label"
                 android:layout_width="wrap_content"
@@ -59,7 +60,8 @@
             android:layout_height="match_parent"
             android:minHeight="48dp"
             android:minWidth="96dp"
-            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom">
+            android:paddingBottom="@dimen/customization_picker_preview_label_padding_bottom"
+            android:accessibilityHeading="true">
             <TextView
                 android:id="@+id/home_preview_label"
                 android:layout_width="wrap_content"
