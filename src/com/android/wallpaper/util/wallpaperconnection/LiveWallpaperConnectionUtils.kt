@@ -30,6 +30,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import java.lang.ref.WeakReference
 import javax.inject.Inject
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -51,7 +54,8 @@ class LiveWallpaperConnectionUtils
 @Inject
 constructor(@ApplicationContext private val context: Context) {
 
-    private val connectionMap: MutableMap<ConnectionKey, LiveWallpaperConnection> = mutableMapOf()
+    private val connectionMap: MutableMap<ConnectionKey, Deferred<LiveWallpaperConnection>> =
+        mutableMapOf()
     private val mutex = Mutex()
 
     init {
@@ -70,8 +74,9 @@ constructor(@ApplicationContext private val context: Context) {
      * existing engines when possible based on the [forceSingleEngine] flag. This call is
      * thread-safe and suspends while the service is being bound and the engine created.
      *
-     * @param onEngineReady A callback triggered when the [IWallpaperEngine] is ready. Note: This is
-     *   invoked even if a cached engine is returned (when [forceSingleEngine] is true).
+     * @param onEngineCreated A callback triggered when the [IWallpaperEngine] is created. Note:
+     *   This is invoked only when a new engine is created. When [forceSingleEngine] is true, this
+     *   will be triggered only once since only one engine is allowed to be created.
      * @param onWallpaperColorsChanged Callback for engine-level color updates.
      * @return A [LiveWallpaperConnection] representing the active binding and engine.
      */
@@ -84,7 +89,7 @@ constructor(@ApplicationContext private val context: Context) {
         windowToken: IBinder,
         displayId: Int,
         whichPreview: WhichPreview,
-        onEngineReady: (engine: IWallpaperEngine) -> Unit,
+        onEngineCreated: (engine: IWallpaperEngine) -> Unit,
         onWallpaperColorsChanged:
             (colors: WallpaperColors?, displayId: Int, persistedColors: WallpaperColors?) -> Unit,
     ): LiveWallpaperConnection {
@@ -95,35 +100,43 @@ constructor(@ApplicationContext private val context: Context) {
                 destinationFlag = destinationFlag,
                 engineDisplaySize = engineDisplaySize,
             )
-        return mutex.withLock {
-            val existingConnection: LiveWallpaperConnection? = connectionMap[connectionKey]
-            if (existingConnection != null) {
-                val existingEngine: IWallpaperEngine? = existingConnection.wallpaperEngine.get()
-                if (existingEngine != null && existingEngine.asBinder().isBinderAlive) {
-                    onEngineReady.invoke(existingEngine)
-                    return@withLock existingConnection // Found it, return immediately
-                } else {
-                    // Clear the "dead" connection when its underlying engine is no longer alive.
-                    existingConnection.disconnect(context)
-                    connectionMap.remove(connectionKey)
+
+        val deferredConnection: Deferred<LiveWallpaperConnection> =
+            mutex.withLock {
+                val existingDeferredConnection: Deferred<LiveWallpaperConnection>? =
+                    connectionMap[connectionKey]
+                if (existingDeferredConnection != null) {
+                    val existingConnection = existingDeferredConnection.await()
+                    val existingEngine: IWallpaperEngine? = existingConnection.wallpaperEngine.get()
+                    if (existingEngine != null && existingEngine.asBinder().isBinderAlive) {
+                        return@withLock existingDeferredConnection
+                    } else {
+                        // Clear the "dead" connection when its underlying engine is no longer
+                        // alive.
+                        existingConnection.disconnect(context)
+                        connectionMap.remove(connectionKey)
+                    }
                 }
+
+                return@withLock coroutineScope {
+                        async {
+                            createConnection(
+                                context = context,
+                                wallpaperModel = wallpaperModel,
+                                destinationFlag = destinationFlag,
+                                displaySize = engineDisplaySize,
+                                windowToken = windowToken,
+                                displayId = displayId,
+                                whichPreview = whichPreview,
+                                onEngineCreated = onEngineCreated,
+                                onWallpaperColorsChanged = onWallpaperColorsChanged,
+                            )
+                        }
+                    }
+                    .also { connectionMap[connectionKey] = it }
             }
 
-            val newConnection =
-                createConnection(
-                    context = context,
-                    wallpaperModel = wallpaperModel,
-                    destinationFlag = destinationFlag,
-                    displaySize = engineDisplaySize,
-                    windowToken = windowToken,
-                    displayId = displayId,
-                    whichPreview = whichPreview,
-                    onEngineCreated = onEngineReady,
-                    onWallpaperColorsChanged = onWallpaperColorsChanged,
-                )
-            connectionMap[connectionKey] = newConnection
-            return@withLock newConnection
-        }
+        return deferredConnection.await()
     }
 
     /**
@@ -133,7 +146,7 @@ constructor(@ApplicationContext private val context: Context) {
      */
     suspend fun disconnectAll() {
         mutex.withLock {
-            connectionMap.values.forEach { connection -> connection.disconnect(context) }
+            connectionMap.values.forEach { connection -> connection.await().disconnect(context) }
             connectionMap.clear()
         }
     }
