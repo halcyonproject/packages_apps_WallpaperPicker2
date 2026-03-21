@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper.di.modules
 
+import android.app.ThemeManager
 import android.app.WallpaperManager
 import android.content.ContentResolver
 import android.content.Context
@@ -25,6 +26,7 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process
 import com.android.wallpaper.binder.FakeBannerProvider
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.CreativeHelper
 import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
@@ -288,6 +290,17 @@ internal abstract class SharedAppTestModule {
         @Singleton
         fun provideWallpaperRefresher(prefs: TestWallpaperPreferences): WallpaperRefresher {
             return FakeWallpaperRefresher(prefs)
+        }
+
+        @Provides
+        @Singleton
+        fun provideThemeManager(
+            @ApplicationContext context: Context,
+            baseFlags: BaseFlags,
+        ): ThemeManager? {
+            return if (baseFlags.isThemeServiceEnabled()) {
+                context.getSystemService(ThemeManager::class.java)
+            } else null
         }
     }
 }
