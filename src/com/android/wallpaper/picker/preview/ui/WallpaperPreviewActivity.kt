@@ -348,24 +348,18 @@ class WallpaperPreviewActivity :
             // EffectsController is Singleton scoped. Therefore, persist state on config change
             // restart, and only destroy when activity is finishing.
             creativeEffectsRepository.destroy()
-            // liveWallpaperConnectionUtils is Activity-Retained Scoped, however, the associated
-            // connections can cause memory leaks if we do not proactively release them.
-            // We only disconnect when the activity is finishing, so that we can retain the
-            // connections on config change.
+
             if (isRefactorWallpaperPreviewScreenEnabled) {
+                // liveWallpaperConnectionUtils is Activity-Retained Scoped, however, the associated
+                // connections can cause memory leaks if we do not proactively release them.
+                // We only disconnect when the activity is finishing, so that we can retain the
+                // connections on config change.
                 mainScope.launch { liveWallpaperConnectionUtils.get().disconnectAll() }
+            } else {
+                mainScope.launch { wallpaperConnectionUtils.disconnectAll() }
             }
         }
         liveWallpaperDownloader.cleanup()
-        // TODO(b/333879532): Only disconnect when leaving the Activity without introducing black
-        //  preview. If onDestroy is caused by an orientation change, we should keep the connection
-        //  to avoid initiating the engines again.
-        // TODO(b/328302105): MainScope ensures the job gets done non-blocking even if the
-        //   activity has been destroyed already. Consider making this part of
-        //   WallpaperConnectionUtils.
-        if (!isRefactorWallpaperPreviewScreenEnabled) {
-            mainScope.launch { wallpaperConnectionUtils.disconnectAll() }
-        }
 
         refreshCreativeCategories?.let {
             if (it) {
