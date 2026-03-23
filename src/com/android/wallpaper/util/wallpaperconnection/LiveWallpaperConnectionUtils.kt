@@ -23,7 +23,9 @@ import android.graphics.Point
 import android.os.IBinder
 import android.service.wallpaper.IWallpaperEngine
 import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
+import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils.isExtendedEffectWallpaper
 import com.android.wallpaper.util.WallpaperConnection.WhichPreview
 import com.android.wallpaper.util.toDescription
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -52,7 +54,10 @@ private data class ConnectionKey(
 @ActivityRetainedScoped
 class LiveWallpaperConnectionUtils
 @Inject
-constructor(@ApplicationContext private val context: Context) {
+constructor(
+    @ApplicationContext private val context: Context,
+    private val effectsController: EffectsController,
+) {
 
     private val connectionMap: MutableMap<ConnectionKey, Deferred<LiveWallpaperConnection>> =
         mutableMapOf()
@@ -211,8 +216,17 @@ constructor(@ApplicationContext private val context: Context) {
     ): ConnectionKey {
         val info: WallpaperInfo = wallpaperModel.liveWallpaperData.systemWallpaperInfo
         val descId: String? = wallpaperModel.liveWallpaperData.description.id
+        // We only use destination flag to generate one engine for home and lock screen respectively
+        // when it's an effect wallpaper; otherwise, in general cases, live wallpapers look exactly
+        // the same for home and lock screen. Only one engine is needed to save memory usage.
+        val shouldUseDestinationFlag =
+            isExtendedEffectWallpaper(context, info.component) ||
+                info.component.packageName == effectsController.effectsPackageName
+
         return if (forceSingleEngine)
-            ConnectionKey(
+        // In the case of forceSingleEngine, destinationFlag and displaySize both null will
+        // guarantee each Wallpaper Service will only create one engine.
+        ConnectionKey(
                 packageName = info.packageName,
                 serviceName = info.serviceName,
                 descriptionId = descId,
@@ -224,7 +238,7 @@ constructor(@ApplicationContext private val context: Context) {
                 packageName = info.packageName,
                 serviceName = info.serviceName,
                 descriptionId = descId,
-                destinationFlag = destinationFlag,
+                destinationFlag = if (shouldUseDestinationFlag) destinationFlag else null,
                 displaySize = "${engineDisplaySize.x}x${engineDisplaySize.y}",
             )
     }
