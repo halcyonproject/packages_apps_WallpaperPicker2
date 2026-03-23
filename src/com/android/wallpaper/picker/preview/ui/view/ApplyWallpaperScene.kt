@@ -19,8 +19,8 @@ package com.android.wallpaper.picker.preview.ui.view
 import android.view.SurfaceView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,18 +28,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -86,6 +83,46 @@ import kotlinx.coroutines.launch
 /**
  * [ApplyWallpaperScene] is one scene in [WallpaperPreviewFragment]'s SceneTransitionLayout. It is
  * bound to the [WallpaperPreviewFragment] and is not expected to be used somewhere else.
+ * <pre>
+ * Visual Representation:
+ * +------------------------------------------+
+ * |              systemBarPadding            |
+ * +------------------------------------------+
+ * |                Title Box                 |
+ * |    (Elements.ApplyWallpaperTitle)        |
+ * +------------------------------------------+
+ * |                                          |
+ * |            Preview Area (weight 1f)      |
+ * |                                          |
+ * |  If Foldable:                            |
+ * |  +------------------------------------+  |
+ * |  |        FoldablePreviewPager        |  |
+ * |  +------------------------------------+  |
+ * |                                          |
+ * |  Else (Single Screen):                   |
+ * |  +-------------------+   +------------+  |
+ * |  |   Lock Screen     |   | Home Screen|  |
+ * |  |   Preview Group   |   | Preview Grp|  |
+ * |  | (CenterEnd)       |   | (CenterStrt)| |
+ * |  |  +-------------+  |   | +--------+ |  |
+ * |  |  | MovableElem |  | 8 | | Movable| |  |
+ * |  |  | (Lock)      |  |dp | | (Home) | |  |
+ * |  |  +-------------+  |   | +--------+ |  |
+ * |  |  | 8dp spacer  |  |   | | 8dp sp | |  |
+ * |  |  +-------------+  |   | +--------+ |  |
+ * |  |  | LabelCheck  |  |   | | LabelCh| |  |
+ * |  |  +-------------+  |   | +--------+ |  |
+ * |  +-------------------+   +------------+  |
+ * |                                          |
+ * +------------------------------------------+
+ * |         ApplyWallpaperButtons            |
+ * | (Elements.ApplyWallpaperBottomButtons)   |
+ * +------------------------------------------+
+ * |        (Optional Desktop Spacer)         |
+ * +------------------------------------------+
+ * |             systemBarPadding             |
+ * +------------------------------------------+
+ * </pre>
  *
  * @param foldablePreviewPagerState We only need the pager state when [isFoldable] is true.
  */
@@ -120,6 +157,7 @@ fun ContentScope.ApplyWallpaperScene(
 
     val context = LocalContext.current
     val shouldShowDesktopUi = remember { BaseFlags.get(context).shouldShowDesktopUi(context) }
+    val isDesktopOrFoldable = isFoldable || shouldShowDesktopUi
 
     Box(
         modifier =
@@ -129,71 +167,79 @@ fun ContentScope.ApplyWallpaperScene(
                     bottom = systemBarPadding.calculateBottomPadding(),
                 )
     ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val windowHeight = maxHeight
-            Column(
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(
                 modifier =
-                    Modifier.fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .heightIn(min = windowHeight)
+                    Modifier.element(Elements.ApplyWallpaperTitle)
+                        .fillMaxWidth()
+                        .then(
+                            if (isDesktopOrFoldable) {
+                                Modifier.padding(24.dp)
+                            } else {
+                                Modifier.padding(
+                                    start = 24.dp,
+                                    top = 80.dp,
+                                    end = 24.dp,
+                                    bottom = 16.dp,
+                                )
+                            }
+                        ),
+                contentAlignment = Alignment.Center,
             ) {
-                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(R.string.apply_wallpaper_title_text),
+                    fontSize = 36.sp,
+                    lineHeight = 44.sp,
+                    color = colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+            }
 
-                Box(
-                    modifier =
-                        Modifier.element(Elements.ApplyWallpaperTitle)
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp, horizontal = 24.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.apply_wallpaper_title_text),
-                        fontSize = 36.sp,
-                        lineHeight = 44.sp,
-                        color = colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (isFoldable) {
+                    FoldablePreviewPager(
+                        viewModel = viewModel,
+                        sceneState = sceneState,
+                        pagerState = checkNotNull(foldablePreviewPagerState),
+                        lockScreenPreview = lockScreenPreview,
+                        lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
+                        homeScreenPreview = homeScreenPreview,
+                        homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
+                        displaySizes = displaySizes,
+                        enableNavToFullPreview = false,
+                        pagerCheckBoxViewModel =
+                            PagerCheckBoxViewModel(
+                                isLockScreenChecked = isLockScreenChecked,
+                                isHomeScreenChecked = isHomeScreenChecked,
+                                onCheckChanged = { screen ->
+                                    when (screen) {
+                                        LOCK_SCREEN -> onLockScreenCheckChanged?.invoke()
+                                        HOME_SCREEN -> onHomeScreenCheckChanged?.invoke()
+                                    }
+                                },
+                            ),
                     )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Box(
-                    modifier = Modifier.fillMaxWidth().clipToBounds(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (isFoldable) {
-                        FoldablePreviewPager(
-                            viewModel = viewModel,
-                            sceneState = sceneState,
-                            pagerState = checkNotNull(foldablePreviewPagerState),
-                            lockScreenPreview = lockScreenPreview,
-                            lockScreenUnfoldedPreview = checkNotNull(lockScreenUnfoldedPreview),
-                            homeScreenPreview = homeScreenPreview,
-                            homeScreenUnfoldedPreview = checkNotNull(homeScreenUnfoldedPreview),
-                            displaySizes = displaySizes,
-                            enableNavToFullPreview = false,
-                            pagerCheckBoxViewModel =
-                                PagerCheckBoxViewModel(
-                                    isLockScreenChecked = isLockScreenChecked,
-                                    isHomeScreenChecked = isHomeScreenChecked,
-                                    onCheckChanged = { screen ->
-                                        when (screen) {
-                                            LOCK_SCREEN -> onLockScreenCheckChanged?.invoke()
-                                            HOME_SCREEN -> onHomeScreenCheckChanged?.invoke()
-                                        }
-                                    },
-                                ),
-                        )
-                    } else {
-                        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                            // Lock screen preview group
+                } else {
+                    Row(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                        // Lock screen preview group
+                        Box(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            contentAlignment = Alignment.CenterEnd,
+                        ) {
                             Column(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxHeight(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement =
+                                    Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                             ) {
                                 MovableElement(
                                     key = SharedElements.LockScreen,
-                                    modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                                    modifier =
+                                        Modifier.weight(1f, fill = false)
+                                            .aspectRatio(phoneAspectRatio),
                                 ) {
                                     content {
                                         PreviewScreen(
@@ -205,8 +251,6 @@ fun ContentScope.ApplyWallpaperScene(
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
                                 LabelCheckbox(
                                     modifier =
                                         Modifier.element(Elements.ApplyWallpaperLockScreenCheckbox),
@@ -215,17 +259,26 @@ fun ContentScope.ApplyWallpaperScene(
                                     text = stringResource(R.string.lock_screen_tab),
                                 )
                             }
+                        }
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                            // Home screen preview group
+                        // Home screen preview group
+                        Box(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
                             Column(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxHeight(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement =
+                                    Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                             ) {
                                 MovableElement(
                                     key = SharedElements.HomeScreen,
-                                    modifier = Modifier.fillMaxWidth().aspectRatio(phoneAspectRatio),
+                                    modifier =
+                                        Modifier.weight(1f, fill = false)
+                                            .aspectRatio(phoneAspectRatio),
                                 ) {
                                     content {
                                         PreviewScreen(
@@ -236,8 +289,6 @@ fun ContentScope.ApplyWallpaperScene(
                                         )
                                     }
                                 }
-
-                                Spacer(modifier = Modifier.height(8.dp))
 
                                 LabelCheckbox(
                                     modifier =
@@ -250,20 +301,19 @@ fun ContentScope.ApplyWallpaperScene(
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.weight(1f))
+            ApplyWallpaperButtons(
+                viewModel,
+                sceneState,
+                onWallpaperApplied,
+                isDesktopOrFoldable,
+                Modifier.element(Elements.ApplyWallpaperBottomButtons),
+            )
 
-                ApplyWallpaperButtons(
-                    viewModel,
-                    sceneState,
-                    onWallpaperApplied,
-                    shouldShowDesktopUi,
-                    Modifier.element(Elements.ApplyWallpaperBottomButtons),
-                )
-
-                if (shouldShowDesktopUi) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+            // Need more padding at the bottom for desktop.
+            if (shouldShowDesktopUi) {
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
 
@@ -280,7 +330,7 @@ fun ApplyWallpaperButtons(
     viewModel: WallpaperPreviewViewModel,
     sceneState: MutableSceneTransitionLayoutState,
     onWallpaperApplied: () -> Unit,
-    shouldShowDesktopUi: Boolean,
+    showSideBySide: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -317,7 +367,7 @@ fun ApplyWallpaperButtons(
     val buttonShape = RoundedCornerShape(percent = 50)
     val cancelButtonBorder = BorderStroke(1.dp, colorScheme.outlineVariant)
 
-    if (shouldShowDesktopUi) {
+    if (showSideBySide) {
         Row(
             modifier =
                 modifier
