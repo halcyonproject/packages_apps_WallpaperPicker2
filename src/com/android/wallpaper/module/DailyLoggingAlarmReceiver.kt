@@ -23,28 +23,27 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 /** Performs daily logging operations when alarm is received. */
 class DailyLoggingAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-
-        val pendingResult: PendingResult? = goAsync() // Marks the BroadcastReceiver to keep alive
-
+        Log.d(TAG, "onReceive")
+        val pendingResult: PendingResult? = goAsync()
         // Create a scope for this specific onReceive call.
-        val scope =
-            CoroutineScope(Dispatchers.Default + Job()) // Or Dispatchers.IO for blocking I/O
+        val scope = CoroutineScope(Dispatchers.IO + Job())
 
         scope.launch {
             try {
-                val appContext = context.applicationContext
-                val injector = InjectorProvider.getInjector()
-                val logger = injector.getUserEventLogger()
-                val preferences = injector.getPreferences(appContext)
+                withTimeout(TIMEOUT_MILLIS) {
+                    val injector = InjectorProvider.getInjector()
+                    val logger = injector.getUserEventLogger()
+                    val preferences = injector.getPreferences(context.applicationContext)
 
-                logger.logSnapshot()
-
-                preferences.setLastDailyLogTimestamp(System.currentTimeMillis())
+                    logger.logSnapshot()
+                    preferences.setLastDailyLogTimestamp(System.currentTimeMillis())
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error logging daily snapshot", e)
             } finally {
@@ -57,5 +56,6 @@ class DailyLoggingAlarmReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG: String = "DailyLoggingAlarmReceiver"
+        private const val TIMEOUT_MILLIS = 5000L // 5 secs
     }
 }
