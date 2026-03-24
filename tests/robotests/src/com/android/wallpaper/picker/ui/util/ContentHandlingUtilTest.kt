@@ -78,10 +78,13 @@ class ContentHandlingUtilTest {
                 wallpaperId = "id",
                 collectionId = "",
                 systemWallpaperInfo = wallpaperInfo,
+                supportsMultipleEngines = true,
             )
 
         ContentHandlingUtil.updatePreview(context, model, description) { updatedModel ->
             assertThat(updatedModel.liveWallpaperData.description).isEqualTo(description)
+            assertThat(updatedModel.liveWallpaperData.supportsMultipleEngines)
+                .isEqualTo(model.liveWallpaperData.supportsMultipleEngines)
         }
     }
 

@@ -109,6 +109,7 @@ class WallpaperModelUtils {
             creativeWallpaperData: CreativeWallpaperData? = null,
             description: WallpaperDescription =
                 WallpaperDescription.Builder().setComponent(systemWallpaperInfo.component).build(),
+            supportsMultipleEngines: Boolean = false,
         ): WallpaperModel.LiveWallpaperModel {
             return WallpaperModel.LiveWallpaperModel(
                 commonWallpaperData =
@@ -130,6 +131,7 @@ class WallpaperModelUtils {
                         isEffectWallpaper = effectNames != null,
                         effectNames = effectNames,
                         description = description,
+                        supportsMultipleEngines = supportsMultipleEngines,
                     ),
                 creativeWallpaperData = creativeWallpaperData,
                 internalLiveWallpaperData = null,
