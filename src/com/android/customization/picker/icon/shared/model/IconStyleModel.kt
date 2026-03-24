@@ -16,9 +16,12 @@
 
 package com.android.customization.picker.icon.shared.model
 
+import com.android.wallpaper.picker.common.text.ui.viewmodel.Text
+
 /** Represents the data needed to display an icon style option. */
 open class IconStyleModel(
     val iconStyle: IconStyle,
-    val isExternalLink: Boolean,
+    val name: Text,
+    val isExternalLink: Boolean = false,
     val isEnabled: Boolean = true,
 )
