@@ -439,9 +439,7 @@ private fun ApplyWallpaperProgressDialog() {
     Row(
         modifier =
             Modifier.background(color = colorScheme.surface, shape = RoundedCornerShape(28.dp))
-                .padding(24.dp)
-                .semantics { testTagsAsResourceId = true }
-                .testTag(PROGRESS_BAR_TEST_RES_ID),
+                .padding(24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CircularProgressIndicator(modifier = Modifier.size(32.dp))
@@ -455,4 +453,3 @@ private fun ApplyWallpaperProgressDialog() {
 }
 
 private const val APPLY_BUTTON_TEST_RES_ID = "com.google.android.apps.wallpaper:id/apply_button"
-private const val PROGRESS_BAR_TEST_RES_ID = "android:id/progress"
