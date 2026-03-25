@@ -44,7 +44,6 @@ import androidx.core.graphics.Insets
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -274,40 +273,6 @@ class CustomizationPickerFragment :
         // bottomScrollView should hide until we customizationOptionsData and call
         // updateHeaderHeightConstraints to make sure of the screen dimensions.
         bottomScrollView.alpha = 0f
-
-        // Override bottom scroll view's accessibility delegate to enable collapse and expand of
-        // the preview and the wallpaper entry.
-        ViewCompat.setAccessibilityDelegate(
-            bottomScrollView,
-            object : AccessibilityDelegateCompat() {
-                override fun onInitializeAccessibilityNodeInfo(
-                    host: View,
-                    info: AccessibilityNodeInfoCompat,
-                ) {
-                    super.onInitializeAccessibilityNodeInfo(host, info)
-                    if (pickerMotionContainer.currentState == R.id.expanded_header_primary) {
-                        info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_BACKWARD)
-                    } else {
-                        info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD)
-                    }
-                }
-
-                override fun performAccessibilityAction(
-                    host: View,
-                    action: Int,
-                    args: Bundle?,
-                ): Boolean {
-                    if (action == AccessibilityNodeInfoCompat.ACTION_SCROLL_BACKWARD) {
-                        pickerMotionContainer.transitionToState(R.id.collapsed_header_primary)
-                        return true
-                    } else if (action == AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD) {
-                        pickerMotionContainer.transitionToState(R.id.expanded_header_primary)
-                        return true
-                    }
-                    return super.performAccessibilityAction(host, action, args)
-                }
-            },
-        )
 
         val optionContainer: ConstraintLayout =
             view.requireViewById(R.id.customization_option_container)
