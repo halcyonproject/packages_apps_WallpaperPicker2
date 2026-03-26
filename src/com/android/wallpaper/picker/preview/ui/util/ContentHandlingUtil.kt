@@ -102,6 +102,7 @@ object ContentHandlingUtil {
                     effectNames,
                     sourceLiveData.contextDescription,
                     description,
+                    sourceLiveData.supportsMultipleEngines,
                 )
             val updatedWallpaper =
                 LiveWallpaperModel(
