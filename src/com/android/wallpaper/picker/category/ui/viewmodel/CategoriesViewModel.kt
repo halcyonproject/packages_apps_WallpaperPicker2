@@ -102,7 +102,10 @@ constructor(
             broadcastDispatcher.broadcastFlow(IntentFilter(Intent.ACTION_LOCALE_CHANGED))
 
         bgScope.launch {
-            localeChangeReceiver.collect { singleCategoryInteractor.refreshDueToLocaleChange() }
+            localeChangeReceiver.collect {
+                singleCategoryInteractor.refreshDueToLocaleChange()
+                categoryWallpapersInteractor.refreshCategoryWallpapers("")
+            }
         }
     }
 
