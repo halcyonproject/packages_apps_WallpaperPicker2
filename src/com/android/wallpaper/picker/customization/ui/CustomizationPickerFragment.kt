@@ -278,30 +278,32 @@ class CustomizationPickerFragment :
 
         // Override bottom scroll view's accessibility delegate to enable the user to expand it
         // once it's been collapsed
-        bottomScrollView.setAccessibilityDelegate(
-            object : ForwardingAccessibilityDelegate(bottomScrollView.accessibilityDelegate) {
-                override fun onInitializeAccessibilityNodeInfo(
-                    host: View,
-                    info: AccessibilityNodeInfo,
-                ) {
-                    super.onInitializeAccessibilityNodeInfo(host, info)
-                    if (pickerMotionContainer.currentState == R.id.collapsed_header_primary) {
-                        info.addAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+        bottomScrollView.accessibilityDelegate?.let { base ->
+            bottomScrollView.setAccessibilityDelegate(
+                object : ForwardingAccessibilityDelegate(base) {
+                    override fun onInitializeAccessibilityNodeInfo(
+                        host: View,
+                        info: AccessibilityNodeInfo,
+                    ) {
+                        super.onInitializeAccessibilityNodeInfo(host, info)
+                        if (pickerMotionContainer.currentState == R.id.collapsed_header_primary) {
+                            info.addAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                        }
                     }
-                }
 
-                override fun performAccessibilityAction(
-                    host: View,
-                    action: Int,
-                    args: Bundle?,
-                ): Boolean {
-                    if (action == AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) {
-                        pickerMotionContainer.transitionToState(R.id.expanded_header_primary)
+                    override fun performAccessibilityAction(
+                        host: View,
+                        action: Int,
+                        args: Bundle?,
+                    ): Boolean {
+                        if (action == AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) {
+                            pickerMotionContainer.transitionToState(R.id.expanded_header_primary)
+                        }
+                        return super.performAccessibilityAction(host, action, args)
                     }
-                    return super.performAccessibilityAction(host, action, args)
                 }
-            }
-        )
+            )
+        }
         val optionContainer: ConstraintLayout =
             view.requireViewById(R.id.customization_option_container)
         val customizationFloatingSheetContainer: FrameLayout =
