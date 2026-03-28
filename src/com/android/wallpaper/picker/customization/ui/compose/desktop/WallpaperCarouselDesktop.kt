@@ -21,15 +21,15 @@ import android.graphics.drawable.AnimatedImageDrawable
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.widget.ImageView
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -120,15 +120,12 @@ fun WallpaperItem(
     val context = LocalContext.current
     val cornerRadius = remember { getDialogCornerRadius(context) }
 
-    Card(
+    Box(
         modifier =
             modifier
                 .height(dimensionResource(id = R.dimen.curated_photo_desktop_height))
-                .clip(RoundedCornerShape(cornerRadius))
-                .semantics { contentDescription = item.contentDescription ?: "" },
-        shape = RoundedCornerShape(cornerRadius),
-        onClick = onClick,
-        elevation = CardDefaults.cardElevation(0.dp),
+                .clickable(onClick = onClick)
+                .semantics { contentDescription = item.contentDescription ?: "" }
     ) {
         AndroidView(
             factory = {
@@ -137,7 +134,7 @@ fun WallpaperItem(
                     importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 }
             },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(cornerRadius)),
             update = { imageView ->
                 item.thumbnailAsset?.let { asset ->
                     asset.loadDrawableWithTransition(
