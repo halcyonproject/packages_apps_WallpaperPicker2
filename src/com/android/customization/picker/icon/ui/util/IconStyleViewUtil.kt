@@ -17,7 +17,6 @@
 package com.android.customization.picker.icon.ui.util
 
 import android.view.View
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.android.customization.picker.icon.shared.model.IconStyle
@@ -28,7 +27,7 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewMo
 import com.android.wallpaper.picker.option.ui.viewmodel.OptionItemViewModel2
 import kotlinx.coroutines.DisposableHandle
 
-interface IconStyleViewUtil : DefaultLifecycleObserver {
+interface IconStyleViewUtil {
     fun getOnClick(iconStyle: IconStyle): (() -> Unit)?
 
     /** Binds an icon style option view for a specific icon style */
